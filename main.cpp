@@ -77,8 +77,7 @@ int main()
 	glDeleteVertexArrays(1, &VertexArrayID);
 	glDeleteProgram(programID);
 
-	// Close OpenGL window and terminate GLFW
-	glfwTerminate();
+	SimEnviromentClose();
 
 	return 0;
 }

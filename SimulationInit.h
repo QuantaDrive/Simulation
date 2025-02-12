@@ -9,4 +9,6 @@
 
 int SimEnviromentInit(GLFWwindow** window, int width = 1280, int height = 720);
 
+void SimEnviromentClose();
+
 #endif //SIMULATIONINIT_H

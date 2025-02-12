@@ -46,3 +46,7 @@ int SimEnviromentInit(GLFWwindow** window, int width, int height) {
     }
     return 0;
 }
+
+void SimEnviromentClose() {
+    glfwTerminate();
+}
