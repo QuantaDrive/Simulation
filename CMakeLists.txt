@@ -47,6 +47,8 @@ add_library(ImGui STATIC
         libs/imgui-1.91.8/imgui_tables.cpp
         libs/imgui-1.91.8/imgui_demo.cpp
         libs/imgui-1.91.8/backends/imgui_impl_glfw.h
+        libs/imgui-1.91.8/backends/imgui_impl_opengl3.h
+        libs/imgui-1.91.8/backends/imgui_impl_opengl3.cpp
         libs/imgui-1.91.8/backends/imgui_impl_glfw.cpp
         libs/imgui-1.91.8/misc/cpp/imgui_stdlib.h
         libs/imgui-1.91.8/misc/cpp/imgui_stdlib.cpp
@@ -54,7 +56,8 @@ add_library(ImGui STATIC
 
 ###
 
-add_executable(simulatie
+add_executable(
+        simulatie
         main.cpp
         common/shader.cpp
         common/shader.hpp
