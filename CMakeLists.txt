@@ -8,7 +8,6 @@ include_directories(
         libs/glew-1.13.0/include
         libs/glm-0.9.6.3
         libs/imgui-1.91.8
-        libs/ImGuizmo-1.83
 )
 
 ### GLFW ###
@@ -33,7 +32,8 @@ target_link_libraries(GLEW_1130
         ${EXTRA_LIBS}
 )
 
-### IMGUI ###
+### ImGui ###
+
 add_library(ImGui STATIC
         libs/imgui-1.91.8/imstb_rectpack.h
         libs/imgui-1.91.8/imstb_textedit.h
@@ -52,10 +52,14 @@ add_library(ImGui STATIC
         libs/imgui-1.91.8/misc/cpp/imgui_stdlib.cpp
 )
 
+###
+
 add_executable(simulatie
         main.cpp
         common/shader.cpp
         common/shader.hpp
+        SimulationInit.cpp
+        SimulationInit.h
 )
 
 target_link_libraries(simulatie
