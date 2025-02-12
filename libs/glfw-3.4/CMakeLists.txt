@@ -19,6 +19,7 @@ option(GLFW_BUILD_EXAMPLES "Build the GLFW example programs" ${GLFW_STANDALONE})
 option(GLFW_BUILD_TESTS "Build the GLFW test programs" ${GLFW_STANDALONE})
 option(GLFW_BUILD_DOCS "Build the GLFW documentation" ON)
 option(GLFW_INSTALL "Generate installation target" ON)
+set(GLFW_BUILD_X11 OFF)
 
 include(GNUInstallDirs)
 include(CMakeDependentOption)
