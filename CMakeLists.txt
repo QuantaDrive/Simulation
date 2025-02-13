@@ -61,8 +61,8 @@ add_executable(
         main.cpp
         common/shader.cpp
         common/shader.hpp
-        SimulationInit.cpp
-        SimulationInit.h
+        src/Simulation/SimulationInit.cpp
+        src/Simulation/SimulationInit.h
 )
 
 target_link_libraries(simulatie

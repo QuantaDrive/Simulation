@@ -7,7 +7,7 @@ using namespace glm;
 
 #include "common/shader.hpp"
 
-#include "SimulationInit.h"
+#include "src/Simulation/SimulationInit.h"
 
 int main()
 {
@@ -26,7 +26,7 @@ int main()
 	glBindVertexArray(VertexArrayID);
 
 	// Create and compile our GLSL program from the shaders
-	GLuint programID = LoadShaders("SimpleVertexShader.vertexshader", "SimpleFragmentShader.fragmentshader");
+	GLuint programID = LoadShaders("src/Simulation/VertexShader.vertexshader", "src/Simulation/FragmentShader.fragmentshader");
 
 
 	static const GLfloat g_vertex_buffer_data[] = {
