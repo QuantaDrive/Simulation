@@ -56,13 +56,11 @@ add_library(ImGui STATIC
 
 ###
 
+add_subdirectory(src/Simulation)
+
 add_executable(
         projectRobotArm
         main.cpp
-        common/shader.cpp
-        common/shader.hpp
-        src/Simulation/SimulationInit.cpp
-        src/Simulation/SimulationInit.h
         src/Domain/ArmPosition.cpp
         src/Domain/ArmPosition.h
         src/Domain/Task.cpp
@@ -78,4 +76,5 @@ target_link_libraries(projectRobotArm
         glfw
         GLEW_1130
         ImGui
+        Simulation
 )
