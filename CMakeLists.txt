@@ -72,6 +72,7 @@ add_executable(
         src/Domain/User.cpp
         src/Domain/User.h
         src/View/IWindowManager.h
+        src/View/WindoManager.cpp
 )
 
 target_link_libraries(projectRobotArm

@@ -11,7 +11,7 @@
 
 class IWindowManager {
 public:
-   bool init();
+   static void init();
    void run();
    void close();
 };
