@@ -2,27 +2,29 @@
 #define ARMPOSITION_H
 
 #include <vector>
+#include <glm/glm.hpp>
 
 using namespace std;
+using namespace glm;
 
 class ArmPosition {
 private:
-    vector<float> position_;
-    vector<float> degrees_;
+    vec3 position_;
+    vec3 degrees_;
     float gripForce_;
 
 public:
-    ArmPosition(const vector<float>& position, const vector<float>& degrees, float gripForce);
+    ArmPosition(const vec3& position, const vec3& degrees, float gripForce);
 
     ~ArmPosition();
 
-    [[nodiscard]] vector<float> getPosition() const;
+    [[nodiscard]] vec3 getPosition() const;
 
-    void setPosition(const vector<float>& position);
+    void setPosition(const vec3& position);
 
-    [[nodiscard]] vector<float> getDegrees() const;
+    [[nodiscard]] vec3 getDegrees() const;
 
-    void setDegrees(const vector<float>& degrees);
+    void setDegrees(const vec3& degrees);
 
     [[nodiscard]] float getGripForce() const;
 
