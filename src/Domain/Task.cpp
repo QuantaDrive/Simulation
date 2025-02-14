@@ -4,7 +4,9 @@
 
 #include "Task.h"
 
-Task::Task(const tm& timestamp, const vector<ArmPosition*>& positions) : timestamp_(timestamp), positions_(positions){}
+Task::Task(const tm& timestamp, const vector<ArmPosition*>& positions) :
+timestamp_(timestamp),
+positions_(positions){}
 
 Task::~Task()
 {

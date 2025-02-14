@@ -14,7 +14,7 @@ private:
     string name_;
 
 public:
-    explicit User(const string& name) : name_(name) {}
+    explicit User(const string& name);
 
     [[nodiscard]] string getName() const;
 

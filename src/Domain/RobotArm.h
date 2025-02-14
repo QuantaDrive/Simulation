@@ -5,6 +5,8 @@
 #ifndef ROBOTARM_H
 #define ROBOTARM_H
 
+#include <string>
+
 #include "Task.h"
 
 #include <vector>
@@ -23,16 +25,12 @@ private:
     vector<Task*> tasks_;
     Status status_;
     ArmPosition* currPosition_;
+    string host_;
 
 public:
-    RobotArm(const vector<Task*>& tasks, Status status, ArmPosition* currPosition)
-        : tasks_(tasks),
-          status_(status),
-          currPosition_(currPosition)
-    {
-    }
+    RobotArm(const vector<Task*>& tasks, Status status, ArmPosition* currPosition, const string& host);
 
-    ~RobotArm();
+    virtual ~RobotArm();
 
     [[nodiscard]] Status getStatus() const;
 

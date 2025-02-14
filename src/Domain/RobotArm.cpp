@@ -4,6 +4,12 @@
 
 #include "RobotArm.h"
 
+RobotArm::RobotArm(const vector<Task*>& tasks, Status status, ArmPosition* currPosition, const string& host) :
+tasks_(tasks),
+status_(status),
+currPosition_(currPosition),
+host_(host){}
+
 RobotArm::~RobotArm()
 {
     for (auto t: tasks_)

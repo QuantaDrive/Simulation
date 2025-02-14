@@ -1,6 +1,9 @@
 #include "ArmPosition.h"
 
-ArmPosition::ArmPosition(const vec3& position, const vec3& degrees, float gripForce) : position_(position), degrees_(degrees), gripForce_(gripForce) {}
+ArmPosition::ArmPosition(const vec3& position, const vec3& degrees, float gripForce) :
+position_(position),
+degrees_(degrees),
+gripForce_(gripForce) {}
 
 ArmPosition::~ArmPosition() = default;
 
