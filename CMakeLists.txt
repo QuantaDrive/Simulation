@@ -63,6 +63,14 @@ add_executable(
         common/shader.hpp
         src/Simulation/SimulationInit.cpp
         src/Simulation/SimulationInit.h
+        src/Domain/ArmPosition.cpp
+        src/Domain/ArmPosition.h
+        src/Domain/Task.cpp
+        src/Domain/Task.h
+        src/Domain/RobotArm.cpp
+        src/Domain/RobotArm.h
+        src/Domain/User.cpp
+        src/Domain/User.h
 )
 
 target_link_libraries(simulatie
