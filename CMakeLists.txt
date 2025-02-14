@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.30)
-project(simulatie)
+project(projectRobotArm)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -57,7 +57,7 @@ add_library(ImGui STATIC
 ###
 
 add_executable(
-        simulatie
+        projectRobotArm
         main.cpp
         common/shader.cpp
         common/shader.hpp
@@ -73,7 +73,7 @@ add_executable(
         src/Domain/User.h
 )
 
-target_link_libraries(simulatie
+target_link_libraries(projectRobotArm
         OpenGL::GL
         glfw
         GLEW_1130
