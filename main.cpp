@@ -1,33 +1,24 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-GLFWwindow* window;
 
 #include <glm/glm.hpp>
 using namespace glm;
 
-#include "common/shader.hpp"
-
-#include "src/Simulation/SimulationInit.h"
+#include <Simulation/Simulation.h>
 
 int main()
 {
 	// Initialise
-	SimEnviromentInit(&window);
-
-	// Ensure we can capture the escape key being pressed below
-	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
+	simulation::Init();
+	simulation::CompileShaders();
 
 	// Dark blue background
-	glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
+	simulation::setBackgroundColor(0.0f, 1.0f, 0.0f);
 
 	// Create the triangle
 	GLuint VertexArrayID;
 	glGenVertexArrays(1, &VertexArrayID);
 	glBindVertexArray(VertexArrayID);
-
-	// Create and compile our GLSL program from the shaders
-	GLuint programID = LoadShaders("src/Simulation/VertexShader.vertexshader", "src/Simulation/FragmentShader.fragmentshader");
-
 
 	static const GLfloat g_vertex_buffer_data[] = {
 		-1.0f, -1.0f, 0.0f,
@@ -46,7 +37,7 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		// Use our shader
-		glUseProgram(programID);
+		glUseProgram(simulation::programID);
 
 		// 1rst attribute buffer : vertices
 		glEnableVertexAttribArray(0);
@@ -66,18 +57,18 @@ int main()
 		glDisableVertexAttribArray(0);
 
 		// Swap buffers
-		glfwSwapBuffers(window);
+		glfwSwapBuffers(simulation::window);
 		glfwPollEvents();
 	} // Check if the ESC key was pressed or the window was closed
-	while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
-		glfwWindowShouldClose(window) == 0);
+	while (glfwGetKey(simulation::window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
+		glfwWindowShouldClose(simulation::window) == 0);
 
 	// Cleanup VBO
 	glDeleteBuffers(1, &vertexbuffer);
 	glDeleteVertexArrays(1, &VertexArrayID);
-	glDeleteProgram(programID);
+	glDeleteProgram(simulation::programID);
 
-	SimEnviromentClose();
+	simulation::Close();
 
 	return 0;
 }

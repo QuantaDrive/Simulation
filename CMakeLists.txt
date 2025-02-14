@@ -56,13 +56,11 @@ add_library(ImGui STATIC
 
 ###
 
+add_subdirectory(src/Simulation)
+
 add_executable(
         simulatie
         main.cpp
-        common/shader.cpp
-        common/shader.hpp
-        src/Simulation/SimulationInit.cpp
-        src/Simulation/SimulationInit.h
 )
 
 target_link_libraries(simulatie
@@ -70,4 +68,5 @@ target_link_libraries(simulatie
         glfw
         GLEW_1130
         ImGui
+        Simulation
 )
