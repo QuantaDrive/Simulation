@@ -11,5 +11,5 @@ string User::getName() const
 
 void User::setName(const string& name)
 {
-    this->name_ = name;
+    name_ = name;
 }

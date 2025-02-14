@@ -41,6 +41,10 @@ public:
     [[nodiscard]] vector<Task*> getTasks() const;
 
     void setTasks(const vector<Task*>& tasks);
+
+    [[nodiscard]] ArmPosition* getCurrPosition() const;
+
+    void setCurrPosition(ArmPosition* currPosition);
 };
 
 

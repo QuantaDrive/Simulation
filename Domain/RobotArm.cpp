@@ -20,7 +20,7 @@ Status RobotArm::getStatus() const
 
 void RobotArm::setStatus(Status status)
 {
-    this->status_=status;
+    status_=status;
 }
 
 vector<Task*> RobotArm::getTasks() const
@@ -30,5 +30,15 @@ vector<Task*> RobotArm::getTasks() const
 
 void RobotArm::setTasks(const vector<Task*>& tasks)
 {
-    this->tasks_=tasks;
+    tasks_=tasks;
+}
+
+ArmPosition* RobotArm::getCurrPosition() const
+{
+    return currPosition_;
+}
+
+void RobotArm::setCurrPosition(ArmPosition* currPosition)
+{
+    currPosition_=currPosition;
 }

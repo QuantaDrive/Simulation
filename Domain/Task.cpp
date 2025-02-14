@@ -21,7 +21,7 @@ tm Task::getTimestamp() const
 
 void Task::setTimestamp(const tm& timestamp)
 {
-    this->timestamp_=timestamp;
+    timestamp_=timestamp;
 }
 
 vector<ArmPosition*> Task::getPositions() const
@@ -31,5 +31,5 @@ vector<ArmPosition*> Task::getPositions() const
 
 void Task::setPositions(const vector<ArmPosition*>& positions)
 {
-    this->positions_=positions;
+    positions_=positions;
 }
