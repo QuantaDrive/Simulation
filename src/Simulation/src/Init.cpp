@@ -76,6 +76,7 @@ int simulation::CompileShaders()
     }
     else
     {
+        printf("Impossible to open the shader!\n");
         getchar();
         return -1;
     }

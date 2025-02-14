@@ -86,6 +86,7 @@ Mesh Mesh::loadObj(const char* filename)
     }
 
     // For each vertex of each triangle
+    Mesh model = Mesh();
     for (unsigned int i = 0; i < vertexIndices.size(); i++)
     {
         // Get the indices of its attributes
@@ -99,10 +100,10 @@ Mesh Mesh::loadObj(const char* filename)
         glm::vec3 normal = temp_normals[normalIndex - 1];
 
         // Put the attributes in buffers
-        out_vertices.push_back(vertex);
-        out_uvs.push_back(uv);
-        out_normals.push_back(normal);
+        model.out_vertices.push_back(vertex);
+        model.out_uvs.push_back(uv);
+        model.out_normals.push_back(normal);
     }
     fclose(file);
-    return true;
+    return model;
 }

@@ -6,11 +6,8 @@
 #define MODELVISUALIZATION_H
 
 namespace simulation {
-
     void setBackgroundColor(float r, float g, float b);
-
-    int loadModel(const char *filename);
-
+    void refresh();
 } // simulation
 
 #endif //MODELVISUALIZATION_H

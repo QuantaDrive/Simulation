@@ -56,9 +56,7 @@ int main()
 
 		glDisableVertexAttribArray(0);
 
-		// Swap buffers
-		glfwSwapBuffers(simulation::window);
-		glfwPollEvents();
+		simulation::refresh();
 	} // Check if the ESC key was pressed or the window was closed
 	while (glfwGetKey(simulation::window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
 		glfwWindowShouldClose(simulation::window) == 0);
