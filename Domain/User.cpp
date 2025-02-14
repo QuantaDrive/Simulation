@@ -3,3 +3,13 @@
 //
 
 #include "User.h"
+
+string User::getName() const
+{
+    return name_;
+}
+
+void User::setName(const string& name)
+{
+    this->name_ = name;
+}

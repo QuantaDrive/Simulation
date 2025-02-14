@@ -20,13 +20,15 @@ enum Status
 
 class RobotArm {
 private:
-    vector<Task*> tasks;
-    Status status;
+    vector<Task*> tasks_;
+    Status status_;
+    ArmPosition* currPosition_;
 
 public:
-    RobotArm(const vector<Task*>& tasks, Status status)
-        : tasks(tasks),
-          status(status)
+    RobotArm(const vector<Task*>& tasks, Status status, ArmPosition* currPosition)
+        : tasks_(tasks),
+          status_(status),
+          currPosition_(currPosition)
     {
     }
 

@@ -11,10 +11,10 @@ using namespace std;
 
 class User {
 private:
-    string name;
+    string name_;
 
 public:
-    explicit User(const string& name) : name(name) {}
+    explicit User(const string& name) : name_(name) {}
 
     [[nodiscard]] string getName() const;
 

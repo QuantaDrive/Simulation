@@ -14,8 +14,8 @@ using namespace std;
 
 class Task {
 private:
-    tm timestamp{};
-    vector<ArmPosition*> positions;
+    tm timestamp_;
+    vector<ArmPosition*> positions_;
 
 public:
     Task(const tm& timestamp, const vector<ArmPosition*>& positions);

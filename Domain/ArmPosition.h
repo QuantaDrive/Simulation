@@ -5,13 +5,13 @@
 
 class ArmPosition {
 private:
-    float xPosition;
-    float yPosition;
-    float zPosition;
-    float xDegrees;
-    float yDegrees;
-    float zDegrees;
-    float gripForce;
+    float xPosition_;
+    float yPosition_;
+    float zPosition_;
+    float xDegrees_;
+    float yDegrees_;
+    float zDegrees_;
+    float gripForce_;
 
 public:
     ArmPosition(float xPosition, float yPosition, float zPosition, float xDegrees, float yDegrees, float zDegrees, float gripForce);

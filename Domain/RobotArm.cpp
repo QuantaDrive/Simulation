@@ -6,28 +6,29 @@
 
 RobotArm::~RobotArm()
 {
-    for (auto t: tasks)
+    for (auto t: tasks_)
     {
         delete t;
     }
+    delete currPosition_;
 }
 
 Status RobotArm::getStatus() const
 {
-    return status;
+    return status_;
 }
 
 void RobotArm::setStatus(Status status)
 {
-    this->status=status;
+    this->status_=status;
 }
 
 vector<Task*> RobotArm::getTasks() const
 {
-    return tasks;
+    return tasks_;
 }
 
 void RobotArm::setTasks(const vector<Task*>& tasks)
 {
-    this->tasks=tasks;
+    this->tasks_=tasks;
 }
