@@ -71,6 +71,10 @@ add_executable(
         src/Domain/RobotArm.h
         src/Domain/User.cpp
         src/Domain/User.h
+        src/Physical/BL/PhysicalManager.cpp
+        src/Physical/BL/PhysicalManager.h
+        src/Simulation/BL/SimulationManager.cpp
+        src/Simulation/BL/SimulationManager.h
 )
 
 target_link_libraries(projectRobotArm
