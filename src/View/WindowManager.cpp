@@ -7,8 +7,10 @@
 #include <iostream>
 #include <bits/algorithmfwd.h>
 
+namespace ed = ax::NodeEditor;
 class WindowManager : public IWindowManager {
 private:
+
     GLFWwindow *window = nullptr;
     int inputX = 0;
     int inputY = 0;
@@ -20,7 +22,7 @@ private:
     std::string textInput = "";
 
 public:
-    void init(GLFWwindow *existingWindow) override {
+    void Init(GLFWwindow *existingWindow) override {
         window = existingWindow;
 
 
@@ -41,7 +43,7 @@ public:
         std::cout << "Window initialized successfully\n";
     }
 
-    void singleInstructionWindow(bool showWindow) {
+    void SingleInstructionWindow(bool showWindow) {
         // Start ImGui frame
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -78,13 +80,13 @@ public:
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     }
 
-    void run() override {
+    void Run() override {
         bool showWindow = true;
 
-        singleInstructionWindow(showWindow);
+        SingleInstructionWindow(showWindow);
     }
 
-    void close() override {
+    void Close() override {
         // Cleanup ImGui
         ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplGlfw_Shutdown();
@@ -93,4 +95,59 @@ public:
         glfwDestroyWindow(window);
         glfwTerminate();
     }
+
+    void SetupImGui(GLFWwindow* window) {
+        IMGUI_CHECKVERSION();
+        ImGui::CreateContext();
+        ImGuiIO& io = ImGui::GetIO(); (void)io;
+        ImGui_ImplGlfw_InitForOpenGL(window, true);
+        ImGui_ImplOpenGL3_Init("#version 330");
+    }
+
+    void RenderImGuiNodesEditor(ed::EditorContext* g_Context) {
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        ed::SetCurrentEditor(g_Context);
+        ed::Begin("My Editor");
+
+        int uniqueId = 1;
+        // Node 1
+        ed::BeginNode(uniqueId++);
+        ImGui::Text("Move 1");
+        ed::BeginPin(uniqueId++, ed::PinKind::Input);
+        ImGui::Text("-> In");
+        ed::EndPin();
+        ImGui::SameLine();
+        ed::BeginPin(uniqueId++, ed::PinKind::Output);
+        ImGui::Text("Out ->");
+        ed::EndPin();
+        ed::EndNode();
+        // Node 2
+        ed::BeginNode(uniqueId++);
+        ImGui::Text("Move 2");
+        ed::BeginPin(uniqueId++, ed::PinKind::Input);
+        ImGui::Text("-> In");
+        ed::EndPin();
+        ImGui::SameLine();
+        ed::BeginPin(uniqueId++, ed::PinKind::Output);
+        ImGui::Text("Out ->");
+        ed::EndPin();
+        ed::EndNode();
+
+        ed::End();
+        ed::SetCurrentEditor(nullptr);
+
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    }
+
+    void CleanupImGui() {
+        ImGui_ImplOpenGL3_Shutdown();
+        ImGui_ImplGlfw_Shutdown();
+        ImGui::DestroyContext();
+    }
+
 };
+

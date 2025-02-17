@@ -8,68 +8,19 @@
 
 #include "common/shader.hpp"
 #include "src/Simulation/SimulationInit.h"
+#include "src/View/WindowManager.cpp"
 
 namespace ed = ax::NodeEditor;
 
-GLFWwindow* window;
-ed::EditorContext* g_Context = nullptr;
+GLFWwindow *window;
+ed::EditorContext *g_Context = nullptr;
+WindowManager windowManager = WindowManager();
 
-//TODO: verwerken in andere klassen
-void SetupImGui() {
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
-    ImGui_ImplGlfw_InitForOpenGL(window, true);
-    ImGui_ImplOpenGL3_Init("#version 330");
-}
 
-void CleanupImGui() {
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
-}
-
-void RenderImGui() {
-    ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplGlfw_NewFrame();
-    ImGui::NewFrame();
-
-    ed::SetCurrentEditor(g_Context);
-    ed::Begin("My Editor");
-
-    int uniqueId = 1;
-// Node 1
-    ed::BeginNode(uniqueId++);
-    ImGui::Text("Move 1");
-    ed::BeginPin(uniqueId++, ed::PinKind::Input);
-    ImGui::Text("-> In");
-    ed::EndPin();
-    ImGui::SameLine();
-    ed::BeginPin(uniqueId++, ed::PinKind::Output);
-    ImGui::Text("Out ->");
-    ed::EndPin();
-    ed::EndNode();
-// Node 2
-    ed::BeginNode(uniqueId++);
-    ImGui::Text("Move 2");
-    ed::BeginPin(uniqueId++, ed::PinKind::Input);
-    ImGui::Text("-> In");
-    ed::EndPin();
-    ImGui::SameLine();
-    ed::BeginPin(uniqueId++, ed::PinKind::Output);
-    ImGui::Text("Out ->");
-    ed::EndPin();
-    ed::EndNode();
-
-    ed::End();
-    ed::SetCurrentEditor(nullptr);
-
-    ImGui::Render();
-    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-}
 
 int main() {
     // Initialize the simulation environment
+
     SimEnviromentInit(&window);
 
     // Ensure we can capture the escape key being pressed below
@@ -82,7 +33,8 @@ int main() {
     glBindVertexArray(VertexArrayID);
 
     // Create and compile our GLSL program from the shaders
-    GLuint programID = LoadShaders("src/Simulation/VertexShader.vertexshader", "src/Simulation/FragmentShader.fragmentshader");
+    GLuint programID = LoadShaders("src/Simulation/VertexShader.vertexshader",
+                                   "src/Simulation/FragmentShader.fragmentshader");
 
     static const GLfloat g_vertex_buffer_data[] = {
         -1.0f, -1.0f, 0.0f,
@@ -96,7 +48,7 @@ int main() {
     glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
 
     // Setup ImGui
-    SetupImGui();
+    windowManager.SetupImGui(window);
 
     // Setup Node Editor
     ed::Config config;
@@ -116,12 +68,12 @@ int main() {
         // Draw the triangle
         glEnableVertexAttribArray(0);
         glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void *) 0);
         glDrawArrays(GL_TRIANGLES, 0, 3);
         glDisableVertexAttribArray(0);
 
-        // Render ImGui
-        RenderImGui();
+        // Render ImGui Node Editor
+        windowManager.RenderImGuiNodesEditor(g_Context);
 
         // Swap buffers
         glfwSwapBuffers(window);
@@ -135,7 +87,7 @@ int main() {
     glDeleteProgram(programID);
 
     // Cleanup ImGui
-    CleanupImGui();
+    windowManager.CleanupImGui();
 
     // Cleanup Node Editor
     ed::DestroyEditor(g_Context);

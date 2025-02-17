@@ -5,11 +5,12 @@
 #include <GLFW/glfw3.h>
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
+#include <imgui_node_editor.h>
 class IWindowManager {
 public:
-   virtual void init(GLFWwindow* existingWindow) = 0;
-   virtual void run() = 0;
-   virtual void close() = 0;
+   virtual void Init(GLFWwindow* existingWindow) = 0;
+   virtual void Run() = 0;
+   virtual void Close() = 0;
    virtual ~IWindowManager() = default;
 };
 
