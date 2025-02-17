@@ -1,15 +1,10 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
-#include <imgui.h>
-#include <iostream>
-#include <backends/imgui_impl_glfw.h>
-#include <backends/imgui_impl_opengl3.h>
-
-using namespace glm;
-
 #include "common/shader.hpp"
 #include "src/Simulation/SimulationInit.h"
+#include "src/View/IWindowManager.h"
+#include "src/View/WindowManager.cpp"
 
 GLFWwindow* window;
 
@@ -42,11 +37,9 @@ int main() {
     glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
     glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
 
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
-    ImGui_ImplGlfw_InitForOpenGL(window, true);
-    ImGui_ImplOpenGL3_Init("#version 330");
+    // Initialize and run the window manager
+    WindowManager windowManager;
+    windowManager.init(window);
 
     do {
         // Clear the screen
@@ -65,21 +58,8 @@ int main() {
         glDrawArrays(GL_TRIANGLES, 0, 3);
         glDisableVertexAttribArray(0);
 
-        // Start ImGui frame
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
-
-        // Create an ImGui window
-        ImGui::Begin("Example Window");
-        if (ImGui::Button("Press Me!")) {
-            std::cout << "Button Pressed!\n";
-        }
-        ImGui::End();
-
-        // Rendering
-        ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        // Run the ImGui window
+        windowManager.run();
 
         // Swap buffers
         glfwSwapBuffers(window);
@@ -92,9 +72,7 @@ int main() {
     glDeleteVertexArrays(1, &VertexArrayID);
     glDeleteProgram(programID);
 
-    // Cleanup ImGui
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui::DestroyContext();
+    windowManager.close();
 
     SimEnviromentClose();
 
