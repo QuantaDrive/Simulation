@@ -1,6 +1,3 @@
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
-
 #include <Simulation/Simulation.h>
 
 int main()
@@ -18,8 +15,7 @@ int main()
 
         monkey.render();
 	} // Check if the ESC key was pressed or the window was closed
-	while (glfwGetKey(simulation::window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
-		glfwWindowShouldClose(simulation::window) == 0);
+	while (simulation::needClose());
 
 	simulation::Close();
 

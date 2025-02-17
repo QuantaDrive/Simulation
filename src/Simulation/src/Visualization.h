@@ -6,8 +6,9 @@
 #define MODELVISUALIZATION_H
 
 namespace simulation {
-    void setBackgroundColor(float r, float g, float b);
     void refresh();
+    bool needClose();
+    void setBackgroundColor(float r, float g, float b);
 } // simulation
 
 #endif //MODELVISUALIZATION_H

@@ -9,11 +9,6 @@
 
 #include "Init.h"
 
-void simulation::setBackgroundColor(float r, float g, float b)
-{
-    glClearColor(r, g, b, 0.0f);
-}
-
 void simulation::refresh()
 {
     // Swap buffers
@@ -24,4 +19,15 @@ void simulation::refresh()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     // Use our shader
     glUseProgram(programID);
+}
+
+bool simulation::needClose()
+{
+    return glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
+        glfwWindowShouldClose(window) == 0;
+}
+
+void simulation::setBackgroundColor(float r, float g, float b)
+{
+    glClearColor(r, g, b, 0.0f);
 }

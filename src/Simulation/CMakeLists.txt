@@ -1,7 +1,15 @@
 cmake_minimum_required(VERSION 3.30)
 project(Simulation)
 
-add_library(Simulation ${GLFW_LIBRARY_TYPE}
+include_directories(
+        ../../libs/glfw-3.4/include
+        ../../libs/glew-1.13.0/include
+        ../../libs/glm-0.9.6.3
+)
+
+### Simulation lib ###
+
+add_library(Simulation SHARED
         "${CMAKE_CURRENT_SOURCE_DIR}/include/Simulation/Simulation.h"
         "${CMAKE_CURRENT_SOURCE_DIR}/src/Init.h" "${CMAKE_CURRENT_SOURCE_DIR}/src/Init.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/src/Visualization.h" "${CMAKE_CURRENT_SOURCE_DIR}/src/Visualization.cpp"
@@ -13,3 +21,11 @@ target_include_directories(Simulation PUBLIC
 
 target_include_directories(Simulation PRIVATE
         "${CMAKE_CURRENT_SOURCE_DIR}/src")
+
+###
+
+target_link_libraries(Simulation
+        OpenGL::GL
+        GLEW_1130
+        glfw
+)

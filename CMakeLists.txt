@@ -22,7 +22,7 @@ add_definitions(
         -DGLEW_STATIC
 )
 
-add_library(GLEW_1130 STATIC
+add_library(GLEW_1130 SHARED
         libs/glew-1.13.0/src/glew.c
         libs/glew-1.13.0/include/GL/glew.h
 )
