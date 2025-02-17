@@ -4,7 +4,8 @@
 
 #include "RobotArm.h"
 
-RobotArm::RobotArm(const vector<Task*>& tasks, Status status, ArmPosition* currPosition, const string& host) :
+RobotArm::RobotArm(const string& name, const vector<Task*>& tasks, Status status, ArmPosition* currPosition, const string& host) :
+name_(name),
 tasks_(tasks),
 status_(status),
 currPosition_(currPosition),
@@ -12,7 +13,7 @@ host_(host){}
 
 RobotArm::~RobotArm()
 {
-    for (auto t: tasks_)
+    for (const auto t: tasks_)
     {
         delete t;
     }
@@ -47,4 +48,24 @@ ArmPosition* RobotArm::getCurrPosition() const
 void RobotArm::setCurrPosition(ArmPosition* currPosition)
 {
     currPosition_=currPosition;
+}
+
+string RobotArm::getHost() const
+{
+    return host_;
+}
+
+void RobotArm::setHost(const string& host)
+{
+    host_=host;
+}
+
+string RobotArm::getName() const
+{
+    return name_;
+}
+
+void RobotArm::setName(const string& name)
+{
+    name_=name;
 }

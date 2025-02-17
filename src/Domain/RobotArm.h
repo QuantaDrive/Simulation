@@ -22,13 +22,14 @@ enum Status
 
 class RobotArm {
 private:
+    string name_;
     vector<Task*> tasks_;
     Status status_;
     ArmPosition* currPosition_;
     string host_;
 
 public:
-    RobotArm(const vector<Task*>& tasks, Status status, ArmPosition* currPosition, const string& host);
+    RobotArm(const string& name, const vector<Task*>& tasks, Status status, ArmPosition* currPosition, const string& host);
 
     virtual ~RobotArm();
 
@@ -43,6 +44,14 @@ public:
     [[nodiscard]] ArmPosition* getCurrPosition() const;
 
     void setCurrPosition(ArmPosition* currPosition);
+
+    string getHost() const;
+
+    void setHost(const string& host);
+
+    string getName() const;
+
+    void setName(const string& name);
 };
 
 

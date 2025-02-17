@@ -75,6 +75,8 @@ add_executable(
         src/Physical/BL/PhysicalManager.h
         src/Simulation/BL/SimulationManager.cpp
         src/Simulation/BL/SimulationManager.h
+        src/DAL/Repo.cpp
+        src/DAL/Repo.h
 )
 
 target_link_libraries(projectRobotArm

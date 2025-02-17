@@ -5,12 +5,18 @@
 #ifndef SIMULATIONMANAGER_H
 #define SIMULATIONMANAGER_H
 
+#include "../../DAL/Repo.h"
+#include "../../Domain/RobotArm.h"
 #include "../../Domain/Task.h"
 
 class SimulationManager {
+private:
+    Repo* repo_;
 public:
-    void executeTask(Task* task);
-    void move(ArmPosition* position);
+    SimulationManager(Repo* repo);
+    ~SimulationManager();
+    void executeTask(const Task* task);
+    bool move(RobotArm* arm, ArmPosition* position);
 };
 
 
