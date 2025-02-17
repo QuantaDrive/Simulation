@@ -13,7 +13,7 @@
 
 #include "Init.h"
 
-int simulation::Init(int width, int height)
+int simulation::Init(const int width, const int height)
 {
     // Initialize GLFW
     if (!glfwInit())
@@ -55,6 +55,14 @@ int simulation::Init(int width, int height)
     // glfwGetKey returns GLFW_PRESS the next time it is called even if the key had been released before the call
     glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
 
+    // Enable depth test
+    glEnable(GL_DEPTH_TEST);
+    // Accept fragment if it is closer to the camera than the former one
+    glDepthFunc(GL_LESS);
+
+    // Cull triangles which normal is not towards the camera
+    glEnable(GL_CULL_FACE);
+
     return 0;
 }
 
@@ -66,8 +74,7 @@ int simulation::CompileShaders()
 
     // Read the Vertex Shader code from the file
     std::string VertexShaderCode;
-    std::ifstream VertexShaderStream("src/Simulation/VertexShader.glsl", std::ios::in);
-    if (VertexShaderStream.is_open())
+    if (std::ifstream VertexShaderStream("src/Simulation/VertexShader.glsl", std::ios::in); VertexShaderStream.is_open())
     {
         std::stringstream sstr;
         sstr << VertexShaderStream.rdbuf();
@@ -157,5 +164,6 @@ int simulation::CompileShaders()
 
 void simulation::Close()
 {
+    glDeleteProgram(programID);
     glfwTerminate();
 }

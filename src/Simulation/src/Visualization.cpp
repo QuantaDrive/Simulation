@@ -19,4 +19,9 @@ void simulation::refresh()
     // Swap buffers
     glfwSwapBuffers(window);
     glfwPollEvents();
+
+    // Clear the screen
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    // Use our shader
+    glUseProgram(programID);
 }

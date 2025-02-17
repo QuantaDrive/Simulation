@@ -8,11 +8,12 @@
 #include <cstring>
 #include <string>
 
+#include <glm/gtc/matrix_transform.hpp>
+
 Mesh Mesh::loadObj(const char* filename)
 {
-    std::vector<unsigned int> vertexIndices, uvIndices, normalIndices;
+    std::vector<unsigned int> vertexIndices, normalIndices;
     std::vector<glm::vec3> temp_vertices;
-    std::vector<glm::vec2> temp_uvs;
     std::vector<glm::vec3> temp_normals;
 
 
@@ -40,14 +41,6 @@ Mesh Mesh::loadObj(const char* filename)
             fscanf(file, "%f %f %f\n", &vertex.x, &vertex.y, &vertex.z);
             temp_vertices.push_back(vertex);
         }
-        else if (strcmp(lineHeader, "vt") == 0)
-        {
-            glm::vec2 uv;
-            fscanf(file, "%f %f\n", &uv.x, &uv.y);
-            uv.y = -uv.y;
-            // Invert V coordinate since we will only use DDS texture, which are inverted. Remove if you want to use TGA or BMP loaders.
-            temp_uvs.push_back(uv);
-        }
         else if (strcmp(lineHeader, "vn") == 0)
         {
             glm::vec3 normal;
@@ -70,9 +63,6 @@ Mesh Mesh::loadObj(const char* filename)
             vertexIndices.push_back(vertexIndex[0]);
             vertexIndices.push_back(vertexIndex[1]);
             vertexIndices.push_back(vertexIndex[2]);
-            uvIndices.push_back(uvIndex[0]);
-            uvIndices.push_back(uvIndex[1]);
-            uvIndices.push_back(uvIndex[2]);
             normalIndices.push_back(normalIndex[0]);
             normalIndices.push_back(normalIndex[1]);
             normalIndices.push_back(normalIndex[2]);
@@ -86,24 +76,105 @@ Mesh Mesh::loadObj(const char* filename)
     }
 
     // For each vertex of each triangle
-    Mesh model = Mesh();
+    std::vector<glm::vec3> vertices;
+    std::vector<glm::vec3> normals;
     for (unsigned int i = 0; i < vertexIndices.size(); i++)
     {
         // Get the indices of its attributes
         unsigned int vertexIndex = vertexIndices[i];
-        unsigned int uvIndex = uvIndices[i];
         unsigned int normalIndex = normalIndices[i];
 
         // Get the attributes thanks to the index
-        glm::vec3 vertex = temp_vertices[vertexIndex - 1];
-        glm::vec2 uv = temp_uvs[uvIndex - 1];
-        glm::vec3 normal = temp_normals[normalIndex - 1];
+        const glm::vec3& vertex = temp_vertices[vertexIndex - 1];
+        const glm::vec3& normal = temp_normals[normalIndex - 1];
 
         // Put the attributes in buffers
-        model.out_vertices.push_back(vertex);
-        model.out_uvs.push_back(uv);
-        model.out_normals.push_back(normal);
+        vertices.push_back(vertex);
+        normals.push_back(normal);
     }
     fclose(file);
+
+    Mesh model = Mesh(vertices, normals);
     return model;
+}
+
+Mesh::Mesh()
+{
+    glGenVertexArrays(1, &VAO);
+}
+
+Mesh::Mesh(const std::vector<glm::vec3>& vertices, const std::vector<glm::vec3>& normals)
+{
+    glGenVertexArrays(1, &VAO);
+    glBindVertexArray(VAO);
+
+    glGenBuffers(1, &vertex_buffer);
+    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), &vertices[0], GL_STATIC_DRAW);
+    vertex_count = vertices.size();
+
+    glGenBuffers(1, &normal_buffer);
+    glBindBuffer(GL_ARRAY_BUFFER, normal_buffer);
+    glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(glm::vec3), &normals[0], GL_STATIC_DRAW);
+}
+
+Mesh::~Mesh()
+{
+    glDeleteBuffers(1, &vertex_buffer);
+    glDeleteBuffers(1, &normal_buffer);
+    glDeleteVertexArrays(1, &VAO);
+}
+
+glm::mat4 Mesh::getTransformationMatrix()
+{
+    glm::mat4 translationMatrix = glm::translate(glm::mat4(1.0f), translation_vec);
+    glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), rotation_vec.x, glm::vec3(1.0f, 0.0f, 0.0f));
+    rotation = glm::rotate(rotation, rotation_vec.y, glm::vec3(0.0f, 1.0f, 0.0f));
+    rotation = glm::rotate(rotation, rotation_vec.z, glm::vec3(0.0f, 0.0f, 1.0f));
+    glm::mat4 scaleMatrix = glm::scale(glm::mat4(1.0f), scale_vec);
+    return translationMatrix * rotation * scaleMatrix;
+}
+
+void Mesh::translate(const glm::vec3& translation, const bool relative)
+{
+    if (relative)
+        translation_vec += translation;
+    else
+        translation_vec = translation;
+}
+
+void Mesh::rotate(glm::vec3 rotation, const bool relative, const bool isDegree)
+{
+    if (isDegree)
+        rotation = glm::radians(rotation);
+    if (relative)
+        rotation_vec += rotation;
+    else
+        rotation_vec = rotation;
+}
+
+void Mesh::scale(const glm::vec3& scale, const bool relative)
+{
+    if (relative)
+        scale_vec *= scale;
+    else
+        scale_vec = scale;
+}
+
+void Mesh::render()
+{
+    glBindVertexArray(VAO);
+    glEnableVertexAttribArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
+    glVertexAttribPointer(
+        0,                  // attribute
+        3,                  // size
+        GL_FLOAT,           // type
+        GL_FALSE,           // normalized?
+        0,                  // stride
+        (void*)0            // array buffer offset
+    );
+
+    glDrawArrays(GL_TRIANGLES, 0, vertex_count);
+    glDisableVertexAttribArray(0);
 }

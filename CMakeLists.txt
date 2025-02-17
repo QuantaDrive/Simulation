@@ -73,8 +73,8 @@ add_executable(
 
 target_link_libraries(projectRobotArm
         OpenGL::GL
-        glfw
         GLEW_1130
+        glfw
         ImGui
         Simulation
 )

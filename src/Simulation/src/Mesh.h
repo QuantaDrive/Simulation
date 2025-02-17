@@ -5,24 +5,34 @@
 #ifndef MESH_H
 #define MESH_H
 #include <vector>
+
+#include <GL/glew.h>
 #include <glm/glm.hpp>
 
 class Mesh {
-    std::vector<glm::vec3> out_vertices;
-    std::vector<glm::vec2> out_uvs;
-    std::vector<glm::vec3> out_normals;
+    GLuint VAO;
+    GLuint vertex_buffer;
+    size_t vertex_count = 0;
+    GLuint normal_buffer;
+
+    glm::vec3 translation_vec = glm::vec3(0.0f);
+    glm::vec3 rotation_vec = glm::vec3(0.0f);
+    glm::vec3 scale_vec = glm::vec3(1.0f);
 
 public:
-    Mesh() = default;
-
-    Mesh(const std::vector<glm::vec3>& out_vertices, const std::vector<glm::vec2>& out_uvs,
-         const std::vector<glm::vec3>& out_normals)
-        : out_vertices(out_vertices),
-          out_uvs(out_uvs),
-          out_normals(out_normals)
-    {}
-
     static Mesh loadObj(const char * filename);
+
+    Mesh();
+    Mesh(const std::vector<glm::vec3>& vertices, const std::vector<glm::vec3>& normals);
+    ~Mesh();
+
+    glm::mat4 getTransformationMatrix();
+
+    void translate(const glm::vec3& translation, bool relative);
+    void rotate(glm::vec3 rotation, bool relative = false, bool isDegree = false);
+    void scale(const glm::vec3& scale, bool relative = false);
+
+    void render();
 };
 
 #endif //MESH_H
