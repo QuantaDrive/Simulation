@@ -72,8 +72,8 @@ int main() {
         glDrawArrays(GL_TRIANGLES, 0, 3);
         glDisableVertexAttribArray(0);
 
-        // Render ImGui Node Editor
-        windowManager.RenderImGuiNodesEditor(g_Context);
+        // Render ImGui UI and Node Editor together
+        windowManager.RenderUI(g_Context);
 
         // Swap buffers
         glfwSwapBuffers(window);
@@ -81,16 +81,15 @@ int main() {
     } while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
              glfwWindowShouldClose(window) == 0);
 
+
     // Cleanup VBO
     glDeleteBuffers(1, &vertexbuffer);
     glDeleteVertexArrays(1, &VertexArrayID);
     glDeleteProgram(programID);
 
-    // Cleanup ImGui
-    windowManager.CleanupImGui();
+    // Cleanup ImGui & Node Editor
+    windowManager.CleanupImGui(g_Context);
 
-    // Cleanup Node Editor
-    ed::DestroyEditor(g_Context);
 
     SimEnviromentClose();
 

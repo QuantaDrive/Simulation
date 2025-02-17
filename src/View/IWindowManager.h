@@ -8,9 +8,7 @@
 #include <imgui_node_editor.h>
 class IWindowManager {
 public:
-   virtual void Init(GLFWwindow* existingWindow) = 0;
-   virtual void Run() = 0;
-   virtual void Close() = 0;
+
    virtual ~IWindowManager() = default;
 };
 

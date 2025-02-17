@@ -10,7 +10,6 @@
 namespace ed = ax::NodeEditor;
 class WindowManager : public IWindowManager {
 private:
-
     GLFWwindow *window = nullptr;
     int inputX = 0;
     int inputY = 0;
@@ -22,9 +21,8 @@ private:
     std::string textInput = "";
 
 public:
-    void Init(GLFWwindow *existingWindow) override {
+    void SetupImGui(GLFWwindow *existingWindow) {
         window = existingWindow;
-
 
         glewExperimental = GL_TRUE;
         if (glewInit() != GLEW_OK) {
@@ -32,7 +30,6 @@ public:
             return;
         }
 
-        // Setup ImGui
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
         ImGuiIO &io = ImGui::GetIO();
@@ -43,16 +40,25 @@ public:
         std::cout << "Window initialized successfully\n";
     }
 
-    void SingleInstructionWindow(bool showWindow) {
-        // Start ImGui frame
+    void RenderUI(ed::EditorContext *g_Context) {
+        // Start ImGui frame (only once per frame)
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        // Create an ImGui window
+        // Render both UI windows
+        RenderSingleInstructionWindow();
+        RenderImGuiNodesEditor(g_Context);
 
+        // Render the final ImGui frame
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    }
+
+private:
+    void RenderSingleInstructionWindow() {
+        bool showWindow = true;
         ImGui::Begin("Single instruction", &showWindow);
-        // Create an input field for ints
         ImGui::InputInt("X", &inputX);
         ImGui::InputInt("Y", &inputY);
         ImGui::InputInt("Z", &inputZ);
@@ -61,10 +67,7 @@ public:
         ImGui::SliderAngle("Z Degrees", &inputZDegrees, -360, 360);
         ImGui::SliderInt("Grip Force", &gripforce, 0, 10);
 
-
-
-        // Create a button
-        if (ImGui::Button("show values")) {
+        if (ImGui::Button("Show values")) {
             textInput = "X = " + std::to_string(inputX) +
                         ", Y = " + std::to_string(inputY) +
                         ", Z = " + std::to_string(inputZ) +
@@ -74,41 +77,10 @@ public:
         }
         ImGui::Text(textInput.c_str());
         ImGui::End();
-
-        // Rendering
-        ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     }
 
-    void Run() override {
-        bool showWindow = true;
-
-        SingleInstructionWindow(showWindow);
-    }
-
-    void Close() override {
-        // Cleanup ImGui
-        ImGui_ImplOpenGL3_Shutdown();
-        ImGui_ImplGlfw_Shutdown();
-        ImGui::DestroyContext();
-
-        glfwDestroyWindow(window);
-        glfwTerminate();
-    }
-
-    void SetupImGui(GLFWwindow* window) {
-        IMGUI_CHECKVERSION();
-        ImGui::CreateContext();
-        ImGuiIO& io = ImGui::GetIO(); (void)io;
-        ImGui_ImplGlfw_InitForOpenGL(window, true);
-        ImGui_ImplOpenGL3_Init("#version 330");
-    }
-
-    void RenderImGuiNodesEditor(ed::EditorContext* g_Context) {
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
-
+    void RenderImGuiNodesEditor(ed::EditorContext *g_Context) {
+        ImGui::Begin("Node Editor");
         ed::SetCurrentEditor(g_Context);
         ed::Begin("My Editor");
 
@@ -138,16 +110,16 @@ public:
 
         ed::End();
         ed::SetCurrentEditor(nullptr);
-
-        ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        ImGui::End();
     }
 
-    void CleanupImGui() {
+public:
+    void CleanupImGui(ed::EditorContext *g_Context) {
         ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
+        glfwDestroyWindow(window);
+        glfwTerminate();
+        ed::DestroyEditor(g_Context);
     }
-
 };
-
