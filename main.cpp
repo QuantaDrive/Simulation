@@ -1,3 +1,4 @@
+#include <iostream>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 GLFWwindow* window;
@@ -5,12 +6,22 @@ GLFWwindow* window;
 #include <glm/glm.hpp>
 using namespace glm;
 
+#include "yaml-cpp/yaml.h"
+
 #include "common/shader.hpp"
 
 #include "src/Simulation/SimulationInit.h"
 
 int main()
 {
+	YAML::Node db = YAML::LoadFile("db.yaml");
+	if (db["users"])
+	{
+		for (auto user:db["users"])
+		{
+			std::cout << user["name"] << std::endl;
+		}
+	}
 	// Initialise
 	SimEnviromentInit(&window);
 

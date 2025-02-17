@@ -1,0 +1,9 @@
+users:
+  - name:
+      "admin"
+arms:
+  - name:
+      "arm1"
+    tasks: []
+    status:
+      "READY"
