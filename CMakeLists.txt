@@ -8,6 +8,7 @@ include_directories(
         libs/glew-1.13.0/include
         libs/glm-0.9.6.3
         libs/imgui-1.91.8
+        libs/yaml-cpp/include
 )
 
 ### GLFW ###

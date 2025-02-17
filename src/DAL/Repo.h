@@ -10,7 +10,7 @@
 
 class Repo {
 public:
-    Repo() = default;
+    Repo();
 
     RobotArm* readArm() const;
     bool createArm(RobotArm* arm);
