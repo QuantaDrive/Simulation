@@ -165,6 +165,8 @@ int simulation::CompileShaders()
     glDeleteShader(vertexShaderID);
     glDeleteShader(fragmentShaderID);
 
+    MvpMatrixID = glGetUniformLocation(programID, "MVP");
+
     simulation::programID = programID;
     return 0;
 }

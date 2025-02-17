@@ -10,6 +10,11 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
+#include "Init.h"
+#include "Visualization.h"
+
+using namespace simulation;
+
 Mesh Mesh::loadObj(const char* filename)
 {
     std::vector<unsigned int> vertexIndices, normalIndices;
@@ -50,11 +55,18 @@ Mesh Mesh::loadObj(const char* filename)
         else if (strcmp(lineHeader, "f") == 0)
         {
             std::string vertex1, vertex2, vertex3;
-            unsigned int vertexIndex[3], uvIndex[3], normalIndex[3];
-            int matches = fscanf(file, "%d/%d/%d %d/%d/%d %d/%d/%d\n", &vertexIndex[0], &uvIndex[0],
-                                 &normalIndex[0], &vertexIndex[1], &uvIndex[1], &normalIndex[1], &vertexIndex[2],
-                                 &uvIndex[2], &normalIndex[2]);
-            if (matches != 9)
+            unsigned int vertexIndex[3], normalIndex[3];
+            int matches = fscanf(file, "%d/%*d/%d %d/%*d/%d %d/%*d/%d\n", &vertexIndex[0],
+                                 &normalIndex[0], &vertexIndex[1], &normalIndex[1], &vertexIndex[2],
+                                 &normalIndex[2]);
+            if (matches != 6)
+            {
+                fseek(file, -strlen(lineHeader) - 1, SEEK_CUR);
+                matches = fscanf(file, "%d//%d %d//%d %d//%d\n", &vertexIndex[0],
+                                 &normalIndex[0], &vertexIndex[1], &normalIndex[1], &vertexIndex[2],
+                                 &normalIndex[2]);
+            }
+            if (matches != 6)
             {
                 printf("File can't be read by our parser.\n");
                 fclose(file);
@@ -163,6 +175,9 @@ void Mesh::scale(const glm::vec3& scale, const bool relative)
 
 void Mesh::render()
 {
+    const glm::mat4 ModelMatrix = getTransformationMatrix();
+    glm::mat4 MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+    glUniformMatrix4fv(MvpMatrixID, 1, GL_FALSE, &MVP[0][0]);
     glBindVertexArray(VAO);
     glEnableVertexAttribArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);

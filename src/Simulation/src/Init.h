@@ -10,6 +10,7 @@
 namespace simulation
 {
     inline GLuint programID;
+    inline GLuint MvpMatrixID;
     inline GLFWwindow* window;
 
     int Init(int width = 1280, int height = 720);

@@ -4,10 +4,21 @@
 
 #include <GL/glew.h>
 #include "GLFW/glfw3.h"
+#include <glm/gtc/matrix_transform.hpp>
 
 #include "Visualization.h"
 
 #include "Init.h"
+
+void simulation::project(float fovy, float aspectRatio, float zNear, float zFar)
+{
+    ProjectionMatrix = glm::perspective(glm::radians(fovy), aspectRatio, zNear, zFar);
+}
+
+void simulation::lookAt(glm::vec3 eye, glm::vec3 center, glm::vec3 up)
+{
+    ViewMatrix = glm::lookAt(eye, center, up);
+}
 
 void simulation::refresh()
 {
