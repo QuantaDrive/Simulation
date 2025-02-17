@@ -4,25 +4,20 @@
 
 #ifndef REPO_H
 #define REPO_H
-
 #include "../Domain/RobotArm.h"
 #include "../Domain/User.h"
-#include "yaml-cpp/yaml.h"
-
 
 
 class Repo {
-private:
-    YAML::Node db_;
 public:
-    Repo(YAML::Node db);
+    Repo();
 
-    RobotArm* readArm(const string& armName) const;
+    RobotArm* readArm() const;
     bool createArm(RobotArm* arm);
     bool updateArm();
     bool deleteArm(const string& armName);
 
-    User* readUser(const string& userName) const;
+    User* readUser() const;
     bool createUser(User* user);
     bool updateUser();
     bool deleteUser(const string& userName);

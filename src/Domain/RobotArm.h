@@ -17,8 +17,7 @@ enum Status
 {
     READY,
     BUSY,
-    DEFECT,
-    UNKNOWN
+    DEFECT
 };
 
 class RobotArm {
