@@ -74,7 +74,8 @@ int simulation::CompileShaders()
 
     // Read the Vertex Shader code from the file
     std::string VertexShaderCode;
-    if (std::ifstream VertexShaderStream("src/Simulation/VertexShader.glsl", std::ios::in); VertexShaderStream.is_open())
+    std::ifstream VertexShaderStream("src/Simulation/VertexShader.glsl", std::ios::in);
+    if (VertexShaderStream.is_open())
     {
         std::stringstream sstr;
         sstr << VertexShaderStream.rdbuf();
@@ -83,7 +84,7 @@ int simulation::CompileShaders()
     }
     else
     {
-        printf("Impossible to open the shader!\n");
+        printf("Impossible to open the vertex shader!\n");
         getchar();
         return -1;
     }
@@ -97,6 +98,12 @@ int simulation::CompileShaders()
         sstr << FragmentShaderStream.rdbuf();
         FragmentShaderCode = sstr.str();
         FragmentShaderStream.close();
+    }
+    else
+    {
+        printf("Impossible to open the fragment shader!\n");
+        getchar();
+        return -1;
     }
 
     GLint Result = GL_FALSE;
