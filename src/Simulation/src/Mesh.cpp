@@ -120,14 +120,22 @@ Mesh::Mesh(const std::vector<glm::vec3>& vertices, const std::vector<glm::vec3>&
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
 
+    vertex_count = vertices.size();
     glGenBuffers(1, &vertex_buffer);
     glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), &vertices[0], GL_STATIC_DRAW);
-    vertex_count = vertices.size();
+    glBufferData(GL_ARRAY_BUFFER, vertex_count * sizeof(glm::vec3), &vertices[0], GL_STATIC_DRAW);
+    glVertexAttribPointer( // Specify how the vertex data is formatted
+        0,                  // Attribute location (match shader layout)
+        3,                  // Number of components per vertex (x, y, z)
+        GL_FLOAT,           // Data type
+        GL_FALSE,           // Normalized? (usually false)
+        0,                  // Stride (0 means tightly packed)
+        (void*)0            // Offset into the buffer (0 means start at the beginning)
+    );
+    glEnableVertexAttribArray(0); // Enable the vertex attribute
 
-    glGenBuffers(1, &normal_buffer);
-    glBindBuffer(GL_ARRAY_BUFFER, normal_buffer);
-    glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(glm::vec3), &normals[0], GL_STATIC_DRAW);
+    glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 Mesh::~Mesh()
@@ -179,17 +187,6 @@ void Mesh::render()
     glm::mat4 MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
     glUniformMatrix4fv(MvpMatrixID, 1, GL_FALSE, &MVP[0][0]);
     glBindVertexArray(VAO);
-    glEnableVertexAttribArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-    glVertexAttribPointer(
-        0,                  // attribute
-        3,                  // size
-        GL_FLOAT,           // type
-        GL_FALSE,           // normalized?
-        0,                  // stride
-        (void*)0            // array buffer offset
-    );
-
     glDrawArrays(GL_TRIANGLES, 0, vertex_count);
-    glDisableVertexAttribArray(0);
+    glBindVertexArray(0);
 }

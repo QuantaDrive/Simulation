@@ -16,6 +16,8 @@ namespace simulation
     int Init(int width = 1280, int height = 720);
     int CompileShaders();
     void Close();
+
+    void checkOpenGLError();
 } // simulation
 
 #endif //SIMULATIONINIT_H

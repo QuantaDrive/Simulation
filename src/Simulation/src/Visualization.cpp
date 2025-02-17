@@ -22,14 +22,17 @@ void simulation::lookAt(glm::vec3 eye, glm::vec3 center, glm::vec3 up)
 
 void simulation::refresh()
 {
-    // Swap buffers
-    glfwSwapBuffers(window);
-    glfwPollEvents();
-
     // Clear the screen
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     // Use our shader
     glUseProgram(programID);
+}
+
+void simulation::showFrame()
+{
+    // Swap buffers
+    glfwSwapBuffers(window);
+    glfwPollEvents();
 }
 
 bool simulation::needClose()
