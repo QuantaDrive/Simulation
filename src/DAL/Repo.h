@@ -6,18 +6,22 @@
 #define REPO_H
 #include "../Domain/RobotArm.h"
 #include "../Domain/User.h"
+#include "yaml-cpp/yaml.h"
 
+using namespace YAML;
 
 class Repo {
+private:
+    Node db_;
 public:
-    Repo();
+    Repo(Node db);
 
-    RobotArm* readArm() const;
+    RobotArm* readArm(const string& armName) const;
     bool createArm(RobotArm* arm);
     bool updateArm();
     bool deleteArm(const string& armName);
 
-    User* readUser() const;
+    User* readUser(const string& userName) const;
     bool createUser(User* user);
     bool updateUser();
     bool deleteUser(const string& userName);
