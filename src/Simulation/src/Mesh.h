@@ -13,19 +13,20 @@ namespace simulation
 {
     class Mesh {
         GLuint VAO;
+        std::vector<glm::vec3> vertices;
         GLuint vertex_buffer;
-        size_t vertex_count = 0;
         GLuint normal_buffer;
 
         glm::vec3 translation_vec = glm::vec3(0.0f);
         glm::vec3 rotation_vec = glm::vec3(0.0f);
         glm::vec3 scale_vec = glm::vec3(1.0f);
 
-    public:
-        static Mesh loadObj(const char * filename);
+        void loadObj(const char * filename);
 
+    public:
         Mesh();
-        Mesh(const std::vector<glm::vec3>& vertices, const std::vector<glm::vec3>& normals);
+        explicit Mesh(const std::vector<glm::vec3>& vertices);
+        explicit Mesh(const char * filename);
         ~Mesh();
 
         glm::mat4 getTransformationMatrix();

@@ -12,6 +12,12 @@
 
 void simulation::project(float fovy, float aspectRatio, float zNear, float zFar)
 {
+    if (roundf(aspectRatio) == 0)
+    {
+        int width, height;
+        glfwGetWindowSize(window, &width, &height);
+        aspectRatio = static_cast<float>(width) / static_cast<float>(height);
+    }
     ProjectionMatrix = glm::perspective(glm::radians(fovy), aspectRatio, zNear, zFar);
 }
 
@@ -22,17 +28,14 @@ void simulation::lookAt(glm::vec3 eye, glm::vec3 center, glm::vec3 up)
 
 void simulation::refresh()
 {
+        // Swap buffers
+    glfwSwapBuffers(window);
+    glfwPollEvents();
+
     // Clear the screen
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     // Use our shader
     glUseProgram(programID);
-}
-
-void simulation::showFrame()
-{
-    // Swap buffers
-    glfwSwapBuffers(window);
-    glfwPollEvents();
 }
 
 bool simulation::needClose()

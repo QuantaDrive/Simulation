@@ -15,7 +15,7 @@
 
 using namespace simulation;
 
-Mesh Mesh::loadObj(const char* filename)
+void Mesh::loadObj(const char* filename)
 {
     std::vector<unsigned int> vertexIndices, normalIndices;
     std::vector<glm::vec3> temp_vertices;
@@ -27,7 +27,7 @@ Mesh Mesh::loadObj(const char* filename)
     {
         printf("Impossible to open the mesh file!\n");
         getchar();
-        return {};
+        vertices.clear();
     }
 
     while (true)
@@ -70,7 +70,7 @@ Mesh Mesh::loadObj(const char* filename)
             {
                 printf("File can't be read by our parser.\n");
                 fclose(file);
-                return {};
+                vertices.clear();
             }
             vertexIndices.push_back(vertexIndex[0]);
             vertexIndices.push_back(vertexIndex[1]);
@@ -88,7 +88,6 @@ Mesh Mesh::loadObj(const char* filename)
     }
 
     // For each vertex of each triangle
-    std::vector<glm::vec3> vertices;
     std::vector<glm::vec3> normals;
     for (unsigned int i = 0; i < vertexIndices.size(); i++)
     {
@@ -105,9 +104,6 @@ Mesh Mesh::loadObj(const char* filename)
         normals.push_back(normal);
     }
     fclose(file);
-
-    Mesh model = Mesh(vertices, normals);
-    return model;
 }
 
 Mesh::Mesh()
@@ -115,15 +111,36 @@ Mesh::Mesh()
     glGenVertexArrays(1, &VAO);
 }
 
-Mesh::Mesh(const std::vector<glm::vec3>& vertices, const std::vector<glm::vec3>& normals)
+Mesh::Mesh(const std::vector<glm::vec3>& vertices): Mesh()
 {
-    glGenVertexArrays(1, &VAO);
+    this->vertices = vertices;
     glBindVertexArray(VAO);
 
-    vertex_count = vertices.size();
     glGenBuffers(1, &vertex_buffer);
     glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-    glBufferData(GL_ARRAY_BUFFER, vertex_count * sizeof(glm::vec3), &vertices[0], GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), &this->vertices[0], GL_STATIC_DRAW);
+    glVertexAttribPointer( // Specify how the vertex data is formatted
+        0,                  // Attribute location (match shader layout)
+        3,                  // Number of components per vertex (x, y, z)
+        GL_FLOAT,           // Data type
+        GL_FALSE,           // Normalized? (usually false)
+        0,                  // Stride (0 means tightly packed)
+        (void*)0            // Offset into the buffer (0 means start at the beginning)
+    );
+    glEnableVertexAttribArray(0); // Enable the vertex attribute
+
+    glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+Mesh::Mesh(const char * filename): Mesh()
+{
+    loadObj(filename);
+    glBindVertexArray(VAO);
+
+    glGenBuffers(1, &vertex_buffer);
+    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), &this->vertices[0], GL_STATIC_DRAW);
     glVertexAttribPointer( // Specify how the vertex data is formatted
         0,                  // Attribute location (match shader layout)
         3,                  // Number of components per vertex (x, y, z)
@@ -141,7 +158,7 @@ Mesh::Mesh(const std::vector<glm::vec3>& vertices, const std::vector<glm::vec3>&
 Mesh::~Mesh()
 {
     glDeleteBuffers(1, &vertex_buffer);
-    glDeleteBuffers(1, &normal_buffer);
+    //glDeleteBuffers(1, &normal_buffer);
     glDeleteVertexArrays(1, &VAO);
 }
 
@@ -187,6 +204,6 @@ void Mesh::render()
     glm::mat4 MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
     glUniformMatrix4fv(MvpMatrixID, 1, GL_FALSE, &MVP[0][0]);
     glBindVertexArray(VAO);
-    glDrawArrays(GL_TRIANGLES, 0, vertex_count);
+    glDrawArrays(GL_TRIANGLES, 0, vertices.size());
     glBindVertexArray(0);
 }
