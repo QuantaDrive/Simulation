@@ -8,6 +8,7 @@ include_directories(
         libs/glew-1.13.0/include
         libs/glm-0.9.6.3
         libs/imgui-1.91.8
+        libs/imgui-node-editor
 )
 
 ### GLFW ###
@@ -22,7 +23,7 @@ add_definitions(
         -DGLEW_STATIC
 )
 
-add_library(GLEW_1130 SHARED
+add_library(GLEW_1130 STATIC
         libs/glew-1.13.0/src/glew.c
         libs/glew-1.13.0/include/GL/glew.h
 )
@@ -69,12 +70,40 @@ add_executable(
         src/Domain/RobotArm.h
         src/Domain/User.cpp
         src/Domain/User.h
+        src/View/IWindowManager.h
+        src/View/WindowManager.cpp
 )
+
+### ImGui Node Editor ###
+
+add_library(ImGuiNodeEditor STATIC
+        libs/imgui-node-editor/imgui_node_editor.h
+        libs/imgui-node-editor/imgui_node_editor.cpp
+        libs/imgui-node-editor/imgui_node_editor_api.cpp
+        libs/imgui-node-editor/imgui_canvas.cpp
+        libs/imgui-node-editor/examples/application/include/application.h
+)
+
+target_link_libraries(ImGuiNodeEditor
+        ImGui
+)
+
+### Crude JSON ###
+
+add_library(crude_json STATIC
+        libs/imgui-node-editor/crude_json.h
+        libs/imgui-node-editor/crude_json.cpp
+)
+
+### Executable ###
 
 target_link_libraries(projectRobotArm
         OpenGL::GL
+        glfw
         GLEW_1130
         glfw
         ImGui
+        ImGuiNodeEditor
+        crude_json
         Simulation
 )
