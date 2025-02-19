@@ -16,7 +16,7 @@ public:
     SimulationManager(Repo* repo);
     ~SimulationManager();
     void executeTask(const Task* task);
-    bool move(RobotArm* arm, ArmPosition* position);
+    bool move(RobotArm* arm, Instruction* position);
 };
 
 

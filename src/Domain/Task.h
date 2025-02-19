@@ -6,19 +6,21 @@
 #define TASK_H
 
 #include <ctime>
+#include <string>
 #include <vector>
 
-#include "ArmPosition.h"
+#include "Instruction.h"
 
 using namespace std;
 
 class Task {
 private:
+    string id_;
     tm timestamp_;
-    vector<ArmPosition*> positions_;
+    vector<Instruction*> instructions_;
 
 public:
-    Task(const tm& timestamp, const vector<ArmPosition*>& positions);
+    Task(const tm& timestamp, const vector<Instruction*>& instructions);
 
     ~Task();
 
@@ -26,9 +28,9 @@ public:
 
     void setTimestamp(const tm& timestamp);
 
-    [[nodiscard]] vector<ArmPosition*> getPositions() const;
+    [[nodiscard]] vector<Instruction*> getPositions() const;
 
-    void setPositions(const vector<ArmPosition*>& positions);
+    void setPositions(const vector<Instruction*>& instructions);
 };
 
 

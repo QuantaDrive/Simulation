@@ -1,5 +1,5 @@
-#ifndef ARMPOSITION_H
-#define ARMPOSITION_H
+#ifndef INSTRUCTION_H
+#define INSTRUCTION_H
 
 #include <vector>
 #include <glm/glm.hpp>
@@ -7,16 +7,17 @@
 using namespace std;
 using namespace glm;
 
-class ArmPosition {
+class Instruction {
 private:
     vec3 position_;
     vec3 degrees_;
     float gripForce_;
+    double wait_;
 
 public:
-    ArmPosition(const vec3& position, const vec3& degrees, float gripForce);
+    Instruction(const vec3& position, const vec3& degrees, float gripForce);
 
-    ~ArmPosition();
+    ~Instruction();
 
     [[nodiscard]] vec3 getPosition() const;
 
@@ -33,4 +34,4 @@ public:
 
 
 
-#endif //ARMPOSITION_H
+#endif //INSTRUCTION_H

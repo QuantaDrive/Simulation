@@ -62,8 +62,8 @@ add_subdirectory(src/Simulation)
 add_executable(
         projectRobotArm
         main.cpp
-        src/Domain/ArmPosition.cpp
-        src/Domain/ArmPosition.h
+        src/Domain/Instruction.cpp
+        src/Domain/Instruction.h
         src/Domain/Task.cpp
         src/Domain/Task.h
         src/Domain/RobotArm.cpp

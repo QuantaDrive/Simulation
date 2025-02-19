@@ -26,7 +26,7 @@ void SimulationManager::executeTask(const Task* task)
     }
 }
 
-bool SimulationManager::move(RobotArm* arm, ArmPosition* position)
+bool SimulationManager::move(RobotArm* arm, Instruction* position)
 {
     if (arm->getStatus() == READY)
     {

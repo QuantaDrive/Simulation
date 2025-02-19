@@ -4,15 +4,16 @@
 
 #include "Task.h"
 
-Task::Task(const tm& timestamp, const vector<ArmPosition*>& positions) :
+Task::Task(const tm& timestamp, const vector<Instruction*>& instructions) :
 timestamp_(timestamp),
-positions_(positions){}
+instructions_(instructions)
+{}
 
 Task::~Task()
 {
-    for (auto p : positions_)
+    for (const auto i : instructions_)
     {
-        delete p;
+        delete i;
     }
 }
 
@@ -26,12 +27,12 @@ void Task::setTimestamp(const tm& timestamp)
     timestamp_=timestamp;
 }
 
-vector<ArmPosition*> Task::getPositions() const
+vector<Instruction*> Task::getPositions() const
 {
-    return positions_;
+    return instructions_;
 }
 
-void Task::setPositions(const vector<ArmPosition*>& positions)
+void Task::setPositions(const vector<Instruction*>& instructions)
 {
-    positions_=positions;
+    instructions_=instructions;
 }

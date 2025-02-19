@@ -17,10 +17,7 @@ RobotArm* Repo::readArm(const string& armName) const
     if (db_["arms"][armName])
     {
         Node arm = db_["arms"][armName];
-        Status status=UNKNOWN;
-
-
-
+        auto* newArm = new RobotArm(arm["name"].as<string>(),
     }
     return nullptr;
 }

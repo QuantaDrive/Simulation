@@ -4,7 +4,7 @@
 
 #include "RobotArm.h"
 
-RobotArm::RobotArm(const string& name, const vector<Task*>& tasks, Status status, ArmPosition* currPosition, const string& host) :
+RobotArm::RobotArm(const string& name, const vector<Task*>& tasks, Status status, Instruction* currPosition, const string& host) :
 name_(name),
 tasks_(tasks),
 status_(status),
@@ -40,12 +40,12 @@ void RobotArm::setTasks(const vector<Task*>& tasks)
     tasks_=tasks;
 }
 
-ArmPosition* RobotArm::getCurrPosition() const
+Instruction* RobotArm::getCurrPosition() const
 {
     return currPosition_;
 }
 
-void RobotArm::setCurrPosition(ArmPosition* currPosition)
+void RobotArm::setCurrPosition(Instruction* currPosition)
 {
     currPosition_=currPosition;
 }
