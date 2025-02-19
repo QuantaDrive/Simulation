@@ -23,7 +23,7 @@ add_definitions(
         -DGLEW_STATIC
 )
 
-add_library(GLEW_1130 STATIC
+add_library(GLEW_1130 SHARED
         libs/glew-1.13.0/src/glew.c
         libs/glew-1.13.0/include/GL/glew.h
 )
@@ -57,13 +57,11 @@ add_library(ImGui STATIC
 
 ###
 
+add_subdirectory(src/Simulation)
+
 add_executable(
         projectRobotArm
         main.cpp
-        common/shader.cpp
-        common/shader.hpp
-        src/Simulation/SimulationInit.cpp
-        src/Simulation/SimulationInit.h
         src/Domain/ArmPosition.cpp
         src/Domain/ArmPosition.h
         src/Domain/Task.cpp
@@ -82,7 +80,8 @@ add_executable(
 
 target_link_libraries(projectRobotArm
         OpenGL::GL
-        glfw
         GLEW_1130
+        glfw
         ImGui
+        Simulation
 )
