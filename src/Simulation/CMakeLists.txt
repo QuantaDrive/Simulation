@@ -9,7 +9,7 @@ include_directories(
 
 ### Simulation lib ###
 
-add_library(Simulation SHARED
+add_library(Simulation STATIC
         "${CMAKE_CURRENT_SOURCE_DIR}/include/Simulation/Simulation.h"
         "${CMAKE_CURRENT_SOURCE_DIR}/src/Init.h" "${CMAKE_CURRENT_SOURCE_DIR}/src/Init.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/src/Visualization.h" "${CMAKE_CURRENT_SOURCE_DIR}/src/Visualization.cpp"
