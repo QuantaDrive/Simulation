@@ -2,20 +2,13 @@ find_package(Threads REQUIRED)
 
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 set(BUILD_MOCK ON CACHE BOOL "" FORCE)
-set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
 set(CMAKE_POLICY_DEFAULT_CMP0048 NEW)
 
-if(YAML_USE_SYSTEM_GTEST)
-  find_package(GTest)
-  if (NOT GTEST_FOUND)
-    message(FATAL_ERROR "system googletest was requested but not found")
-  endif()
-else()
-    add_subdirectory(
-      "${CMAKE_CURRENT_SOURCE_DIR}/gtest-1.11.0"
-      "${CMAKE_CURRENT_BINARY_DIR}/prefix")
-    include_directories(SYSTEM "${CMAKE_CURRENT_SOURCE_DIR}/gtest-1.11.0/googletest/include")
-endif()
+add_subdirectory(
+  "${CMAKE_CURRENT_SOURCE_DIR}/gtest-1.11.0"
+  "${CMAKE_CURRENT_BINARY_DIR}/prefix")
+
+include_directories(SYSTEM "${CMAKE_CURRENT_SOURCE_DIR}/gtest-1.11.0/googletest/include")
 
 set(test-new-api-pattern "new-api/*.cpp")
 set(test-source-pattern "*.cpp" "integration/*.cpp" "node/*.cpp")
@@ -40,12 +33,11 @@ target_include_directories(yaml-cpp-tests
 target_compile_options(yaml-cpp-tests
   PRIVATE
     $<$<CXX_COMPILER_ID:Clang>:-Wno-c99-extensions -Wno-variadic-macros -Wno-sign-compare>
-    $<$<CXX_COMPILER_ID:GNU>:-Wno-variadic-macros -Wno-sign-compare -Wno-narrowing>)
+    $<$<CXX_COMPILER_ID:GNU>:-Wno-variadic-macros -Wno-sign-compare>)
 target_link_libraries(yaml-cpp-tests
   PRIVATE
     Threads::Threads
     yaml-cpp
-    gtest
     gmock)
 
 set_property(TARGET yaml-cpp-tests PROPERTY CXX_STANDARD_REQUIRED ON)

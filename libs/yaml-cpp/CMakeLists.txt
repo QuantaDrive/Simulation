@@ -1,6 +1,5 @@
-# 3.5 is actually available almost everywhere, but this a good minimum.
-# 3.14 as the upper policy limit avoids CMake deprecation warnings.
-cmake_minimum_required(VERSION 3.4...3.14)
+# 3.5 is actually available almost everywhere, but this a good minimum
+cmake_minimum_required(VERSION 3.5)
 
 # enable MSVC_RUNTIME_LIBRARY target property
 # see https://cmake.org/cmake/help/latest/policy/CMP0091.html
@@ -25,19 +24,13 @@ option(YAML_CPP_BUILD_CONTRIB "Enable yaml-cpp contrib in library" ON)
 option(YAML_CPP_BUILD_TOOLS "Enable parse tools" ON)
 option(YAML_BUILD_SHARED_LIBS "Build yaml-cpp shared library" ${BUILD_SHARED_LIBS})
 option(YAML_CPP_INSTALL "Enable generation of yaml-cpp install targets" ${YAML_CPP_MAIN_PROJECT})
-option(YAML_CPP_FORMAT_SOURCE "Format source" ${YAML_CPP_MAIN_PROJECT})
-option(YAML_CPP_DISABLE_UNINSTALL  "Disable uninstallation of yaml-cpp" OFF)
-option(YAML_USE_SYSTEM_GTEST "Use system googletest if found" OFF)
-option(YAML_ENABLE_PIC "Use Position-Independent Code " ON)
-
+option(YAML_CPP_FORMAT_SOURCE "Format source" ON)
 cmake_dependent_option(YAML_CPP_BUILD_TESTS
   "Enable yaml-cpp tests" OFF
   "BUILD_TESTING;YAML_CPP_MAIN_PROJECT" OFF)
 cmake_dependent_option(YAML_MSVC_SHARED_RT
   "MSVC: Build yaml-cpp with shared runtime libs (/MD)" ON
   "CMAKE_SYSTEM_NAME MATCHES Windows" OFF)
-set(YAML_CPP_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/yaml-cpp"
-  CACHE STRING "Path to install the CMake package to")
  
 if (YAML_CPP_FORMAT_SOURCE)
     find_program(YAML_CPP_CLANG_FORMAT_EXE NAMES clang-format)
@@ -92,7 +85,7 @@ set_property(TARGET yaml-cpp
     CXX_STANDARD_REQUIRED ON)
 
 if (NOT YAML_BUILD_SHARED_LIBS)
-      set_property(TARGET yaml-cpp PROPERTY POSITION_INDEPENDENT_CODE ${YAML_ENABLE_PIC})
+  set_property(TARGET yaml-cpp PROPERTY POSITION_INDEPENDENT_CODE ON)
 endif()
 
 target_include_directories(yaml-cpp
@@ -150,12 +143,13 @@ set_target_properties(yaml-cpp PROPERTIES
   PROJECT_LABEL "yaml-cpp ${yaml-cpp-label-postfix}"
   DEBUG_POSTFIX "${CMAKE_DEBUG_POSTFIX}")
 
-set(EXPORT_TARGETS yaml-cpp::yaml-cpp)
+set(CONFIG_EXPORT_DIR "${CMAKE_INSTALL_LIBDIR}/cmake/yaml-cpp")
+set(EXPORT_TARGETS yaml-cpp)
 configure_package_config_file(
   "${PROJECT_SOURCE_DIR}/yaml-cpp-config.cmake.in"
   "${PROJECT_BINARY_DIR}/yaml-cpp-config.cmake"
-  INSTALL_DESTINATION "${YAML_CPP_INSTALL_CMAKEDIR}"
-  PATH_VARS CMAKE_INSTALL_INCLUDEDIR CMAKE_INSTALL_LIBDIR)
+  INSTALL_DESTINATION "${CONFIG_EXPORT_DIR}"
+  PATH_VARS CMAKE_INSTALL_INCLUDEDIR CMAKE_INSTALL_LIBDIR CONFIG_EXPORT_DIR YAML_BUILD_SHARED_LIBS)
 unset(EXPORT_TARGETS)
 
 write_basic_package_version_file(
@@ -175,14 +169,15 @@ if (YAML_CPP_INSTALL)
                 FILES_MATCHING PATTERN "*.h")
   install(EXPORT yaml-cpp-targets
     NAMESPACE yaml-cpp::
-    DESTINATION "${YAML_CPP_INSTALL_CMAKEDIR}")
+    DESTINATION "${CONFIG_EXPORT_DIR}")
   install(FILES
       "${PROJECT_BINARY_DIR}/yaml-cpp-config.cmake"
       "${PROJECT_BINARY_DIR}/yaml-cpp-config-version.cmake"
-    DESTINATION "${YAML_CPP_INSTALL_CMAKEDIR}")
+    DESTINATION "${CONFIG_EXPORT_DIR}")
   install(FILES "${PROJECT_BINARY_DIR}/yaml-cpp.pc"
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
 endif()
+unset(CONFIG_EXPORT_DIR)
 
 if(YAML_CPP_BUILD_TESTS)
   add_subdirectory(test)
@@ -197,12 +192,11 @@ if (YAML_CPP_FORMAT_SOURCE AND YAML_CPP_CLANG_FORMAT_EXE)
     COMMAND clang-format --style=file -i $<TARGET_PROPERTY:yaml-cpp,SOURCES>
     COMMAND_EXPAND_LISTS
     COMMENT "Running clang-format"
-    WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
     VERBATIM)
 endif()
 
 # uninstall target
-if(YAML_CPP_INSTALL AND NOT YAML_CPP_DISABLE_UNINSTALL AND NOT TARGET uninstall)
+if(NOT TARGET uninstall)
   configure_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in"
     "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"

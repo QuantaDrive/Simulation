@@ -22,10 +22,6 @@
 #include <string_view>
 #endif
 
-#include <glm/detail/type_vec.hpp>
-#include <glm/detail/type_vec3.hpp>
-
-#include "../../../../../src/Domain/RobotArm.h"
 #include "yaml-cpp/binary.h"
 #include "yaml-cpp/node/impl.h"
 #include "yaml-cpp/node/iterator.h"
@@ -153,7 +149,7 @@ ConvertStreamTo(std::stringstream& stream, T& rhs) {
         num <= (std::numeric_limits<T>::max)()) {
       rhs = static_cast<T>(num);
       return true;
-        }
+    }
   }
   return false;
 }
@@ -170,55 +166,55 @@ ConvertStreamTo(std::stringstream& stream, T& rhs) {
 }
 
 #define YAML_DEFINE_CONVERT_STREAMABLE(type, negative_op)                  \
-template <>                                                              \
-struct convert<type> {                                                   \
-\
-static Node encode(const type& rhs) {                                  \
-std::stringstream stream;                                            \
-stream.precision(std::numeric_limits<type>::max_digits10);           \
-conversion::inner_encode(rhs, stream);                               \
-return Node(stream.str());                                           \
-}                                                                      \
-\
-static bool decode(const Node& node, type& rhs) {                      \
-if (node.Type() != NodeType::Scalar) {                               \
-return false;                                                      \
-}                                                                    \
-const std::string& input = node.Scalar();                            \
-std::stringstream stream(input);                                     \
-stream.unsetf(std::ios::dec);                                        \
-if ((stream.peek() == '-') && std::is_unsigned<type>::value) {       \
-return false;                                                      \
-}                                                                    \
-if (conversion::ConvertStreamTo(stream, rhs)) {                      \
-return true;                                                       \
-}                                                                    \
-if (std::numeric_limits<type>::has_infinity) {                       \
-if (conversion::IsInfinity(input)) {                               \
-rhs = std::numeric_limits<type>::infinity();                     \
-return true;                                                     \
-} else if (conversion::IsNegativeInfinity(input)) {                \
-rhs = negative_op std::numeric_limits<type>::infinity();         \
-return true;                                                     \
-}                                                                  \
-}                                                                    \
-\
-if (std::numeric_limits<type>::has_quiet_NaN) {                      \
-if (conversion::IsNaN(input)) {                                    \
-rhs = std::numeric_limits<type>::quiet_NaN();                    \
-return true;                                                     \
-}                                                                  \
-}                                                                    \
-\
-return false;                                                        \
-}                                                                      \
-}
+  template <>                                                              \
+  struct convert<type> {                                                   \
+                                                                           \
+    static Node encode(const type& rhs) {                                  \
+      std::stringstream stream;                                            \
+      stream.precision(std::numeric_limits<type>::max_digits10);           \
+      conversion::inner_encode(rhs, stream);                               \
+      return Node(stream.str());                                           \
+    }                                                                      \
+                                                                           \
+    static bool decode(const Node& node, type& rhs) {                      \
+      if (node.Type() != NodeType::Scalar) {                               \
+        return false;                                                      \
+      }                                                                    \
+      const std::string& input = node.Scalar();                            \
+      std::stringstream stream(input);                                     \
+      stream.unsetf(std::ios::dec);                                        \
+      if ((stream.peek() == '-') && std::is_unsigned<type>::value) {       \
+        return false;                                                      \
+      }                                                                    \
+      if (conversion::ConvertStreamTo(stream, rhs)) {                      \
+        return true;                                                       \
+      }                                                                    \
+      if (std::numeric_limits<type>::has_infinity) {                       \
+        if (conversion::IsInfinity(input)) {                               \
+          rhs = std::numeric_limits<type>::infinity();                     \
+          return true;                                                     \
+        } else if (conversion::IsNegativeInfinity(input)) {                \
+          rhs = negative_op std::numeric_limits<type>::infinity();         \
+          return true;                                                     \
+        }                                                                  \
+      }                                                                    \
+                                                                           \
+      if (std::numeric_limits<type>::has_quiet_NaN) {                      \
+        if (conversion::IsNaN(input)) {                                    \
+          rhs = std::numeric_limits<type>::quiet_NaN();                    \
+          return true;                                                     \
+        }                                                                  \
+      }                                                                    \
+                                                                           \
+      return false;                                                        \
+    }                                                                      \
+  }
 
 #define YAML_DEFINE_CONVERT_STREAMABLE_SIGNED(type) \
-YAML_DEFINE_CONVERT_STREAMABLE(type, -)
+  YAML_DEFINE_CONVERT_STREAMABLE(type, -)
 
 #define YAML_DEFINE_CONVERT_STREAMABLE_UNSIGNED(type) \
-YAML_DEFINE_CONVERT_STREAMABLE(type, +)
+  YAML_DEFINE_CONVERT_STREAMABLE(type, +)
 
 YAML_DEFINE_CONVERT_STREAMABLE_SIGNED(int);
 YAML_DEFINE_CONVERT_STREAMABLE_SIGNED(short);
@@ -267,9 +263,9 @@ struct convert<std::map<K, V, C, A>> {
     for (const auto& element : node)
 #if defined(__GNUC__) && __GNUC__ < 4
       // workaround for GCC 3:
-        rhs[element.first.template as<K>()] = element.second.template as<V>();
+      rhs[element.first.template as<K>()] = element.second.template as<V>();
 #else
-          rhs[element.first.as<K>()] = element.second.as<V>();
+      rhs[element.first.as<K>()] = element.second.as<V>();
 #endif
     return true;
   }
@@ -293,9 +289,9 @@ struct convert<std::unordered_map<K, V, H, P, A>> {
     for (const auto& element : node)
 #if defined(__GNUC__) && __GNUC__ < 4
       // workaround for GCC 3:
-        rhs[element.first.template as<K>()] = element.second.template as<V>();
+      rhs[element.first.template as<K>()] = element.second.template as<V>();
 #else
-          rhs[element.first.as<K>()] = element.second.as<V>();
+      rhs[element.first.as<K>()] = element.second.as<V>();
 #endif
     return true;
   }
@@ -319,9 +315,9 @@ struct convert<std::vector<T, A>> {
     for (const auto& element : node)
 #if defined(__GNUC__) && __GNUC__ < 4
       // workaround for GCC 3:
-        rhs.push_back(element.template as<T>());
+      rhs.push_back(element.template as<T>());
 #else
-          rhs.push_back(element.as<T>());
+      rhs.push_back(element.as<T>());
 #endif
     return true;
   }
@@ -345,9 +341,9 @@ struct convert<std::list<T,A>> {
     for (const auto& element : node)
 #if defined(__GNUC__) && __GNUC__ < 4
       // workaround for GCC 3:
-        rhs.push_back(element.template as<T>());
+      rhs.push_back(element.template as<T>());
 #else
-          rhs.push_back(element.as<T>());
+      rhs.push_back(element.as<T>());
 #endif
     return true;
   }
@@ -380,7 +376,7 @@ struct convert<std::array<T, N>> {
     return true;
   }
 
-private:
+ private:
   static bool isNodeValid(const Node& node) {
     return node.IsSequence() && node.size() == N;
   }
@@ -468,53 +464,6 @@ struct convert<Binary> {
     return true;
   }
 };
-
-//vec3
-template <>
-struct convert<glm::vec3> {
-  static Node encode(const glm::vec3& rhs) {
-    Node node(NodeType::Sequence);
-    node.push_back(rhs.x);
-    node.push_back(rhs.y);
-    node.push_back(rhs.z);
-    return node;
-  }
-
-  static bool decode(const Node& node, glm::vec3& rhs) {
-    if (!node.IsSequence() || node.size() != 3)
-      return false;
-    rhs.x=node[0].as<float>();
-    rhs.y=node[1].as<float>();
-    rhs.z=node[2].as<float>();
-    return true;
-  }
-};
-
-//Status
-template<>
-struct convert<Status> {
-  static Node encode(const Status rhs) {
-    if (rhs==READY) return Node("READY");
-    if (rhs==BUSY) return Node("BUSY");
-    if (rhs==DEFECT) return Node("DEFECT");
-    return Node("UNKNOWN");
-  }
-
-  static bool decode(const Node& node, Status& rhs) {
-    if (node.as<string>() == "READY") rhs=READY;
-    if (node.as<string>() == "BUSY") rhs=BUSY;
-    if (node.as<string>() == "DEFECT") rhs=DEFECT;
-    else rhs=UNKNOWN;
-    return true;
-
-  }
-};
-
-template<>
-struct convert<Task> {
-  static Node encode(const Task& rhs) {
-    Node node(NodeType::Map);
-    node["timestamp"]
-};
+}
 
 #endif  // NODE_CONVERT_H_62B23520_7C8E_11DE_8A39_0800200C9A66

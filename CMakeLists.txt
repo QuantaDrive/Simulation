@@ -55,6 +55,10 @@ add_library(ImGui STATIC
         libs/imgui-1.91.8/misc/cpp/imgui_stdlib.cpp
 )
 
+### yaml-cpp ###
+
+add_subdirectory(libs/yaml-cpp)
+
 ###
 
 add_subdirectory(src/Simulation)
@@ -84,4 +88,5 @@ target_link_libraries(projectRobotArm
         glfw
         ImGui
         Simulation
+        yaml-cpp
 )
