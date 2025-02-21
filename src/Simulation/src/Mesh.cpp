@@ -6,6 +6,7 @@
 
 #include <cstdio>
 #include <cstring>
+#include <map>
 #include <string>
 
 #include <glm/gtc/matrix_transform.hpp>
@@ -15,62 +16,70 @@
 
 using namespace simulation;
 
-void Mesh::loadObj(const char* filename)
+void Mesh::loadObj(const char* meshFilename, const char* materialFilename)
 {
-    std::vector<unsigned int> vertexIndices, normalIndices;
-    std::vector<glm::vec3> temp_vertices;
-    std::vector<glm::vec3> temp_normals;
-
-
-    FILE* file = fopen(filename, "r");
-    if (file == NULL)
-    {
-        printf("Impossible to open the mesh file!\n");
-        getchar();
-        vertices.clear();
+    FILE* materialFile = fopen(materialFilename, "r");
+    if (!materialFile) {
+        printf("Unable to open material file: %s\n", materialFilename);
+        return;
     }
 
-    while (true)
-    {
-        char lineHeader[128];
-        // read the first word of the line
-        int res = fscanf(file, "%s", lineHeader);
-        if (res == EOF)
-            break; // EOF = End Of File. Quit the loop.
+    FILE* meshFile = fopen(meshFilename, "r");
+    if (!meshFile) {
+        printf("Unable to open mesh file: %s\n", meshFilename);
+        vertices.clear();
+        return;
+    }
 
-        // else : parse lineHeader
+    std::map<std::string, glm::vec3> materialMap;
 
-        if (strcmp(lineHeader, "v") == 0)
-        {
+    char materialName[128];
+    char lineHeader[128];
+    while (fscanf(materialFile, "%s", lineHeader) == 1) {
+        if (strcmp(lineHeader, "newmtl") == 0) {
+            fscanf(materialFile, "%s\n", materialName);
+        } else if (strcmp(lineHeader, "Kd") == 0) {
+            glm::vec3 material;
+            fscanf(materialFile, "%f %f %f\n", &material.x, &material.y, &material.z);
+            materialMap[materialName] = material;
+        } else {
+            char buffer[1000];
+            fgets(buffer, 1000, materialFile);
+        }
+    }
+
+    std::vector<unsigned int> vertexIndices;
+    std::vector<unsigned int> normalIndices;
+    std::vector<glm::vec3> tempVertices;
+    std::vector<glm::vec3> tempNormals;
+
+    while (fscanf(meshFile, "%s", lineHeader) == 1) {
+        if (strcmp(lineHeader, "v") == 0) {
             glm::vec3 vertex;
-            fscanf(file, "%f %f %f\n", &vertex.x, &vertex.y, &vertex.z);
-            temp_vertices.push_back(vertex);
-        }
-        else if (strcmp(lineHeader, "vn") == 0)
-        {
+            fscanf(meshFile, "%f %f %f\n", &vertex.x, &vertex.y, &vertex.z);
+            tempVertices.push_back(vertex);
+        } else if (strcmp(lineHeader, "vn") == 0) {
             glm::vec3 normal;
-            fscanf(file, "%f %f %f\n", &normal.x, &normal.y, &normal.z);
-            temp_normals.push_back(normal);
-        }
-        else if (strcmp(lineHeader, "f") == 0)
-        {
-            std::string vertex1, vertex2, vertex3;
+            fscanf(meshFile, "%f %f %f\n", &normal.x, &normal.y, &normal.z);
+            tempNormals.push_back(normal);
+        } else if (strcmp(lineHeader, "usemtl") == 0) {
+            fscanf(meshFile, "%s", materialName);
+        } else if (strcmp(lineHeader, "f") == 0) {
             unsigned int vertexIndex[3], normalIndex[3];
-            int matches = fscanf(file, "%d/%*d/%d %d/%*d/%d %d/%*d/%d\n", &vertexIndex[0],
+            char line[256];
+            fgets(line, 256, meshFile);
+            int matches = sscanf(line, "%d//%d %d//%d %d//%d\n", &vertexIndex[0],
                                  &normalIndex[0], &vertexIndex[1], &normalIndex[1], &vertexIndex[2],
                                  &normalIndex[2]);
-            if (matches != 6)
-            {
-                fseek(file, -strlen(lineHeader) - 1, SEEK_CUR);
-                matches = fscanf(file, "%d//%d %d//%d %d//%d\n", &vertexIndex[0],
+
+            if (matches != 6) {
+                matches = sscanf(line, "%d/%*d/%d %d/%*d/%d %d/%*d/%d\n", &vertexIndex[0],
                                  &normalIndex[0], &vertexIndex[1], &normalIndex[1], &vertexIndex[2],
                                  &normalIndex[2]);
             }
-            if (matches != 6)
-            {
-                printf("File can't be read by our parser.\n");
-                fclose(file);
-                vertices.clear();
+            if (matches != 6) {
+                fclose(meshFile);
+                return;
             }
             vertexIndices.push_back(vertexIndex[0]);
             vertexIndices.push_back(vertexIndex[1]);
@@ -78,31 +87,28 @@ void Mesh::loadObj(const char* filename)
             normalIndices.push_back(normalIndex[0]);
             normalIndices.push_back(normalIndex[1]);
             normalIndices.push_back(normalIndex[2]);
-        }
-        else
-        {
-            // Probably a comment, eat up the rest of the line
-            char stupidBuffer[1000];
-            fgets(stupidBuffer, 1000, file);
+            colors.push_back(materialMap[materialName]);
+            colors.push_back(materialMap[materialName]);
+            colors.push_back(materialMap[materialName]);
+        } else {
+            char buffer[1000];
+            fgets(buffer, 1000, meshFile);
         }
     }
 
-    // For each vertex of each triangle
-    for (unsigned int i = 0; i < vertexIndices.size(); i++)
-    {
-        // Get the indices of its attributes
+    vertices.reserve(vertexIndices.size());
+    normals.reserve(vertexIndices.size());
+    for (unsigned int i = 0; i < vertexIndices.size(); i++) {
         unsigned int vertexIndex = vertexIndices[i];
         unsigned int normalIndex = normalIndices[i];
 
-        // Get the attributes thanks to the index
-        const glm::vec3& vertex = temp_vertices[vertexIndex - 1];
-        const glm::vec3& normal = temp_normals[normalIndex - 1];
+        const glm::vec3& vertex = tempVertices[vertexIndex - 1];
+        const glm::vec3& normal = tempNormals[normalIndex - 1];
 
-        // Put the attributes in buffers
         vertices.push_back(vertex);
         normals.push_back(normal);
     }
-    fclose(file);
+    fclose(meshFile);
 }
 
 void Mesh::fillBuffers()
@@ -133,6 +139,18 @@ void Mesh::fillBuffers()
     );
     glEnableVertexAttribArray(1);
 
+    glBindBuffer(GL_ARRAY_BUFFER, color_buffer);
+    glBufferData(GL_ARRAY_BUFFER, this->colors.size() * sizeof(glm::vec3), &this->colors[0], GL_STATIC_DRAW);
+    glVertexAttribPointer(
+        2,                                // attribute
+        3,                                // size
+        GL_FLOAT,                         // type
+        GL_FALSE,                         // normalized?
+        0,                                // stride
+        (void*)0                          // array buffer offset
+    );
+    glEnableVertexAttribArray(2);
+
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
@@ -142,6 +160,7 @@ Mesh::Mesh()
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &vertex_buffer);
     glGenBuffers(1, &normal_buffer);
+    glGenBuffers(1, &color_buffer);
 }
 
 Mesh::Mesh(const std::vector<glm::vec3>& vertices, const std::vector<glm::vec3>& normals): Mesh()
@@ -151,9 +170,9 @@ Mesh::Mesh(const std::vector<glm::vec3>& vertices, const std::vector<glm::vec3>&
     fillBuffers();
 }
 
-Mesh::Mesh(const char * filename): Mesh()
+Mesh::Mesh(const char* meshFilename, const char* materialFilename): Mesh()
 {
-    loadObj(filename);
+    loadObj(meshFilename, materialFilename);
     fillBuffers();
 }
 

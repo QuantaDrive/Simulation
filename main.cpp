@@ -12,14 +12,14 @@ int main()
 
 	simulation::project();
 	simulation::lookAt(
-		glm::vec3(4,3,-3), // Camera is at (4,3,-3), in World Space
+		glm::vec3(0,3.5,6), // Camera is at (4,3,-3), in World Space
 		glm::vec3(0,0,0)   // and looks at the origin
 	);
-	simulation::lightPosition(glm::vec3(4, 3, 3));
+	simulation::lightPosition(glm::vec3(5, 5, 6));
 
 	simulation::setBackgroundColor(0.0f, 0.0f, 0.4f);
 
-	simulation::Mesh model = simulation::Mesh("monkey.obj");
+	simulation::Mesh model = simulation::Mesh("monkey.obj", "monkey.mtl");
 
 	// Setup Node Editor
 	ed::Config config;
@@ -32,7 +32,7 @@ int main()
 	{
 		simulation::refresh();
 
-		model.rotate(glm::vec3(0, 1, 0), true, true); // Rotate the model by 1 degree around the y axis
+		model.rotate(glm::vec3(0, 0.2, 0), true, true); // Rotate the model by 1 degree around the y axis
         model.render();
 		// Render ImGui UI and Node Editor together
 		windowManager.RenderUI(g_Context);

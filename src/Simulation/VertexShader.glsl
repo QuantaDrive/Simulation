@@ -3,11 +3,13 @@
 // Input vertex data, different for all executions of this shader.
 layout (location = 0) in vec3 PosModelSpace;
 layout (location = 1) in vec3 NormalModelSpace;
+layout (location = 2) in vec3 Color;
 
 out vec3 PosWorldSpace;
 out vec3 NormalCameraSpace;
 out vec3 EyeDirCameraSpace;
 out vec3 LightDirCameraSpace;
+out vec3 DiffuseColor;
 
 uniform mat4 M;
 uniform mat4 V;
@@ -31,5 +33,7 @@ void main() {
     // Vector that goes from the vertex to the light, in camera space. M is ommited because it's identity.
     vec3 LightPosCameraSpace = ( V * vec4(LightPosWorldSpace, 1)).xyz;
     LightDirCameraSpace = LightPosCameraSpace + EyeDirCameraSpace;
+
+    DiffuseColor = Color;
 }
 

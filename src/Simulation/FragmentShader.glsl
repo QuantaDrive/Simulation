@@ -5,6 +5,7 @@ in vec3 PosWorldSpace;
 in vec3 NormalCameraSpace;
 in vec3 EyeDirCameraSpace;
 in vec3 LightDirCameraSpace;
+in vec3 DiffuseColor;
 
 // Output data
 out vec3 color;
@@ -13,15 +14,12 @@ out vec3 color;
 uniform vec3 LightPosWorldSpace;
 
 void main() {
-    vec3 LightColor = vec3(1,1,1);
-    float LightPower = 50.0f;
+    float LightPower = 80.0f;
 
     // Material properties
-    vec3 DiffuseColor = vec3(1,0,0);
-    vec3 AmbientColor = vec3(0.1,0.1,0.1) * DiffuseColor;
-    vec3 SpecularColor = vec3(0.3,0.3,0.3);
-
-    vec3 GreenColor = vec3(0,1,0);
+    //vec3 DiffuseColor = vec3(1,0,0);
+    vec3 AmbientColor = vec3(0.25,0.25,0.25) * DiffuseColor;
+    vec3 SpecularColor = vec3(0.2,0.2,0.2);
 
     // Distance to the light
     float distance = length( LightPosWorldSpace - PosWorldSpace );
@@ -51,7 +49,7 @@ void main() {
         // Ambient : simulates indirect lighting
         AmbientColor +
         // Diffuse : "color" of the object
-        DiffuseColor * LightColor * LightPower * cosTheta / (distance*distance) +
+        DiffuseColor * LightPower * cosTheta / (distance*distance) +
         // Specular : reflective highlight, like a mirror
-        SpecularColor * LightColor * LightPower * pow(cosAlpha,5) / (distance*distance);
+        SpecularColor * LightPower * pow(cosAlpha,5) / (distance*distance);
 }
