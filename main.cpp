@@ -14,15 +14,6 @@ int main()
 {
 	YAML::Node db = YAML::LoadFile("conf/db.yaml");
 	Repo repo = Repo(db);
-	auto var = repo.readArm("arm1");
-	std::cout << var->getName() << std::endl;
-	std::cout << var->getType() << std::endl;
-	std::cout << var->getHost() << std::endl;
-
-	RobotArm* arm=new RobotArm("testarm",{},READY,nullptr,"localhost","stranger");
-	repo.createArm(arm);
-
-	std::ifstream file("db.yaml");
 
 	simulation::Init();
 	simulation::CompileShaders();
