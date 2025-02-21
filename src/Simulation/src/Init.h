@@ -10,8 +10,11 @@
 namespace simulation
 {
     inline GLuint programID;
-    inline GLuint MvpMatrixID;
     inline GLFWwindow* window;
+    inline GLuint ModelMatrixID;
+    inline GLuint ViewMatrixID;
+    inline GLuint MvpMatrixID;
+    inline GLuint LightPosID;
 
     int Init(int width = 1280, int height = 720);
     int CompileShaders();

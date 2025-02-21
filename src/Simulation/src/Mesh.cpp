@@ -88,7 +88,6 @@ void Mesh::loadObj(const char* filename)
     }
 
     // For each vertex of each triangle
-    std::vector<glm::vec3> normals;
     for (unsigned int i = 0; i < vertexIndices.size(); i++)
     {
         // Get the indices of its attributes
@@ -106,19 +105,12 @@ void Mesh::loadObj(const char* filename)
     fclose(file);
 }
 
-Mesh::Mesh()
+void Mesh::fillBuffers()
 {
-    glGenVertexArrays(1, &VAO);
-}
-
-Mesh::Mesh(const std::vector<glm::vec3>& vertices): Mesh()
-{
-    this->vertices = vertices;
     glBindVertexArray(VAO);
 
-    glGenBuffers(1, &vertex_buffer);
     glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), &this->vertices[0], GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, this->vertices.size() * sizeof(glm::vec3), &this->vertices[0], GL_STATIC_DRAW);
     glVertexAttribPointer( // Specify how the vertex data is formatted
         0,                  // Attribute location (match shader layout)
         3,                  // Number of components per vertex (x, y, z)
@@ -129,36 +121,46 @@ Mesh::Mesh(const std::vector<glm::vec3>& vertices): Mesh()
     );
     glEnableVertexAttribArray(0); // Enable the vertex attribute
 
+    glBindBuffer(GL_ARRAY_BUFFER, normal_buffer);
+    glBufferData(GL_ARRAY_BUFFER, this->normals.size() * sizeof(glm::vec3), &this->normals[0], GL_STATIC_DRAW);
+    glVertexAttribPointer(
+        1,                                // attribute
+        3,                                // size
+        GL_FLOAT,                         // type
+        GL_FALSE,                         // normalized?
+        0,                                // stride
+        (void*)0                          // array buffer offset
+    );
+    glEnableVertexAttribArray(1);
+
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+Mesh::Mesh()
+{
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &vertex_buffer);
+    glGenBuffers(1, &normal_buffer);
+}
+
+Mesh::Mesh(const std::vector<glm::vec3>& vertices, const std::vector<glm::vec3>& normals): Mesh()
+{
+    this->vertices = vertices;
+    this->normals = normals;
+    fillBuffers();
 }
 
 Mesh::Mesh(const char * filename): Mesh()
 {
     loadObj(filename);
-    glBindVertexArray(VAO);
-
-    glGenBuffers(1, &vertex_buffer);
-    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), &this->vertices[0], GL_STATIC_DRAW);
-    glVertexAttribPointer( // Specify how the vertex data is formatted
-        0,                  // Attribute location (match shader layout)
-        3,                  // Number of components per vertex (x, y, z)
-        GL_FLOAT,           // Data type
-        GL_FALSE,           // Normalized? (usually false)
-        0,                  // Stride (0 means tightly packed)
-        (void*)0            // Offset into the buffer (0 means start at the beginning)
-    );
-    glEnableVertexAttribArray(0); // Enable the vertex attribute
-
-    glBindVertexArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    fillBuffers();
 }
 
 Mesh::~Mesh()
 {
     glDeleteBuffers(1, &vertex_buffer);
-    //glDeleteBuffers(1, &normal_buffer);
+    glDeleteBuffers(1, &normal_buffer);
     glDeleteVertexArrays(1, &VAO);
 }
 
@@ -200,7 +202,8 @@ void Mesh::scale(const glm::vec3& scale, const bool relative)
 
 void Mesh::render()
 {
-    const glm::mat4 ModelMatrix = getTransformationMatrix();
+    glm::mat4 ModelMatrix = getTransformationMatrix();
+    glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
     glm::mat4 MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
     glUniformMatrix4fv(MvpMatrixID, 1, GL_FALSE, &MVP[0][0]);
     glBindVertexArray(VAO);
