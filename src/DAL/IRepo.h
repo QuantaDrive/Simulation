@@ -5,6 +5,8 @@
 #ifndef IREPO_H
 #define IREPO_H
 
+#include <yaml-cpp/yaml.h>
+
 #include "../Domain/RobotArm.h"
 #include "../Domain/User.h"
 
@@ -23,6 +25,8 @@ public:
     virtual bool createUser(User* user)=0;
     virtual bool updateUser()=0;
     virtual bool deleteUser(const string& userName)=0;
+
+    virtual void writeFile()=0;
 };
 
 

@@ -1,4 +1,9 @@
 #include <Simulation/Simulation.h>
+#include <yaml-cpp/yaml.h>
+#include <fstream>
+
+#include "src/DAL/IRepo.h"
+#include "src/DAL/Repo.h"
 #include "src/View/WindowManager.cpp"
 
 namespace ed = ax::NodeEditor;
@@ -7,6 +12,18 @@ WindowManager windowManager = WindowManager();
 
 int main()
 {
+	YAML::Node db = YAML::LoadFile("conf/db.yaml");
+	Repo repo = Repo(db);
+	auto var = repo.readArm("arm1");
+	std::cout << var->getName() << std::endl;
+	std::cout << var->getType() << std::endl;
+	std::cout << var->getHost() << std::endl;
+
+	RobotArm* arm=new RobotArm("testarm",{},READY,nullptr,"localhost","stranger");
+	repo.createArm(arm);
+
+	std::ifstream file("db.yaml");
+
 	simulation::Init();
 	simulation::CompileShaders();
 

@@ -4,6 +4,7 @@
 #include "Repo.h"
 
 #include <iostream>
+#include <fstream>
 
 using namespace YAML;
 
@@ -35,6 +36,7 @@ bool Repo::createArm(const RobotArm* arm)
         std::cerr << e.what() << '\n';
         return false;
     }
+    writeFile();
 
     return true;
 }
@@ -59,7 +61,7 @@ bool Repo::updateArm(const string& armName, const string& newName, const string&
             try
             {
                 Node oldArm = db_["arms"][armName];
-                auto var = db_["arms"].remove(armName);
+                db_["arms"].remove(armName);
                 db_["arms"][newName] = oldArm;
             }
             catch (const std::exception& e)
@@ -100,4 +102,15 @@ bool Repo::updateUser()
 bool Repo::deleteUser(const string& userName)
 {
     return true;
+}
+
+void Repo::writeFile()
+{
+    YAML::Emitter out;
+    out << db_;
+    ofstream file("conf/db.yaml");
+    file << out.c_str();
+    file.close();
+    cout << "File written" << endl;
+
 }

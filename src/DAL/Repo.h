@@ -27,6 +27,8 @@ public:
     bool createUser(User* user) override;
     bool updateUser() override;
     bool deleteUser(const string& userName) override;
+
+    void writeFile() override;
 };
 
 
