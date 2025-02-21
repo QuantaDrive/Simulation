@@ -80,6 +80,7 @@ add_executable(
         src/Simulation/BL/SimulationManager.h
         src/DAL/Repo.cpp
         src/DAL/Repo.h
+        src/DAL/IRepo.h
 )
 
 target_link_libraries(projectRobotArm

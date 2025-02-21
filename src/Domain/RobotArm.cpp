@@ -4,12 +4,13 @@
 
 #include "RobotArm.h"
 
-RobotArm::RobotArm(const string& name, const vector<Task*>& tasks, Status status, Instruction* currPosition, const string& host) :
+RobotArm::RobotArm(const string& name, const vector<Task*>& tasks, const Status status, Instruction* currPosition, const string& host, const string& type) :
 name_(name),
 tasks_(tasks),
 status_(status),
 currPosition_(currPosition),
-host_(host){}
+host_(host),
+type_(type){}
 
 RobotArm::~RobotArm()
 {
@@ -68,4 +69,14 @@ string RobotArm::getName() const
 void RobotArm::setName(const string& name)
 {
     name_=name;
+}
+
+string RobotArm::getType() const
+{
+    return type_;
+}
+
+void RobotArm::setType(const string& type)
+{
+    type_=type;
 }

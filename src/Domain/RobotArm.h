@@ -28,9 +28,10 @@ private:
     Status status_;
     Instruction* currPosition_;
     string host_;
+    string type_;
 
 public:
-    RobotArm(const string& name, const vector<Task*>& tasks, Status status, Instruction* currPosition, const string& host);
+    RobotArm(const string& name, const vector<Task*>& tasks, Status status, Instruction* currPosition, const string& host, const string& type);
 
     virtual ~RobotArm();
 
@@ -46,13 +47,19 @@ public:
 
     void setCurrPosition(Instruction* currPosition);
 
-    string getHost() const;
+    [[nodiscard]] string getHost() const;
 
     void setHost(const string& host);
 
-    string getName() const;
+    [[nodiscard]] string getName() const;
 
     void setName(const string& name);
+
+    [[nodiscard]] string getType() const;
+
+    void setType(const string& type);
+
+
 };
 
 

@@ -7,7 +7,7 @@
 
 using namespace YAML;
 
-Repo::Repo(Node db)
+Repo::Repo(const Node& db) : IRepo()
 {
     db_=db;
 }
@@ -16,18 +16,58 @@ RobotArm* Repo::readArm(const string& armName) const
 {
     if (db_["arms"][armName])
     {
-        Node arm = db_["arms"][armName];
+        auto arm = db_["arms"][armName];
+        auto* newArm = new RobotArm(armName,{},READY,nullptr,arm["host"].as<string>(),arm["type"].as<string>());
+        return newArm;
     }
     return nullptr;
 }
 
-bool Repo::createArm(RobotArm* arm)
+bool Repo::createArm(const RobotArm* arm)
 {
+    try
+    {
+        db_["arms"][arm->getName()]["type"] = arm->getType();
+        db_["arms"][arm->getName()]["host"] = arm->getHost();
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr << e.what() << '\n';
+        return false;
+    }
+
     return true;
 }
 
-bool Repo::updateArm()
+bool Repo::updateArm(const string& armName, const string& newName, const string& host)
 {
+    if (db_["arms"][armName])
+    {
+        if (!host.empty())
+        {
+            try
+            {
+                db_["arms"][armName]["host"] = host;
+            }
+            catch (const std::exception& e)
+            {
+                std::cerr << e.what() << '\n';
+            }
+        }
+        if (!newName.empty())
+        {
+            try
+            {
+                Node oldArm = db_["arms"][armName];
+                auto var = db_["arms"].remove(armName);
+                db_["arms"][newName] = oldArm;
+            }
+            catch (const std::exception& e)
+            {
+                std::cerr << e.what() << '\n';
+            }
+        }
+    }
     return true;
 }
 

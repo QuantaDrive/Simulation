@@ -4,27 +4,29 @@
 
 #ifndef REPO_H
 #define REPO_H
+#include "IRepo.h"
 #include "../Domain/RobotArm.h"
 #include "../Domain/User.h"
 #include "yaml-cpp/yaml.h"
 
 using namespace YAML;
 
-class Repo {
+class Repo : IRepo{
 private:
     Node db_;
 public:
-    Repo(Node db);
+    explicit Repo(const Node& db);
+    ~Repo() override = default;
 
-    RobotArm* readArm(const string& armName) const;
-    bool createArm(RobotArm* arm);
-    bool updateArm();
-    bool deleteArm(const string& armName);
+    RobotArm* readArm(const string& armName) const override;
+    bool createArm(const RobotArm* arm) override;
+    bool updateArm(const string& armName, const string& newName="", const string& host="") override;
+    bool deleteArm(const string& armName) override;
 
-    User* readUser(const string& userName) const;
-    bool createUser(User* user);
-    bool updateUser();
-    bool deleteUser(const string& userName);
+    User* readUser(const string& userName) const override;
+    bool createUser(User* user) override;
+    bool updateUser() override;
+    bool deleteUser(const string& userName) override;
 };
 
 
