@@ -3,7 +3,7 @@
 // Interpolated values from the vertex shaders
 in vec3 PosWorldSpace;
 in vec3 NormalCameraSpace;
-in vec3 EyeCameraSpace;
+in vec3 EyeDirCameraSpace;
 in vec3 LightDirCameraSpace;
 
 // Output data
@@ -38,7 +38,7 @@ void main() {
 	float cosTheta = clamp( dot( n, l ), 0, 1 );
 
     // Eye vector (towards the camera)
-    vec3 E = normalize(EyeCameraSpace);
+    vec3 E = normalize(EyeDirCameraSpace);
     // Direction in which the triangle reflects the light
     vec3 R = reflect(-l,n);
     // Cosine of the angle between the Eye vector and the Reflect vector,
