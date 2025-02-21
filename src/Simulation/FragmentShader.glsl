@@ -47,11 +47,11 @@ void main() {
     //  - Looking elsewhere -> < 1
     float cosAlpha = clamp( dot( E, R ), 0, 1 );
 
-    color = DiffuseColor * cosTheta;
+    color =
         // Ambient : simulates indirect lighting
-        //AmbientColor +
+        AmbientColor +
         // Diffuse : "color" of the object
-        //DiffuseColor * LightColor * LightPower * cosTheta / (distance*distance) +
+        DiffuseColor * LightColor * LightPower * cosTheta / (distance*distance) +
         // Specular : reflective highlight, like a mirror
-        //SpecularColor * LightColor * LightPower * pow(cosAlpha,5) / (distance*distance);
+        SpecularColor * LightColor * LightPower * pow(cosAlpha,5) / (distance*distance);
 }

@@ -15,7 +15,7 @@ int main()
 		glm::vec3(4,3,-3), // Camera is at (4,3,-3), in World Space
 		glm::vec3(0,0,0)   // and looks at the origin
 	);
-	simulation::lightPosition(glm::vec3(4, 4, 4));
+	simulation::lightPosition(glm::vec3(4, 3, 3));
 
 	simulation::setBackgroundColor(0.0f, 0.0f, 0.4f);
 
@@ -32,7 +32,7 @@ int main()
 	{
 		simulation::refresh();
 
-		//model.rotate(glm::vec3(0, 1, 0), true, true); // Rotate the model by 1 degree around the y axis
+		model.rotate(glm::vec3(0, 1, 0), true, true); // Rotate the model by 1 degree around the y axis
         model.render();
 		// Render ImGui UI and Node Editor together
 		windowManager.RenderUI(g_Context);
