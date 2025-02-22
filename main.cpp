@@ -14,6 +14,8 @@ int main()
 {
 	YAML::Node db = YAML::LoadFile("conf/db.yaml");
 	Repo repo = Repo(db);
+	repo.deleteArm("testarm");
+	repo.updateArm("newarm","arm2","localhost");
 
 	simulation::Init();
 	simulation::CompileShaders();

@@ -6,8 +6,5 @@ arms:
     host: 127.0.0.1
     type: moveo
   arm2:
-    host: 127.0.0.1
-    type: moveo
-  testarm:
-    type: stranger
     host: localhost
+    type: moveo

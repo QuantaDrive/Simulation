@@ -54,6 +54,7 @@ bool Repo::updateArm(const string& armName, const string& newName, const string&
             catch (const std::exception& e)
             {
                 std::cerr << e.what() << '\n';
+                return false;
             }
         }
         if (!newName.empty())
@@ -67,15 +68,24 @@ bool Repo::updateArm(const string& armName, const string& newName, const string&
             catch (const std::exception& e)
             {
                 std::cerr << e.what() << '\n';
+                return false;
             }
         }
+        writeFile();
+        return true;
     }
-    return true;
+    return false;
 }
 
 bool Repo::deleteArm(const string& armName)
 {
-    return true;
+    if (db_["arms"][armName])
+    {
+        db_["arms"].remove(armName);
+        writeFile();
+        return true;
+    }
+    return false;
 }
 
 User* Repo::readUser(const string& userName) const
