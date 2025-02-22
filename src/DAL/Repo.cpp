@@ -90,28 +90,77 @@ bool Repo::deleteArm(const string& armName)
 
 User* Repo::readUser(const string& userName) const
 {
-    if (db_["users"][userName])
+    for (auto user:db_["users"])
     {
-        Node user=db_["users"][userName];
-        auto* newUser = new User(user["name"].as<string>());
-        return newUser;
+        if (user.as<string>()==userName)
+        {
+            return new User(userName);
+        }
     }
     return nullptr;
 }
 
 bool Repo::createUser(User* user)
 {
+    if (user->getName().empty())
+    {
+        cerr << "User name is empty" << endl;
+        return false;
+    }
+    for (auto i : db_["users"])
+    {
+        if (i.as<string>()==user->getName())
+        {
+            cerr << "User already exists" << endl;
+            return false;
+        }
+    }
+    db_["users"].push_back(user->getName());
+    writeFile();
     return true;
 }
 
-bool Repo::updateUser()
+bool Repo::updateUser(const string& userName, const string& newName)
 {
-    return true;
+    if (userName.empty() || newName.empty())
+    {
+        cerr << "Invalid use of update method for user. Please pass user name and new name" << endl;
+        return false;
+    }
+    for (auto i : db_["users"])
+    {
+        if (i.as<string>()==userName)
+        {
+            deleteUser(userName);
+            db_["users"].push_back(newName);
+            writeFile();
+            return true;
+        }
+    }
+    cerr << "User not found" << endl;
+    return false;
 }
 
 bool Repo::deleteUser(const string& userName)
 {
-    return true;
+    if (userName.empty())
+    {
+        cerr << "User name is empty" << endl;
+        return false;
+    }
+    for (auto i : db_["users"])
+    {
+        if (i.as<string>()==userName)
+        {
+            auto users = db_["users"].as<list<string>>();
+            users.remove(userName);
+            db_["users"] = users;
+            writeFile();
+            return true;
+        }
+    }
+    cerr << "User not found" << endl;
+    return false;    return true;
 }
 
 void Repo::writeFile()

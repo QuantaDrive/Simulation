@@ -25,7 +25,7 @@ public:
 
     User* readUser(const string& userName) const override;
     bool createUser(User* user) override;
-    bool updateUser() override;
+    bool updateUser(const string& userName, const string& newName) override;
     bool deleteUser(const string& userName) override;
 
     void writeFile() override;

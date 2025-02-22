@@ -23,7 +23,7 @@ public:
 
     [[nodiscard]] virtual User* readUser(const string& userName) const=0;
     virtual bool createUser(User* user)=0;
-    virtual bool updateUser()=0;
+    virtual bool updateUser(const string& userName, const string& newName)=0;
     virtual bool deleteUser(const string& userName)=0;
 
     virtual void writeFile()=0;
