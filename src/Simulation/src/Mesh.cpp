@@ -180,6 +180,7 @@ Mesh::~Mesh()
 {
     glDeleteBuffers(1, &vertex_buffer);
     glDeleteBuffers(1, &normal_buffer);
+    glDeleteBuffers(1, &color_buffer);
     glDeleteVertexArrays(1, &VAO);
 }
 
@@ -225,6 +226,11 @@ void Mesh::render()
     glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
     glm::mat4 MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
     glUniformMatrix4fv(MvpMatrixID, 1, GL_FALSE, &MVP[0][0]);
+    renderBare();
+}
+
+void Mesh::renderBare() const
+{
     glBindVertexArray(VAO);
     glDrawArrays(GL_TRIANGLES, 0, vertices.size());
     glBindVertexArray(0);

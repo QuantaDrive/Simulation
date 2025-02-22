@@ -14,7 +14,7 @@ out vec3 color;
 uniform vec3 LightPosWorldSpace;
 
 void main() {
-    float LightPower = 80.0f;
+    float LightPower = 1250.0f;
 
     // Material properties
     //vec3 DiffuseColor = vec3(1,0,0);
@@ -49,7 +49,7 @@ void main() {
         // Ambient : simulates indirect lighting
         AmbientColor +
         // Diffuse : "color" of the object
-        DiffuseColor * LightPower * cosTheta / (distance*distance) +
+        DiffuseColor * LightPower * cosTheta / (distance) +
         // Specular : reflective highlight, like a mirror
-        SpecularColor * LightPower * pow(cosAlpha,5) / (distance*distance);
+        SpecularColor * LightPower * pow(cosAlpha,5) / (distance);
 }

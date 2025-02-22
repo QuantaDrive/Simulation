@@ -10,5 +10,6 @@
 #include "../../src/Init.h"
 #include "../../src/Visualization.h"
 #include "../../src/Mesh.h"
+#include "../../src/RobotArm.h"
 
 #endif //SIMULATION_H

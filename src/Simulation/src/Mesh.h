@@ -35,11 +35,12 @@ namespace simulation
 
         glm::mat4 getTransformationMatrix();
 
-        void translate(const glm::vec3& translation, bool relative);
+        void translate(const glm::vec3& translation, bool relative = false);
         void rotate(glm::vec3 rotation, bool relative = false, bool isDegree = false);
         void scale(const glm::vec3& scale, bool relative = false);
 
         void render();
+        void renderBare() const;
     };
 } // simulation
 #endif //MESH_H
