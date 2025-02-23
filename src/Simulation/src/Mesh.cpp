@@ -16,23 +16,13 @@
 
 using namespace simulation;
 
-void Mesh::loadObj(const char* meshFilename, const char* materialFilename)
+bool Mesh::loadMaterial(const std::string& materialFilename, std::map<std::string, glm::vec3>& materialMap)
 {
-    FILE* materialFile = fopen(materialFilename, "r");
+    FILE* materialFile = fopen(materialFilename.c_str(), "r");
     if (!materialFile) {
-        printf("Unable to open material file: %s\n", materialFilename);
-        return;
+        printf("Unable to open material file: %s\n", materialFilename.c_str());
+        return false;
     }
-
-    FILE* meshFile = fopen(meshFilename, "r");
-    if (!meshFile) {
-        printf("Unable to open mesh file: %s\n", meshFilename);
-        vertices.clear();
-        return;
-    }
-
-    std::map<std::string, glm::vec3> materialMap;
-
     char materialName[128];
     char lineHeader[128];
     while (fscanf(materialFile, "%s", lineHeader) == 1) {
@@ -47,12 +37,28 @@ void Mesh::loadObj(const char* meshFilename, const char* materialFilename)
             fgets(buffer, 1000, materialFile);
         }
     }
+    fclose(materialFile);
+    return true;
+}
+
+void Mesh::loadObj(const std::string& meshFilename)
+{
+    FILE* meshFile = fopen(meshFilename.c_str(), "r");
+    if (!meshFile) {
+        printf("Unable to open mesh file: %s\n", meshFilename.c_str());
+        vertices.clear();
+        return;
+    }
+
+    std::map<std::string, glm::vec3> materialMap;
 
     std::vector<unsigned int> vertexIndices;
     std::vector<unsigned int> normalIndices;
     std::vector<glm::vec3> tempVertices;
     std::vector<glm::vec3> tempNormals;
 
+    char materialName[128];
+    char lineHeader[128];
     while (fscanf(meshFile, "%s", lineHeader) == 1) {
         if (strcmp(lineHeader, "v") == 0) {
             glm::vec3 vertex;
@@ -62,8 +68,19 @@ void Mesh::loadObj(const char* meshFilename, const char* materialFilename)
             glm::vec3 normal;
             fscanf(meshFile, "%f %f %f\n", &normal.x, &normal.y, &normal.z);
             tempNormals.push_back(normal);
+        } else if (strcmp(lineHeader, "mtllib") == 0) {
+            std::string directory;
+            if (const size_t pos = meshFilename.find_last_of('/'); pos != std::string::npos)
+                directory = meshFilename.substr(0, pos + 1);
+            char materialFilename[128];
+            fscanf(meshFile, "%s\n", materialFilename);
+            std::string materialFilePath = directory + materialFilename;
+            if (!loadMaterial(materialFilePath, materialMap)) {
+                fclose(meshFile);
+                return;
+            }
         } else if (strcmp(lineHeader, "usemtl") == 0) {
-            fscanf(meshFile, "%s", materialName);
+            fscanf(meshFile, "%s\n", materialName);
         } else if (strcmp(lineHeader, "f") == 0) {
             unsigned int vertexIndex[3], normalIndex[3];
             char line[256];
@@ -170,9 +187,9 @@ Mesh::Mesh(const std::vector<glm::vec3>& vertices, const std::vector<glm::vec3>&
     fillBuffers();
 }
 
-Mesh::Mesh(const char* meshFilename, const char* materialFilename): Mesh()
+Mesh::Mesh(std::string meshFilename): Mesh()
 {
-    loadObj(meshFilename, materialFilename);
+    loadObj(meshFilename);
     fillBuffers();
 }
 

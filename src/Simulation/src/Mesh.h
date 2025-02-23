@@ -4,6 +4,8 @@
 
 #ifndef MESH_H
 #define MESH_H
+#include <map>
+#include <string>
 #include <vector>
 
 #include <GL/glew.h>
@@ -24,13 +26,14 @@ namespace simulation
         glm::vec3 rotation_vec = glm::vec3(0.0f);
         glm::vec3 scale_vec = glm::vec3(1.0f);
 
-        void loadObj(const char* meshFilename, const char* materialFilename);
+        static bool loadMaterial(const std::string& materialFilename, std::map<std::string, glm::vec3>& materialMap);
+        void loadObj(const std::string& meshFilename);
         void fillBuffers();
 
     public:
         Mesh();
         explicit Mesh(const std::vector<glm::vec3>& vertices, const std::vector<glm::vec3>& normals);
-        explicit Mesh(const char* meshFilename, const char* materialFilename);
+        explicit Mesh(std::string meshFilename);
         ~Mesh();
 
         glm::mat4 getTransformationMatrix();

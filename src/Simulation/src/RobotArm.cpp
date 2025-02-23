@@ -47,7 +47,7 @@ simulation::RobotArm::RobotArm(const std::string& definitionFile)
     for (int i = 0; i <= numJoints; i++) {
         // Load mesh
         std::string meshFilename = directory + definition["joint_" + std::to_string(i)]["mesh"].as<std::string>();
-        Mesh* mesh = new Mesh(meshFilename.c_str(), materialFilename.c_str());
+        Mesh* mesh = new Mesh(meshFilename);
         this->joints.push_back(mesh);
         // Load joint position and axis for visualization
         this->jointOffsets.push_back(stringToVec3(definition["joint_" + std::to_string(i)]["offset"].as<std::string>()));
