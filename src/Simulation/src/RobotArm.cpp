@@ -40,7 +40,6 @@ simulation::RobotArm::RobotArm(const std::string& definitionFile)
     const unsigned int numJoints = definition["arm"]["degrees_of_freedom"].as<unsigned int>();
     std::string materialFilename = directory + definition["arm"]["material"].as<std::string>();
 
-    this->joints.reserve(numJoints);
     this->jointPositions.reserve(numJoints);
     this->jointOffsets.reserve(numJoints);
     this->jointDOFs.reserve(numJoints);
