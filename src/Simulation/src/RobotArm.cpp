@@ -14,7 +14,7 @@
 
 void simulation::RobotArm::moveAngle(const int joint, float angle, const bool relative, const bool isDegree)
 {
-    if (joint < 1 || joint >= this->joints.size())
+    if (joint < 1 || joint >= this->jointDOFs.size())
         // You cant move joint 0 because it is the base
         return;
     if (isDegree)
@@ -23,8 +23,7 @@ void simulation::RobotArm::moveAngle(const int joint, float angle, const bool re
         this->jointPositions[joint] += angle;
     else
         this->jointPositions[joint] = angle;
-    const glm::vec3 rotation = this->jointDOFs[joint] * angle;
-    this->joints[joint]->rotate(rotation, relative);
+    this->jointPositions[joint] = std::fmod(this->jointPositions[joint], glm::two_pi<float>());
 }
 
 simulation::RobotArm::RobotArm(const std::string& definitionFile)
@@ -40,9 +39,7 @@ simulation::RobotArm::RobotArm(const std::string& definitionFile)
     const unsigned int numJoints = definition["arm"]["degrees_of_freedom"].as<unsigned int>();
     std::string materialFilename = directory + definition["arm"]["material"].as<std::string>();
 
-    this->jointPositions.reserve(numJoints);
-    this->jointOffsets.reserve(numJoints);
-    this->jointDOFs.reserve(numJoints);
+    this->jointPositions.resize(numJoints + 1);
 
     for (int i = 0; i <= numJoints; i++) {
         // Load mesh
