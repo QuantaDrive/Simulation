@@ -12,15 +12,19 @@ int main()
 
 	simulation::project();
 	simulation::lookAt(
-		glm::vec3(0,3.5,6), // Camera is at (4,3,-3), in World Space
-		glm::vec3(0,0,0)   // and looks at the origin
+		glm::vec3(0,750/2,1000), // Camera is at (4,3,-3), in World Space
+		glm::vec3(0,750/2,0)   // and looks at the origin
 	);
-	simulation::lightPosition(glm::vec3(5, 5, 6));
+	simulation::lightPosition(glm::vec3(0,750/2,1000));
 
-	simulation::setBackgroundColor(0.0f, 0.0f, 0.4f);
+	simulation::setBackgroundColor(0.86f, 0.86f, 0.86f);
 
-	simulation::Mesh model = simulation::Mesh("monkey.obj", "monkey.mtl");
+	simulation::RobotArm arm = simulation::RobotArm( "src/Simulation/arms/Moveo/moveo.ini");
 
+	arm.moveAngle(1, 30.0f, false, true);
+	arm.moveAngle(2, -35.0f, false, true);
+	arm.moveAngle(3, 90.0f, false, true);
+	arm.moveAngle(5, 50.0f, false, true);
 	// Setup Node Editor
 	ed::Config config;
 	config.SettingsFile = "Simple.json";
@@ -32,8 +36,10 @@ int main()
 	{
 		simulation::refresh();
 
-		model.rotate(glm::vec3(0, 0.2, 0), true, true); // Rotate the model by 1 degree around the y axis
-        model.render();
+		arm.moveAngle(1, 0.2f, true, true);
+		arm.moveAngle(4, 0.3f, true, true);
+		arm.moveAngle(6, 1.0f, true, true);
+		arm.render();
 		// Render ImGui UI and Node Editor together
 		windowManager.RenderUI(g_Context);
 	} // Check if the ESC key was pressed or the window was closed
