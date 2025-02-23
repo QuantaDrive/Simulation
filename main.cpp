@@ -19,38 +19,11 @@ int main()
 
 	simulation::setBackgroundColor(0.86f, 0.86f, 0.86f);
 
-	std::vector meshFilenames = {
-		"src/Simulation/arms/Moveo/J0.obj",
-		"src/Simulation/arms/Moveo/J1.obj",
-		"src/Simulation/arms/Moveo/J2.obj",
-		"src/Simulation/arms/Moveo/J3.obj",
-		"src/Simulation/arms/Moveo/J4.obj",
-		"src/Simulation/arms/Moveo/J5.obj",
-		"src/Simulation/arms/Moveo/J6.obj"};
-	std::vector offsets = {
-		glm::vec3(0.0f, 0.0f, 0.0f),
-		glm::vec3(0.0f, 66.0f, 0.0f),
-		glm::vec3(0.0f, 165.5f, 0.0f),
-		glm::vec3(0.0f, 221.0f, 0.0f),
-		glm::vec3(0.0f, 125.5f, 0.0f),
-		glm::vec3(0.0f, 99.0f, 0.0f),
-		glm::vec3(0.0f, 61.0f, 0.0f)
-	};
-	std::vector DOFs = {
-		glm::vec3(0.0f, 1.0f, 0.0f),
-		glm::vec3(0.0f, 1.0f, 0.0f),
-		glm::vec3(1.0f, 0.0f, 0.0f),
-		glm::vec3(1.0f, 0.0f, 0.0f),
-		glm::vec3(0.0f, 1.0f, 0.0f),
-		glm::vec3(1.0f, 0.0f, 0.0f),
-		glm::vec3(0.0f, 1.0f, 0.0f)
-	};
-	simulation::RobotArm arm = simulation::RobotArm(meshFilenames, "src/Simulation/arms/Moveo/moveo.mtl", offsets, DOFs);
+	simulation::RobotArm arm = simulation::RobotArm( "src/Simulation/arms/Moveo/moveo.ini");
 
 	arm.moveAngle(1, 30.0f, false, true);
 	arm.moveAngle(2, -35.0f, false, true);
 	arm.moveAngle(3, 90.0f, false, true);
-	arm.moveAngle(4, -50.0f, false, true);
 	arm.moveAngle(5, 50.0f, false, true);
 	// Setup Node Editor
 	ed::Config config;
@@ -64,7 +37,8 @@ int main()
 		simulation::refresh();
 
 		arm.moveAngle(1, 0.2f, true, true);
-		arm.moveAngle(6, 0.5f, true, true);
+		arm.moveAngle(4, 0.3f, true, true);
+		arm.moveAngle(6, 1.0f, true, true);
 		arm.render();
 		// Render ImGui UI and Node Editor together
 		windowManager.RenderUI(g_Context);

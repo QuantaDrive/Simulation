@@ -4,6 +4,8 @@
 
 #ifndef ROBOTARM_H
 #define ROBOTARM_H
+#include <string>
+
 #include "Mesh.h"
 
 
@@ -17,10 +19,7 @@ namespace simulation{
     public:
         void moveAngle(int joint, float angle,
             bool relative = false, bool isDegree = false);
-        RobotArm(std::vector<const char*> meshFilenames,
-                 const char* materialFilename,
-                 std::vector<glm::vec3> jointOffsets,
-                 std::vector<glm::vec3> jointDOFs);
+        RobotArm(const std::string& definitionFile);
         ~RobotArm();
         void render();
     };

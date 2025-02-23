@@ -1,6 +1,6 @@
 # Blender 4.0.2
 # www.blender.org
-mtllib J6.mtl
+mtllib moveo.mtl
 o module_4.3
 v -20.647518 0.500009 16.122032
 v -19.233305 0.500009 14.707816

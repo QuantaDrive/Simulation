@@ -5,31 +5,67 @@
 #include "RobotArm.h"
 
 #include <utility>
+#include <inicpp.h>
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "Init.h"
+#include "Utils.h"
 #include "Visualization.h"
 
 void simulation::RobotArm::moveAngle(const int joint, float angle, const bool relative, const bool isDegree)
 {
+    if (joint < 1 || joint >= this->joints.size())
+        // You cant move joint 0 because it is the base
+        return;
     if (isDegree)
         angle = glm::radians(angle);
     if (relative)
         this->jointPositions[joint] += angle;
     else
         this->jointPositions[joint] = angle;
-    const glm::vec3 rotation = static_cast<glm::vec3>(this->jointDOFs[joint]) * angle;
+    const glm::vec3 rotation = this->jointDOFs[joint] * angle;
     this->joints[joint]->rotate(rotation, relative);
 }
 
-simulation::RobotArm::RobotArm(std::vector<const char*> meshFilenames, const char* materialFilename,
-    std::vector<glm::vec3> jointOffsets, std::vector<glm::vec3> jointDOFs):
-    jointOffsets(std::move(jointOffsets)), jointDOFs(std::move(jointDOFs))
+simulation::RobotArm::RobotArm(const std::string& definitionFile)
 {
-    this->jointPositions = std::vector(meshFilenames.size(), 0.0f);
-    for (const char* & meshFilename : meshFilenames) {
-        Mesh* mesh = new Mesh(meshFilename, materialFilename);
+    // get part directory from definitionFile
+    std::string directory;
+    if (const size_t pos = definitionFile.find_last_of('/'); pos != std::string::npos)
+        directory = definitionFile.substr(0, pos + 1);
+
+    ini::IniFile definition;
+    definition.load(definitionFile);
+
+    const unsigned int numJoints = definition["arm"]["degrees_of_freedom"].as<unsigned int>();
+    std::string materialFilename = directory + definition["arm"]["material"].as<std::string>();
+
+    this->joints.reserve(numJoints);
+    this->jointPositions.reserve(numJoints);
+    this->jointOffsets.reserve(numJoints);
+    this->jointDOFs.reserve(numJoints);
+
+    for (int i = 0; i <= numJoints; i++) {
+        // Load mesh
+        std::string meshFilename = directory + definition["joint_" + std::to_string(i)]["mesh"].as<std::string>();
+        Mesh* mesh = new Mesh(meshFilename.c_str(), materialFilename.c_str());
         this->joints.push_back(mesh);
+        // Load joint position and axis for visualization
+        this->jointOffsets.push_back(stringToVec3(definition["joint_" + std::to_string(i)]["offset"].as<std::string>()));
+        if (i == 0)
+            definition["joint_" + std::to_string(i)]["axis"] = 'X';
+        switch (definition["joint_" + std::to_string(i)]["axis"].as<char>()) {
+            case 'X':
+                this->jointDOFs.emplace_back(1.0f, 0.0f, 0.0f);
+                break;
+            case 'Y':
+                this->jointDOFs.emplace_back(0.0f, 1.0f, 0.0f);
+                break;
+            case 'Z':
+                this->jointDOFs.emplace_back(0.0f, 0.0f, 1.0f);
+                break;
+            default: ;
+        }
     }
 }
 
