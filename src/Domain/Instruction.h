@@ -7,25 +7,21 @@
 using namespace std;
 using namespace glm;
 
+class Position;
 class Instruction {
 private:
-    vec3 position_;
-    vec3 degrees_;
+    Position* position_;
     float gripForce_;
     double wait_;
 
 public:
-    Instruction(const vec3& position, const vec3& degrees, float gripForce);
+    Instruction(Position* position, float gripForce, double wait);
 
     ~Instruction();
 
-    [[nodiscard]] vec3 getPosition() const;
+    [[nodiscard]] Position* getPosition() const;
 
-    void setPosition(const vec3& position);
-
-    [[nodiscard]] vec3 getDegrees() const;
-
-    void setDegrees(const vec3& degrees);
+    void setPosition(Position* position);
 
     [[nodiscard]] float getGripForce() const;
 

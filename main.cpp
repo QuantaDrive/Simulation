@@ -1,6 +1,13 @@
 #include <Simulation/Simulation.h>
 #include <fstream>
 
+#include <yaml-cpp/yaml.h>
+
+#include "src/DAL/Repo.h"
+#include "src/Domain/Position.h"
+#include "src/Domain/RobotArm.h"
+#include "src/Domain/Tool.h"
+#include "src/Simulation/BL/SimulationManager.h"
 #include "src/View/WindowManager.cpp"
 
 namespace ed = ax::NodeEditor;
@@ -9,6 +16,11 @@ WindowManager windowManager = WindowManager();
 
 int main()
 {
+	Repo* repo= new Repo(YAML::LoadFile("conf/db.yaml"));
+	SimulationManager* mgr= new SimulationManager(repo);
+	auto testarm = repo->readArm("arm1");
+	mgr->inverseKinematics(testarm,new Position({286.830,0,438.520},{180,0,180}));
+
 	simulation::Init();
 	simulation::CompileShaders();
 

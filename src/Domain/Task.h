@@ -9,10 +9,9 @@
 #include <string>
 #include <vector>
 
-#include "Instruction.h"
-
 using namespace std;
 
+class Instruction;
 class Task {
 private:
     string id_;
@@ -28,9 +27,9 @@ public:
 
     void setTimestamp(const tm& timestamp);
 
-    [[nodiscard]] vector<Instruction*> getPositions() const;
+    [[nodiscard]] vector<Instruction*> getInstructions() const;
 
-    void setPositions(const vector<Instruction*>& instructions);
+    void setInstructions(const vector<Instruction*>& instructions);
 };
 
 

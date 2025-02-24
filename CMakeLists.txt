@@ -84,6 +84,10 @@ add_executable(
         src/DAL/IRepo.h
         src/View/IWindowManager.h
         src/View/WindowManager.cpp
+        src/Domain/Tool.cpp
+        src/Domain/Tool.h
+        src/Domain/Position.cpp
+        src/Domain/Position.h
 )
 
 ### ImGui Node Editor ###

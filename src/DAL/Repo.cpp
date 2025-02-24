@@ -6,6 +6,11 @@
 #include <iostream>
 #include <fstream>
 
+#include "../Domain/RobotArm.h"
+#include "../Domain/Tool.h"
+#include "../Domain/User.h"
+#include "../Domain/Position.h"
+
 using namespace YAML;
 
 Repo::Repo(const Node& db) : IRepo()
@@ -18,7 +23,7 @@ RobotArm* Repo::readArm(const string& armName) const
     if (db_["arms"][armName])
     {
         auto arm = db_["arms"][armName];
-        auto* newArm = new RobotArm(armName,{},READY,nullptr,arm["host"].as<string>(),arm["type"].as<string>());
+        auto* newArm = new RobotArm(armName,{},READY,nullptr,arm["host"].as<string>(),arm["type"].as<string>(),new Tool("default",new Position({0,0,0},{0,0,0})));
         return newArm;
     }
     return nullptr;

@@ -5,18 +5,19 @@
 #ifndef IREPO_H
 #define IREPO_H
 
-#include <yaml-cpp/yaml.h>
+#include <string>
 
-#include "../Domain/RobotArm.h"
-#include "../Domain/User.h"
+using namespace std;
 
+class RobotArm;
+class User;
 class IRepo {
 public:
     virtual ~IRepo() = default;
 
     IRepo()= default;
 
-    [[nodiscard]] virtual RobotArm* readArm(const string& armName) const=0;
+    [[nodiscard]] virtual RobotArm* readArm(const std::string& armName) const=0;
     virtual bool createArm(const RobotArm* arm)=0;
     virtual bool updateArm(const string& armName, const string& newName, const string& host)=0;
     virtual bool deleteArm(const string& armName)=0;

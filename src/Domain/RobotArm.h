@@ -6,9 +6,6 @@
 #define ROBOTARM_H
 
 #include <string>
-
-#include "Task.h"
-
 #include <vector>
 
 using namespace std;
@@ -21,17 +18,22 @@ enum Status
     UNKNOWN
 };
 
+class Task;
+class Instruction;
+class Tool;
+class Position;
 class RobotArm {
 private:
     string name_;
     vector<Task*> tasks_;
     Status status_;
-    Instruction* currPosition_;
+    Position* currPosition_;
     string host_;
     string type_;
+    Tool* tool_;
 
 public:
-    RobotArm(const string& name, const vector<Task*>& tasks, Status status, Instruction* currPosition, const string& host, const string& type);
+    RobotArm(const string& name, const vector<Task*>& tasks, Status status, Position* currPosition, const string& host, const string& type, Tool* tool);
 
     virtual ~RobotArm();
 
@@ -43,9 +45,9 @@ public:
 
     void setTasks(const vector<Task*>& tasks);
 
-    [[nodiscard]] Instruction* getCurrPosition() const;
+    [[nodiscard]] Position* getCurrPosition() const;
 
-    void setCurrPosition(Instruction* currPosition);
+    void setCurrPosition(Position* currPosition);
 
     [[nodiscard]] string getHost() const;
 
@@ -58,6 +60,10 @@ public:
     [[nodiscard]] string getType() const;
 
     void setType(const string& type);
+
+    [[nodiscard]] Tool* getTool() const;
+
+    void setTool(Tool* tool);
 
 
 };

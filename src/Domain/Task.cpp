@@ -27,12 +27,12 @@ void Task::setTimestamp(const tm& timestamp)
     timestamp_=timestamp;
 }
 
-vector<Instruction*> Task::getPositions() const
+vector<Instruction*> Task::getInstructions() const
 {
     return instructions_;
 }
 
-void Task::setPositions(const vector<Instruction*>& instructions)
+void Task::setInstructions(const vector<Instruction*>& instructions)
 {
     instructions_=instructions;
 }

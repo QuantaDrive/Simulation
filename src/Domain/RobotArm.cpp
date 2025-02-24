@@ -4,13 +4,18 @@
 
 #include "RobotArm.h"
 
-RobotArm::RobotArm(const string& name, const vector<Task*>& tasks, const Status status, Instruction* currPosition, const string& host, const string& type) :
+#include "Position.h"
+#include "../Domain/Instruction.h"
+#include "../Domain/Task.h"
+
+RobotArm::RobotArm(const string& name, const vector<Task*>& tasks, const Status status, Position* currPosition, const string& host, const string& type, Tool* tool) :
 name_(name),
 tasks_(tasks),
 status_(status),
 currPosition_(currPosition),
 host_(host),
-type_(type){}
+type_(type),
+tool_(tool){}
 
 RobotArm::~RobotArm()
 {
@@ -41,12 +46,12 @@ void RobotArm::setTasks(const vector<Task*>& tasks)
     tasks_=tasks;
 }
 
-Instruction* RobotArm::getCurrPosition() const
+Position* RobotArm::getCurrPosition() const
 {
     return currPosition_;
 }
 
-void RobotArm::setCurrPosition(Instruction* currPosition)
+void RobotArm::setCurrPosition(Position* currPosition)
 {
     currPosition_=currPosition;
 }
@@ -79,4 +84,14 @@ string RobotArm::getType() const
 void RobotArm::setType(const string& type)
 {
     type_=type;
+}
+
+Tool* RobotArm::getTool() const
+{
+    return tool_;
+}
+
+void RobotArm::setTool(Tool* tool)
+{
+    tool_=tool;
 }

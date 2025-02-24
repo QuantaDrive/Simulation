@@ -4,14 +4,13 @@
 
 #ifndef REPO_H
 #define REPO_H
+
 #include "IRepo.h"
-#include "../Domain/RobotArm.h"
-#include "../Domain/User.h"
 #include "yaml-cpp/yaml.h"
 
 using namespace YAML;
 
-class Repo : IRepo{
+class Repo final : IRepo{
 private:
     Node db_;
 public:
