@@ -1,0 +1,10 @@
+users:
+  - admin
+  - iemand
+arms:
+  arm1:
+    host: 127.0.0.1
+    type: moveo
+  arm2:
+    host: localhost
+    type: moveo

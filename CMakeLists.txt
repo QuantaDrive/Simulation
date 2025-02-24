@@ -9,6 +9,7 @@ include_directories(
         libs/glm-0.9.6.3
         libs/imgui-1.91.8
         libs/imgui-node-editor
+        libs/yaml-cpp/include
 )
 
 ### GLFW ###
@@ -55,6 +56,10 @@ add_library(ImGui STATIC
         libs/imgui-1.91.8/misc/cpp/imgui_stdlib.cpp
 )
 
+### yaml-cpp ###
+
+add_subdirectory(libs/yaml-cpp)
+
 ###
 
 add_subdirectory(src/Simulation)
@@ -62,14 +67,21 @@ add_subdirectory(src/Simulation)
 add_executable(
         projectRobotArm
         main.cpp
-        src/Domain/ArmPosition.cpp
-        src/Domain/ArmPosition.h
+        src/Domain/Instruction.cpp
+        src/Domain/Instruction.h
         src/Domain/Task.cpp
         src/Domain/Task.h
         src/Domain/RobotArm.cpp
         src/Domain/RobotArm.h
         src/Domain/User.cpp
         src/Domain/User.h
+        src/Physical/BL/PhysicalManager.cpp
+        src/Physical/BL/PhysicalManager.h
+        src/Simulation/BL/SimulationManager.cpp
+        src/Simulation/BL/SimulationManager.h
+        src/DAL/Repo.cpp
+        src/DAL/Repo.h
+        src/DAL/IRepo.h
         src/View/IWindowManager.h
         src/View/WindowManager.cpp
 )
@@ -106,4 +118,5 @@ target_link_libraries(projectRobotArm
         ImGuiNodeEditor
         crude_json
         Simulation
+        yaml-cpp
 )

@@ -1,4 +1,9 @@
 #include <Simulation/Simulation.h>
+#include <yaml-cpp/yaml.h>
+#include <fstream>
+
+#include "src/DAL/IRepo.h"
+#include "src/DAL/Repo.h"
 #include "src/View/WindowManager.cpp"
 
 namespace ed = ax::NodeEditor;

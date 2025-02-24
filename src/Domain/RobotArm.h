@@ -5,6 +5,8 @@
 #ifndef ROBOTARM_H
 #define ROBOTARM_H
 
+#include <string>
+
 #include "Task.h"
 
 #include <vector>
@@ -15,24 +17,23 @@ enum Status
 {
     READY,
     BUSY,
-    DEFECT
+    DEFECT,
+    UNKNOWN
 };
 
 class RobotArm {
 private:
+    string name_;
     vector<Task*> tasks_;
     Status status_;
-    ArmPosition* currPosition_;
+    Instruction* currPosition_;
+    string host_;
+    string type_;
 
 public:
-    RobotArm(const vector<Task*>& tasks, Status status, ArmPosition* currPosition)
-        : tasks_(tasks),
-          status_(status),
-          currPosition_(currPosition)
-    {
-    }
+    RobotArm(const string& name, const vector<Task*>& tasks, Status status, Instruction* currPosition, const string& host, const string& type);
 
-    ~RobotArm();
+    virtual ~RobotArm();
 
     [[nodiscard]] Status getStatus() const;
 
@@ -42,9 +43,23 @@ public:
 
     void setTasks(const vector<Task*>& tasks);
 
-    [[nodiscard]] ArmPosition* getCurrPosition() const;
+    [[nodiscard]] Instruction* getCurrPosition() const;
 
-    void setCurrPosition(ArmPosition* currPosition);
+    void setCurrPosition(Instruction* currPosition);
+
+    [[nodiscard]] string getHost() const;
+
+    void setHost(const string& host);
+
+    [[nodiscard]] string getName() const;
+
+    void setName(const string& name);
+
+    [[nodiscard]] string getType() const;
+
+    void setType(const string& type);
+
+
 };
 
 
