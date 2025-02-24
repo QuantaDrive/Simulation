@@ -1,10 +1,5 @@
 #include "IWindowManager.h"
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
-#include <imgui.h>
-#include <backends/imgui_impl_glfw.h>
-#include <backends/imgui_impl_opengl3.h>
-#include <iostream>
+
 #include <bits/algorithmfwd.h>
 
 namespace ed = ax::NodeEditor;
@@ -18,10 +13,10 @@ private:
     float inputYDegrees = 0;
     float inputZDegrees = 0;
     int gripforce = 0;
-    std::string textInput = "";
+    std::string textInput;
 
 public:
-    void SetupImGui(GLFWwindow *existingWindow) {
+    void SetupImGui(GLFWwindow *existingWindow) override {
         window = existingWindow;
 
         glewExperimental = GL_TRUE;
@@ -40,7 +35,7 @@ public:
         std::cout << "Window initialized successfully\n";
     }
 
-    void RenderUI(ed::EditorContext *g_Context) {
+    void RenderUI(ed::EditorContext *g_Context) override {
         // Start ImGui frame (only once per frame)
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -79,7 +74,7 @@ private:
         ImGui::End();
     }
 
-    void RenderImGuiNodesEditor(ed::EditorContext *g_Context) {
+    static void RenderImGuiNodesEditor(ed::EditorContext *g_Context) {
         ImGui::Begin("Node Editor");
         ed::SetCurrentEditor(g_Context);
         ed::Begin("My Editor");
@@ -114,7 +109,7 @@ private:
     }
 
 public:
-    void CleanupImGui(ed::EditorContext *g_Context) {
+    void CleanupImGui(ed::EditorContext *g_Context) override {
         ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
