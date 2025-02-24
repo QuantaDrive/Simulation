@@ -1,9 +1,12 @@
 #include "IWindowManager.h"
-
 #include <bits/algorithmfwd.h>
-
-
 namespace ed = ax::NodeEditor;
+
+struct LinkInfo {
+    ed::LinkId Id;
+    ed::PinId StartPinId;
+    ed::PinId EndPinId;
+};
 
 class WindowManager : public IWindowManager {
 private:
@@ -16,8 +19,7 @@ private:
     float inputZDegrees = 0;
     int gripforce = 0;
     std::string textInput;
-    std::vector<LinkInfo> nodeLinkInfos;
-
+    ImVector<LinkInfo> m_Links;
 
 public:
     void SetupImGui(GLFWwindow *existingWindow) override {
@@ -36,12 +38,11 @@ public:
         ImGui_ImplGlfw_InitForOpenGL(window, true);
         ImGui_ImplOpenGL3_Init("#version 330");
 
-
         std::cout << "Window initialized successfully\n";
     }
 
     void RenderUI(ed::EditorContext *g_Context) override {
-        // Start ImGui frame
+        // Start ImGui frame (only once per frame)
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
@@ -79,45 +80,50 @@ private:
         ImGui::End();
     }
 
-    static void createNode(int &uniqueId, const std::string& name) {
-        ed::BeginNode(uniqueId++);
-        ImGui::Text(name.c_str());
-        ed::BeginPin(uniqueId++, ed::PinKind::Input);
-        ImGui::Text("-> In");
-        ed::EndPin();
-        ImGui::SameLine();
-        ed::BeginPin(uniqueId++, ed::PinKind::Output);
-        ImGui::Text("Out ->");
-        ed::EndPin();
-        ed::EndNode();
-    }
-
-    void RenderLinks() {
-        for (const auto &link : nodeLinkInfos) {
-            ed::Link(link.id, link.inputPin, link.outputPin);
-        }
-    }
-
-    static void RenderImGuiNodesEditor(ed::EditorContext *g_Context) {
-        if (!g_Context) {
-            std::cerr << "Error: g_Context is null!" << std::endl;
-            return;
-        }
-
+    void RenderImGuiNodesEditor(ed::EditorContext *g_Context) {
         ImGui::Begin("Node Editor");
         ed::SetCurrentEditor(g_Context);
         ed::Begin("My Editor");
 
-        // Ensure nodes exist before linking
-        static int uniqueId = 1;
-        createNode(uniqueId, "Move 1");
-        createNode(uniqueId, "Move 2");
+        int uniqueId = 1;
+        // Node A
+        // id's
+        ed::NodeId nodeA_Id = uniqueId++;
+        ed::PinId nodeA_InputPinId = uniqueId++;
+        ed::PinId nodeA_OutputPinId = uniqueId++;
+
+        ed::BeginNode(nodeA_Id);
+        ImGui::Text("Node A");
+        ed::BeginPin(nodeA_InputPinId, ed::PinKind::Input);
+        ImGui::Text("-> In");
+        ed::EndPin();
+        ImGui::SameLine();
+        ed::BeginPin(nodeA_OutputPinId, ed::PinKind::Output);
+        ImGui::Text("Out ->");
+        ed::EndPin();
+        ed::EndNode();
+
+
+        // Handle link creation
+
+            if (ed::QueryNewLink(&nodeA_InputPinId, &nodeA_OutputPinId)) {
+                if (nodeA_InputPinId && nodeA_OutputPinId) {
+                    ed::AcceptNewItem();
+                    // Create a new link
+                    ed::Link(ed::LinkId(uniqueId++), nodeA_InputPinId, nodeA_OutputPinId);
+                }
+            }
+
+
+        // Render existing links
+        for (auto& link : m_Links) {
+            ed::Link(link.Id, link.StartPinId, link.EndPinId);
+        }
 
         ed::End();
         ed::SetCurrentEditor(nullptr);
         ImGui::End();
     }
-
 
 public:
     void CleanupImGui(ed::EditorContext *g_Context) override {
@@ -126,6 +132,6 @@ public:
         ImGui::DestroyContext();
         glfwDestroyWindow(window);
         glfwTerminate();
-        DestroyEditor(g_Context);
+        ed::DestroyEditor(g_Context);
     }
 };

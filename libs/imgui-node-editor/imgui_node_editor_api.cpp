@@ -257,7 +257,7 @@ bool ax::NodeEditor::BeginCreate(const ImVec4& color, float thickness)
 
 bool ax::NodeEditor::QueryNewLink(PinId* startId, PinId* endId)
 {
-    using Result = ax::NodeEditor::Detail::CreateItemAction::Result;
+    using Result = Detail::CreateItemAction::Result;
 
     auto& context = s_Editor->GetItemCreator();
 

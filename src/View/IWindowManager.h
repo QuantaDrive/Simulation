@@ -10,11 +10,6 @@
 #include <iostream>
 #include <vector>
 
-struct LinkInfo {
-   ax::NodeEditor::LinkId id;
-   ax::NodeEditor::PinId inputPin;
-   ax::NodeEditor::PinId outputPin;
-};
 
 class IWindowManager {
 public:

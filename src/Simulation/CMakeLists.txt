@@ -17,6 +17,7 @@ add_library(Simulation STATIC
         src/RobotArm.cpp
         src/RobotArm.h
         src/Utils.h
+
 )
 
 target_include_directories(Simulation PUBLIC
