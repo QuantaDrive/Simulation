@@ -105,7 +105,8 @@ private:
 
 
         // Handle link creation
-
+        if (ed::BeginCreate())
+        {
             if (ed::QueryNewLink(&nodeA_InputPinId, &nodeA_OutputPinId)) {
                 if (nodeA_InputPinId && nodeA_OutputPinId) {
                     ed::AcceptNewItem();
@@ -113,6 +114,8 @@ private:
                     ed::Link(ed::LinkId(uniqueId++), nodeA_InputPinId, nodeA_OutputPinId);
                 }
             }
+        }
+        ed::EndCreate();
 
 
         // Render existing links
