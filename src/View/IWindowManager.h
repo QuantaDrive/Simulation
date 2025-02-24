@@ -8,6 +8,13 @@
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
 #include <iostream>
+#include <vector>
+
+struct LinkInfo {
+   ax::NodeEditor::LinkId id;
+   ax::NodeEditor::PinId inputPin;
+   ax::NodeEditor::PinId outputPin;
+};
 
 class IWindowManager {
 public:

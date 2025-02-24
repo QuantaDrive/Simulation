@@ -16,7 +16,8 @@ add_library(Simulation STATIC
         "${CMAKE_CURRENT_SOURCE_DIR}/src/Mesh.h" "${CMAKE_CURRENT_SOURCE_DIR}/src/Mesh.cpp"
         src/RobotArm.cpp
         src/RobotArm.h
-        src/Utils.h)
+        src/Utils.h
+)
 
 target_include_directories(Simulation PUBLIC
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
