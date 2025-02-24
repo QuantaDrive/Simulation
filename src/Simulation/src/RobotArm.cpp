@@ -62,6 +62,13 @@ simulation::RobotArm::RobotArm(const std::string& definitionFile)
                 break;
             default: ;
         }
+        if (i != 0) {
+            const float omega = definition["joint_" + std::to_string(i)]["dh_omega"].as<float>();
+            const float alpha = definition["joint_" + std::to_string(i)]["dh_alpha"].as<float>();
+            const float a = definition["joint_" + std::to_string(i)]["dh_a"].as<float>();
+            const float d = definition["joint_" + std::to_string(i)]["dh_d"].as<float>();
+            this->dh_parameters.emplace_back(omega, alpha, a, d);
+        }
     }
 }
 

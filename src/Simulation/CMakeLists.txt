@@ -14,9 +14,8 @@ add_library(Simulation STATIC
         "${CMAKE_CURRENT_SOURCE_DIR}/src/Init.h" "${CMAKE_CURRENT_SOURCE_DIR}/src/Init.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/src/Visualization.h" "${CMAKE_CURRENT_SOURCE_DIR}/src/Visualization.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/src/Mesh.h" "${CMAKE_CURRENT_SOURCE_DIR}/src/Mesh.cpp"
-        src/RobotArm.cpp
-        src/RobotArm.h
-        src/Utils.h)
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/RobotArm.h" "${CMAKE_CURRENT_SOURCE_DIR}/src/RobotArm.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/Utils.h")
 
 target_include_directories(Simulation PUBLIC
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
