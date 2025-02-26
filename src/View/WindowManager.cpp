@@ -80,20 +80,13 @@ private:
         ImGui::End();
     }
 
-    void RenderImGuiNodesEditor(ed::EditorContext *g_Context) {
-        ImGui::Begin("Node Editor");
-        ed::SetCurrentEditor(g_Context);
-        ed::Begin("My Editor");
-
-        int uniqueId = 1;
-        // Node A
-        // id's
+    void CreateNodes(int& uniqueId, const char *nodeTitle) {
         ed::NodeId nodeA_Id = uniqueId++;
         ed::PinId nodeA_InputPinId = uniqueId++;
         ed::PinId nodeA_OutputPinId = uniqueId++;
 
         ed::BeginNode(nodeA_Id);
-        ImGui::Text("Node A");
+        ImGui::Text(nodeTitle);
         ed::BeginPin(nodeA_InputPinId, ed::PinKind::Input);
         ImGui::Text("-> In");
         ed::EndPin();
@@ -102,8 +95,6 @@ private:
         ImGui::Text("Out ->");
         ed::EndPin();
         ed::EndNode();
-
-
         // Handle link creation
         if (ed::BeginCreate())
         {
@@ -122,6 +113,18 @@ private:
         for (auto& link : m_Links) {
             ed::Link(link.Id, link.StartPinId, link.EndPinId);
         }
+    }
+
+    void RenderImGuiNodesEditor(ed::EditorContext *g_Context) {
+        ImGui::Begin("Node Editor");
+        ed::SetCurrentEditor(g_Context);
+        ed::Begin("My Editor");
+
+        int uniqueId = 1;
+        const char * nodeTitle1 = "Node A";
+        const char * nodeTitle2 = "Node B";
+        CreateNodes(uniqueId, nodeTitle1);
+        CreateNodes(uniqueId, nodeTitle2);
 
         ed::End();
         ed::SetCurrentEditor(nullptr);
