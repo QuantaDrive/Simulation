@@ -4,8 +4,8 @@ namespace ed = ax::NodeEditor;
 
 struct LinkInfo {
     ed::LinkId Id;
-    ed::PinId StartPinId;
-    ed::PinId EndPinId;
+    ed::PinId InputId;
+    ed::PinId OutputId;
 };
 
 class WindowManager : public IWindowManager {
@@ -20,6 +20,8 @@ private:
     int gripforce = 0;
     std::string textInput;
     ImVector<LinkInfo> m_Links;
+    bool m_FirstFrame = true;
+    int m_NextLinkId = 100;
 
 public:
     void SetupImGui(GLFWwindow *existingWindow) override {
@@ -80,11 +82,20 @@ private:
         ImGui::End();
     }
 
-    void CreateNodes(int& uniqueId, const char *nodeTitle) {
-        ed::NodeId nodeA_Id = uniqueId++;
-        ed::PinId nodeA_InputPinId = uniqueId++;
-        ed::PinId nodeA_OutputPinId = uniqueId++;
+    void CreateNodes(ed::NodeId nodeId, const char *nodeTitle, ed::PinId inputId, ed::PinId outputId) {
+        ed::BeginNode(nodeId);
+        ImGui::Text(nodeTitle);
+        ed::BeginPin(inputId, ed::PinKind::Input);
+        ImGui::Text("-> In");
+        ed::EndPin();
+        ImGui::SameLine();
+        ed::BeginPin(outputId, ed::PinKind::Output);
+        ImGui::Text("Out ->");
+        ed::EndPin();
+        ed::EndNode();
+    }
 
+    void CreateNode(const char* nodeTitle,ed::NodeId nodeA_Id, ed::PinId nodeA_InputPinId, ed::PinId nodeA_OutputPinId) {
         ed::BeginNode(nodeA_Id);
         ImGui::Text(nodeTitle);
         ed::BeginPin(nodeA_InputPinId, ed::PinKind::Input);
@@ -95,24 +106,6 @@ private:
         ImGui::Text("Out ->");
         ed::EndPin();
         ed::EndNode();
-        // Handle link creation
-        if (ed::BeginCreate())
-        {
-            if (ed::QueryNewLink(&nodeA_InputPinId, &nodeA_OutputPinId)) {
-                if (nodeA_InputPinId && nodeA_OutputPinId) {
-                    ed::AcceptNewItem();
-                    // Create a new link
-                    ed::Link(ed::LinkId(uniqueId++), nodeA_InputPinId, nodeA_OutputPinId);
-                }
-            }
-        }
-        ed::EndCreate();
-
-
-        // Render existing links
-        for (auto& link : m_Links) {
-            ed::Link(link.Id, link.StartPinId, link.EndPinId);
-        }
     }
 
     void RenderImGuiNodesEditor(ed::EditorContext *g_Context) {
@@ -120,14 +113,106 @@ private:
         ed::SetCurrentEditor(g_Context);
         ed::Begin("My Editor");
 
-        int uniqueId = 1;
-        const char * nodeTitle1 = "Node A";
-        const char * nodeTitle2 = "Node B";
-        CreateNodes(uniqueId, nodeTitle1);
-        CreateNodes(uniqueId, nodeTitle2);
+    int uniqueId = 1;
+
+        //
+        // 1) Commit known data to editor
+        //
+
+        // Submit Node A
+        ed::NodeId nodeA_Id = uniqueId++;
+        ed::PinId  nodeA_InputPinId = uniqueId++;
+        ed::PinId  nodeA_OutputPinId = uniqueId++;
+
+        if (m_FirstFrame)
+            ed::SetNodePosition(nodeA_Id, ImVec2(10, 10));
+        CreateNode("Node A",nodeA_Id, nodeA_InputPinId, nodeA_OutputPinId);
+
+        // Submit Node B
+        ed::NodeId nodeB_Id = uniqueId++;
+        ed::PinId  nodeB_InputPinId1 = uniqueId++;
+        ed::PinId  nodeB_InputPinId2 = uniqueId++;
+        ed::PinId  nodeB_OutputPinId = uniqueId++;
+
+        if (m_FirstFrame)
+            ed::SetNodePosition(nodeB_Id, ImVec2(210, 60));
+        CreateNode("Node B",nodeB_Id, nodeB_InputPinId1, nodeB_InputPinId2);
+
+        // Submit Links
+        for (auto& linkInfo : m_Links)
+            ed::Link(linkInfo.Id, linkInfo.InputId, linkInfo.OutputId);
+
+
+        // 2) Handle interactions
+        // Handle creation action, returns true if editor want to create new object (node or link)
+        if (ed::BeginCreate())
+        {
+            ed::PinId inputPinId, outputPinId;
+            if (ed::QueryNewLink(&inputPinId, &outputPinId))
+            {
+                // QueryNewLink returns true if editor want to create new link between pins.
+                //
+                // Link can be created only for two valid pins, it is up to you to
+                // validate if connection make sense. Editor is happy to make any.
+                //
+                // Link always goes from input to output. User may choose to drag
+                // link from output pin or input pin. This determine which pin ids
+                // are valid and which are not:
+                //   * input valid, output invalid - user started to drag new line from input pin
+                //   * input invalid, output valid - user started to drag new line from output pin
+                //   * input valid, output valid   - user dragged link over other pin, can be validated
+
+                if (inputPinId && outputPinId) // both are valid, let's accept link
+                {
+                    // ed::AcceptNewItem() return true when user release mouse button.
+                    if (ed::AcceptNewItem())
+                    {
+                        // Since we accepted new link, lets add one to our list of links.
+                        m_Links.push_back({ ed::LinkId(m_NextLinkId++), inputPinId, outputPinId });
+
+                        // Draw new link.
+                        ed::Link(m_Links.back().Id, m_Links.back().InputId, m_Links.back().OutputId);
+                    }
+
+                }
+            }
+        }
+        ed::EndCreate(); // Wraps up object creation action handling.
+
+
+        // Handle deletion action
+        if (ed::BeginDelete())
+        {
+            // There may be many links marked for deletion, let's loop over them.
+            ed::LinkId deletedLinkId;
+            while (ed::QueryDeletedLink(&deletedLinkId))
+            {
+                // If you agree that link can be deleted, accept deletion.
+                if (ed::AcceptDeletedItem())
+                {
+                    // Then remove link from your data.
+                    for (auto& link : m_Links)
+                    {
+                        if (link.Id == deletedLinkId)
+                        {
+                            m_Links.erase(&link);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        ed::EndDelete();
+
+
+
+
+        if (m_FirstFrame)
+            ed::NavigateToContent(0.0f);
 
         ed::End();
         ed::SetCurrentEditor(nullptr);
+        m_FirstFrame = false;
         ImGui::End();
     }
 
