@@ -9,8 +9,8 @@ struct LinkInfo {
 };
 
 class WindowManager : public IWindowManager {
-private:
     GLFWwindow *window = nullptr;
+    // Single instruction Window
     int inputX = 0;
     int inputY = 0;
     int inputZ = 0;
@@ -19,9 +19,16 @@ private:
     float inputZDegrees = 0;
     int gripforce = 0;
     std::string textInput;
+
+    // Render Nodes Window
     ImVector<LinkInfo> m_Links;
     bool m_FirstFrame = true;
     int m_NextLinkId = 100;
+
+    // Node Selector Window
+
+
+
 
 public:
     void SetupImGui(GLFWwindow *existingWindow) override {
@@ -43,6 +50,8 @@ public:
         std::cout << "Window initialized successfully\n";
     }
 
+
+
     void RenderUI(ed::EditorContext *g_Context) override {
         // Start ImGui frame (only once per frame)
         ImGui_ImplOpenGL3_NewFrame();
@@ -51,6 +60,7 @@ public:
 
         // Render both UI windows
         RenderSingleInstructionWindow();
+        RenderNodeSelectorWindow();
         RenderImGuiNodesEditor(g_Context);
 
         // Render the final ImGui frame
@@ -59,6 +69,13 @@ public:
     }
 
 private:
+    void RenderNodeSelectorWindow() {
+        bool showWindow = true;
+        ImGui::Begin("Node Selector", &showWindow);
+        ImGui::Button("Movement Left");
+        ImGui::End();
+    }
+
     void RenderSingleInstructionWindow() {
         bool showWindow = true;
         ImGui::Begin("Single instruction", &showWindow);
@@ -82,18 +99,6 @@ private:
         ImGui::End();
     }
 
-    void CreateNodes(ed::NodeId nodeId, const char *nodeTitle, ed::PinId inputId, ed::PinId outputId) {
-        ed::BeginNode(nodeId);
-        ImGui::Text(nodeTitle);
-        ed::BeginPin(inputId, ed::PinKind::Input);
-        ImGui::Text("-> In");
-        ed::EndPin();
-        ImGui::SameLine();
-        ed::BeginPin(outputId, ed::PinKind::Output);
-        ImGui::Text("Out ->");
-        ed::EndPin();
-        ed::EndNode();
-    }
 
     void CreateNode(const char* nodeTitle,ed::NodeId nodeA_Id, ed::PinId nodeA_InputPinId, ed::PinId nodeA_OutputPinId) {
         ed::BeginNode(nodeA_Id);
@@ -132,7 +137,6 @@ private:
         ed::NodeId nodeB_Id = uniqueId++;
         ed::PinId  nodeB_InputPinId1 = uniqueId++;
         ed::PinId  nodeB_InputPinId2 = uniqueId++;
-        ed::PinId  nodeB_OutputPinId = uniqueId++;
 
         if (m_FirstFrame)
             ed::SetNodePosition(nodeB_Id, ImVec2(210, 60));
