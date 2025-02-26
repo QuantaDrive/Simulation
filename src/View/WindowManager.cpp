@@ -28,8 +28,6 @@ class WindowManager : public IWindowManager {
     // Node Selector Window
 
 
-
-
 public:
     void SetupImGui(GLFWwindow *existingWindow) override {
         window = existingWindow;
@@ -49,7 +47,6 @@ public:
 
         std::cout << "Window initialized successfully\n";
     }
-
 
 
     void RenderUI(ed::EditorContext *g_Context) override {
@@ -100,7 +97,8 @@ private:
     }
 
 
-    void CreateNode(const char* nodeTitle,ed::NodeId nodeA_Id, ed::PinId nodeA_InputPinId, ed::PinId nodeA_OutputPinId) {
+    void CreateNode(const char *nodeTitle, ed::NodeId nodeA_Id, ed::PinId nodeA_InputPinId,
+                    ed::PinId nodeA_OutputPinId) {
         ed::BeginNode(nodeA_Id);
         ImGui::Text(nodeTitle);
         ed::BeginPin(nodeA_InputPinId, ed::PinKind::Input);
@@ -118,42 +116,37 @@ private:
         ed::SetCurrentEditor(g_Context);
         ed::Begin("My Editor");
 
-    int uniqueId = 1;
+        int uniqueId = 1;
 
-        //
         // 1) Commit known data to editor
-        //
-
         // Submit Node A
         ed::NodeId nodeA_Id = uniqueId++;
-        ed::PinId  nodeA_InputPinId = uniqueId++;
-        ed::PinId  nodeA_OutputPinId = uniqueId++;
+        ed::PinId nodeA_InputPinId = uniqueId++;
+        ed::PinId nodeA_OutputPinId = uniqueId++;
 
         if (m_FirstFrame)
             ed::SetNodePosition(nodeA_Id, ImVec2(10, 10));
-        CreateNode("Node A",nodeA_Id, nodeA_InputPinId, nodeA_OutputPinId);
+        CreateNode("Node A", nodeA_Id, nodeA_InputPinId, nodeA_OutputPinId);
 
         // Submit Node B
         ed::NodeId nodeB_Id = uniqueId++;
-        ed::PinId  nodeB_InputPinId1 = uniqueId++;
-        ed::PinId  nodeB_InputPinId2 = uniqueId++;
+        ed::PinId nodeB_InputPinId1 = uniqueId++;
+        ed::PinId nodeB_InputPinId2 = uniqueId++;
 
         if (m_FirstFrame)
             ed::SetNodePosition(nodeB_Id, ImVec2(210, 60));
-        CreateNode("Node B",nodeB_Id, nodeB_InputPinId1, nodeB_InputPinId2);
+        CreateNode("Node B", nodeB_Id, nodeB_InputPinId1, nodeB_InputPinId2);
 
         // Submit Links
-        for (auto& linkInfo : m_Links)
+        for (auto &linkInfo: m_Links) {
             ed::Link(linkInfo.Id, linkInfo.InputId, linkInfo.OutputId);
-
+        }
 
         // 2) Handle interactions
         // Handle creation action, returns true if editor want to create new object (node or link)
-        if (ed::BeginCreate())
-        {
+        if (ed::BeginCreate()) {
             ed::PinId inputPinId, outputPinId;
-            if (ed::QueryNewLink(&inputPinId, &outputPinId))
-            {
+            if (ed::QueryNewLink(&inputPinId, &outputPinId)) {
                 // QueryNewLink returns true if editor want to create new link between pins.
                 //
                 // Link can be created only for two valid pins, it is up to you to
@@ -169,15 +162,13 @@ private:
                 if (inputPinId && outputPinId) // both are valid, let's accept link
                 {
                     // ed::AcceptNewItem() return true when user release mouse button.
-                    if (ed::AcceptNewItem())
-                    {
+                    if (ed::AcceptNewItem()) {
                         // Since we accepted new link, lets add one to our list of links.
-                        m_Links.push_back({ ed::LinkId(m_NextLinkId++), inputPinId, outputPinId });
+                        m_Links.push_back({ed::LinkId(m_NextLinkId++), inputPinId, outputPinId});
 
                         // Draw new link.
                         ed::Link(m_Links.back().Id, m_Links.back().InputId, m_Links.back().OutputId);
                     }
-
                 }
             }
         }
@@ -185,20 +176,15 @@ private:
 
 
         // Handle deletion action
-        if (ed::BeginDelete())
-        {
+        if (ed::BeginDelete()) {
             // There may be many links marked for deletion, let's loop over them.
             ed::LinkId deletedLinkId;
-            while (ed::QueryDeletedLink(&deletedLinkId))
-            {
+            while (ed::QueryDeletedLink(&deletedLinkId)) {
                 // If you agree that link can be deleted, accept deletion.
-                if (ed::AcceptDeletedItem())
-                {
+                if (ed::AcceptDeletedItem()) {
                     // Then remove link from your data.
-                    for (auto& link : m_Links)
-                    {
-                        if (link.Id == deletedLinkId)
-                        {
+                    for (auto &link: m_Links) {
+                        if (link.Id == deletedLinkId) {
                             m_Links.erase(&link);
                             break;
                         }
@@ -207,8 +193,6 @@ private:
             }
         }
         ed::EndDelete();
-
-
 
 
         if (m_FirstFrame)
