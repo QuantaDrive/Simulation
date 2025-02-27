@@ -65,19 +65,13 @@ mat4 SimulationManager::getTransformationMatrix(vec3 position, vec3 rotation)
 
 void SimulationManager::inverseToolFrame(mat4& toolFrame)
 {
-    for (int i=0;i<3;i++)
-    {
-        for (int j=0;j<3;j++)
-        {
-
-        }
-    }
+    toolFrame = inverse(toolFrame);
 }
 
 mat4 SimulationManager::toolToArm(const Position* position, const Tool* tool)
 {
     auto toolFrame=getTransformationMatrix(tool->getPosition()->getCoords(),tool->getPosition()->getRotation());
-    inverseToolFrame(toolFrame);
+    toolFrame = inverse(toolFrame);
     return getTransformationMatrix(position->getCoords(),position->getRotation())*toolFrame;
 }
 
@@ -88,7 +82,11 @@ void SimulationManager::armToSphericalWrist(mat4& endOfArm)
 
 void SimulationManager::inverseKinematics(RobotArm* arm, Position* position)
 {
-    mat4 endofarm = toolToArm(position,arm->getTool());
-    armToSphericalWrist(endofarm);
-    cout << to_string(endofarm[0][3]) << endl;
+    mat4 j6 = toolToArm(position,arm->getTool());
+    armToSphericalWrist(j6);
+    auto dOffset = 438.520;
+    mat4 negate = {1,0,0,0,0,1,0,0,0,0,1,-dOffset,0,0,0,1};
+    auto sphericalWrist = negate*j6;
+    auto j1Angle = 0;
+
 }
