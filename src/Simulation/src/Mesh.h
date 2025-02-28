@@ -2,8 +2,8 @@
 // Created by stan on 14/02/25.
 //
 
-#ifndef MESH_H
-#define MESH_H
+#ifndef SIMULATION_MESH_H
+#define SIMULATION_MESH_H
 #include <map>
 #include <string>
 #include <vector>
@@ -46,4 +46,4 @@ namespace simulation
         void renderBare() const;
     };
 } // simulation
-#endif //MESH_H
+#endif // SIMULATION_MESH_H

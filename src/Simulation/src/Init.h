@@ -2,8 +2,8 @@
 // Created by stan on 12/02/25.
 //
 
-#ifndef SIMULATIONINIT_H
-#define SIMULATIONINIT_H
+#ifndef SIMULATION_INIT_H
+#define SIMULATION_INIT_H
 
 #include <GLFW/glfw3.h>
 
@@ -23,4 +23,4 @@ namespace simulation
     void checkOpenGLError();
 } // simulation
 
-#endif //SIMULATIONINIT_H
+#endif //SIMULATION_INIT_H

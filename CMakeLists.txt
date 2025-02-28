@@ -88,6 +88,8 @@ add_executable(
         src/Domain/Tool.h
         src/Domain/Position.cpp
         src/Domain/Position.h
+        src/Domain/Node.cpp
+        src/Domain/Node.h
 )
 
 ### ImGui Node Editor ###
