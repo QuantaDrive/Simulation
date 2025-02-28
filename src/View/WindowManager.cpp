@@ -5,14 +5,16 @@
 #include "../Domain/NodeActivation.h"
 namespace ed = ax::NodeEditor;
 
-struct LinkInfo {
+struct LinkInfo
+{
     ed::LinkId Id;
     ed::PinId InputId;
     ed::PinId OutputId;
 };
 
-class WindowManager : public IWindowManager {
-    GLFWwindow *window = nullptr;
+class WindowManager : public IWindowManager
+{
+    GLFWwindow* window = nullptr;
     // Single instruction Window
     int inputX = 0;
     int inputY = 0;
@@ -32,19 +34,21 @@ class WindowManager : public IWindowManager {
 
 
 public:
-    void SetupImGui(GLFWwindow *existingWindow) override {
+    void SetupImGui(GLFWwindow* existingWindow) override
+    {
         window = existingWindow;
 
         glewExperimental = GL_TRUE;
-        if (glewInit() != GLEW_OK) {
+        if (glewInit() != GLEW_OK)
+        {
             std::cerr << "Failed to initialize GLEW\n";
             return;
         }
 
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
-        ImGuiIO &io = ImGui::GetIO();
-        (void) io;
+        ImGuiIO& io = ImGui::GetIO();
+        (void)io;
         ImGui_ImplGlfw_InitForOpenGL(window, true);
         ImGui_ImplOpenGL3_Init("#version 330");
 
@@ -52,7 +56,8 @@ public:
     }
 
 
-    void RenderUI(ed::EditorContext *g_Context) override {
+    void RenderUI(ed::EditorContext* g_Context) override
+    {
         // Start ImGui frame (only once per frame)
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -69,14 +74,16 @@ public:
     }
 
 private:
-    void RenderNodeSelectorWindow() {
+    void RenderNodeSelectorWindow()
+    {
         bool showWindow = true;
         ImGui::Begin("Node Selector", &showWindow);
         ImGui::Button("Movement Left");
         ImGui::End();
     }
 
-    void RenderSingleInstructionWindow() {
+    void RenderSingleInstructionWindow()
+    {
         bool showWindow = true;
         ImGui::Begin("Single instruction", &showWindow);
         ImGui::InputInt("X", &inputX);
@@ -87,21 +94,23 @@ private:
         ImGui::SliderAngle("Z Degrees", &inputZDegrees, -360, 360);
         ImGui::SliderInt("Grip Force", &gripforce, 0, 10);
 
-        if (ImGui::Button("Show values")) {
+        if (ImGui::Button("Show values"))
+        {
             textInput = "X = " + std::to_string(inputX) +
-                        ", Y = " + std::to_string(inputY) +
-                        ", Z = " + std::to_string(inputZ) +
-                        " X Degrees = " + std::to_string(inputXDegrees) +
-                        " Y Degrees = " + std::to_string(inputYDegrees) +
-                        " Z Degrees = " + std::to_string(inputZDegrees);
+                ", Y = " + std::to_string(inputY) +
+                ", Z = " + std::to_string(inputZ) +
+                " X Degrees = " + std::to_string(inputXDegrees) +
+                " Y Degrees = " + std::to_string(inputYDegrees) +
+                " Z Degrees = " + std::to_string(inputZDegrees);
         }
         ImGui::Text(textInput.c_str());
         ImGui::End();
     }
 
 
-    void CreateNodeInEditor(const char *nodeTitle, ed::NodeId nodeA_Id, ed::PinId nodeA_InputPinId,
-                    ed::PinId nodeA_OutputPinId) {
+    void CreateNodeInEditor(const char* nodeTitle, ed::NodeId nodeA_Id, ed::PinId nodeA_InputPinId,
+                            ed::PinId nodeA_OutputPinId)
+    {
         ed::BeginNode(nodeA_Id);
         ImGui::Text(nodeTitle);
         ed::BeginPin(nodeA_InputPinId, ed::PinKind::Input);
@@ -114,7 +123,8 @@ private:
         ed::EndNode();
     }
 
-    void RenderImGuiNodesEditor(ed::EditorContext *g_Context) {
+    void RenderImGuiNodesEditor(ed::EditorContext* g_Context)
+    {
         ImGui::Begin("Node Editor");
         ed::SetCurrentEditor(g_Context);
         ed::Begin("My Editor");
@@ -122,24 +132,25 @@ private:
         int uniqueId = 1;
 
         // 1) Commit known data to editor
-        // Submit Node A
-        ed::NodeId nodeA_Id = uniqueId++;
-        ed::PinId nodeA_InputPinId = uniqueId++;
-        ed::PinId nodeA_OutputPinId = uniqueId++;
+        Node nodeA("Node A", RobotActions::NodeActivation::Action);
+        nodeA.initializeNodeIds(uniqueId);
 
         if (m_FirstFrame)
-            ed::SetNodePosition(nodeA_Id, ImVec2(10, 10));
-        Node nodeA(uniqueId, "Naam", RobotActions::NodeActivation::Action);
-        CreateNodeInEditor(nodeA.getTitle(), nodeA.getNodeId(), nodeA.getNodeInputPinId(), nodeA.getNodeOutputPinId());
+        {
+        ed::SetNodePosition(nodeA.getNodeId(), ImVec2(0, 0));
 
-        // Submit Node B
-        ed::NodeId nodeB_Id = uniqueId++;
-        ed::PinId nodeB_InputPinId1 = uniqueId++;
-        ed::PinId nodeB_InputPinId2 = uniqueId++;
+        }
+        CreateNodeInEditor(nodeA.getTitle(), nodeA.getNodeId(), nodeA.getNodeInputPinId(),
+                           nodeA.getNodeOutputPinId());
 
+        Node nodeB("Node B", RobotActions::NodeActivation::Action);
+        nodeB.initializeNodeIds(uniqueId);
         if (m_FirstFrame)
-            ed::SetNodePosition(nodeB_Id, ImVec2(210, 60));
-        CreateNodeInEditor("Node B", nodeB_Id, nodeB_InputPinId1, nodeB_InputPinId2);
+        {
+            ed::SetNodePosition(nodeB.getNodeId(), ImVec2(20, 20));
+        }
+        CreateNodeInEditor(nodeB.getTitle(), nodeB.getNodeId(), nodeB.getNodeInputPinId(),
+                           nodeB.getNodeOutputPinId());
 
         // Submit Links
         for (auto &linkInfo: m_Links) {
@@ -209,7 +220,8 @@ private:
     }
 
 public:
-    void CleanupImGui(ed::EditorContext *g_Context) override {
+    void CleanupImGui(ed::EditorContext* g_Context) override
+    {
         ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
