@@ -15,6 +15,7 @@ namespace simulation{
         std::vector<float> jointPositions;
         std::vector<glm::vec3> jointOffsets;
         std::vector<glm::vec3> jointDOFs;
+        std::vector<glm::vec4> dh_parameters;
 
     public:
         void moveAngle(int joint, float angle,
