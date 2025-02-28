@@ -16,14 +16,17 @@ namespace RobotActions
 
 class Node {
     int& id_;
+    const char * title_;
     RobotActions::NodeActivation activation_;
     ed::NodeId nodeId_;
     ed::PinId nodeInputPinId_;
     ed::PinId nodeOutputPinId_;
 public:
-    explicit Node(RobotActions::NodeActivation activation, int& nodeId);
+    explicit Node(int& nodeId, const char* title, RobotActions::NodeActivation activation);
 
     [[nodiscard]] int getId() const;
+
+    [[nodiscard]] const char* getTitle() const;
 
     [[nodiscard]] RobotActions::NodeActivation getActivation() const;
 

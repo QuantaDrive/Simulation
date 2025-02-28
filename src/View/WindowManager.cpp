@@ -1,5 +1,8 @@
 #include "IWindowManager.h"
 #include <bits/algorithmfwd.h>
+
+#include "../Domain/Node.h"
+#include "../Domain/NodeActivation.h"
 namespace ed = ax::NodeEditor;
 
 struct LinkInfo {
@@ -97,7 +100,7 @@ private:
     }
 
 
-    void CreateNode(const char *nodeTitle, ed::NodeId nodeA_Id, ed::PinId nodeA_InputPinId,
+    void CreateNodeInEditor(const char *nodeTitle, ed::NodeId nodeA_Id, ed::PinId nodeA_InputPinId,
                     ed::PinId nodeA_OutputPinId) {
         ed::BeginNode(nodeA_Id);
         ImGui::Text(nodeTitle);
@@ -126,7 +129,8 @@ private:
 
         if (m_FirstFrame)
             ed::SetNodePosition(nodeA_Id, ImVec2(10, 10));
-        CreateNode("Node A", nodeA_Id, nodeA_InputPinId, nodeA_OutputPinId);
+        Node nodeA(uniqueId, "Naam", RobotActions::NodeActivation::Action);
+        CreateNodeInEditor(nodeA.getTitle(), nodeA.getNodeId(), nodeA.getNodeInputPinId(), nodeA.getNodeOutputPinId());
 
         // Submit Node B
         ed::NodeId nodeB_Id = uniqueId++;
@@ -135,7 +139,7 @@ private:
 
         if (m_FirstFrame)
             ed::SetNodePosition(nodeB_Id, ImVec2(210, 60));
-        CreateNode("Node B", nodeB_Id, nodeB_InputPinId1, nodeB_InputPinId2);
+        CreateNodeInEditor("Node B", nodeB_Id, nodeB_InputPinId1, nodeB_InputPinId2);
 
         // Submit Links
         for (auto &linkInfo: m_Links) {

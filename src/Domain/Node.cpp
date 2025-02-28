@@ -4,8 +4,9 @@
 
 #include "Node.h"
 
-Node::Node(RobotActions::NodeActivation activation, int& nodeId)
+Node::Node(int& nodeId, const char* title, RobotActions::NodeActivation activation)
     : id_(nodeId),
+      title_(title),
       activation_(activation),
       nodeId_(nodeId++),
       nodeInputPinId_(nodeId++),
@@ -16,6 +17,11 @@ Node::Node(RobotActions::NodeActivation activation, int& nodeId)
 int Node::getId() const
 {
     return id_;
+}
+
+const char* Node::getTitle() const
+{
+    return title_;
 }
 
 RobotActions::NodeActivation Node::getActivation() const
@@ -37,5 +43,3 @@ ed::PinId Node::getNodeOutputPinId() const
 {
     return nodeOutputPinId_;
 }
-
-
