@@ -1,5 +1,5 @@
-#ifndef INSTRUCTION_H
-#define INSTRUCTION_H
+#ifndef DOMAIN_INSTRUCTION_H
+#define DOMAIN_INSTRUCTION_H
 
 #include <vector>
 #include <glm/glm.hpp>
@@ -8,26 +8,29 @@ using namespace std;
 using namespace glm;
 
 class Position;
-class Instruction {
-private:
-    Position* position_;
-    float gripForce_;
-    double wait_;
 
-public:
-    Instruction(Position* position, float gripForce, double wait);
+namespace domain
+{
+    class Instruction {
+    private:
+        Position* position_;
+        float gripForce_;
+        double wait_;
 
-    ~Instruction();
+    public:
+        Instruction(Position* position, float gripForce, double wait);
 
-    [[nodiscard]] Position* getPosition() const;
+        ~Instruction();
 
-    void setPosition(Position* position);
+        [[nodiscard]] Position* getPosition() const;
 
-    [[nodiscard]] float getGripForce() const;
+        void setPosition(Position* position);
 
-    void setGripForce(float gripForce);
-};
+        [[nodiscard]] float getGripForce() const;
+
+        void setGripForce(float gripForce);
+    };
+}
 
 
-
-#endif //INSTRUCTION_H
+#endif //DOMAIN_INSTRUCTION_H

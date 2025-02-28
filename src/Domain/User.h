@@ -9,18 +9,20 @@
 
 using namespace std;
 
-class User {
-private:
-    string name_;
+namespace domain
+{
+    class User {
+    private:
+        string name_;
 
-public:
-    explicit User(const string& name);
+    public:
+        explicit User(const string& name);
 
-    [[nodiscard]] string getName() const;
+        [[nodiscard]] string getName() const;
 
-    void setName(const string &name);
-};
-
+        void setName(const string &name);
+    };
+}
 
 
 #endif //USER_H

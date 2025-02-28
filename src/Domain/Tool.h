@@ -12,20 +12,22 @@ class Position;
 using namespace std;
 using namespace glm;
 
-class Tool {
-private:
-    string name_;
-    Position* position_;
-public:
-    Tool(const string& name, Position* position);
-    ~Tool() = default;
+namespace domain
+{
+    class Tool {
+    private:
+        string name_;
+        Position* position_;
+    public:
+        Tool(const string& name, Position* position);
+        ~Tool() = default;
 
-    [[nodiscard]] string getName() const;
-    void setName(const string& name);
-    [[nodiscard]] Position* getPosition() const;
-    void setPosition(Position* position);
-};
-
+        [[nodiscard]] string getName() const;
+        void setName(const string& name);
+        [[nodiscard]] Position* getPosition() const;
+        void setPosition(Position* position);
+    };
+}
 
 
 #endif //TOOL_H

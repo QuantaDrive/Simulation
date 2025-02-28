@@ -11,26 +11,29 @@
 
 using namespace std;
 
-class Instruction;
-class Task {
-private:
-    string id_;
-    tm timestamp_;
-    vector<Instruction*> instructions_;
+namespace domain
+{
+    class Instruction;
 
-public:
-    Task(const tm& timestamp, const vector<Instruction*>& instructions);
+    class Task {
+    private:
+        string id_;
+        tm timestamp_;
+        vector<Instruction*> instructions_;
 
-    ~Task();
+    public:
+        Task(const tm& timestamp, const vector<Instruction*>& instructions);
 
-    [[nodiscard]]tm getTimestamp() const;
+        ~Task();
 
-    void setTimestamp(const tm& timestamp);
+        [[nodiscard]]tm getTimestamp() const;
 
-    [[nodiscard]] vector<Instruction*> getInstructions() const;
+        void setTimestamp(const tm& timestamp);
 
-    void setInstructions(const vector<Instruction*>& instructions);
-};
+        [[nodiscard]] vector<Instruction*> getInstructions() const;
 
+        void setInstructions(const vector<Instruction*>& instructions);
+    };
+}
 
 #endif //TASK_H

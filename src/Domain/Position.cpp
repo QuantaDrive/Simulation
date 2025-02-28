@@ -7,26 +7,26 @@
 #include "Instruction.h"
 #include "Instruction.h"
 
-Position::Position(const vec3& coords, const vec3& rotation):
+domain::Position::Position(const vec3& coords, const vec3& rotation):
 coords_(coords),
 rotation_(rotation){}
 
-vec3 Position::getCoords() const
+vec3 domain::Position::getCoords() const
 {
     return coords_;
 }
 
-void Position::setCoords(const vec3& coords)
+void domain::Position::setCoords(const vec3& coords)
 {
     coords_=coords;
 }
 
-vec3 Position::getRotation() const
+vec3 domain::Position::getRotation() const
 {
     return rotation_;
 }
 
-void Position::setRotation(const vec3& rotation)
+void domain::Position::setRotation(const vec3& rotation)
 {
     rotation_=rotation;
 }

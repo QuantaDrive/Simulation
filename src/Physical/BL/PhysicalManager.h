@@ -6,7 +6,7 @@
 #define PHYSICALMANAGER_H
 
 #include "../../Domain/Task.h"
-
+using namespace domain;
 class PhysicalManager {
 public:
     void executeTask(Task* task);
