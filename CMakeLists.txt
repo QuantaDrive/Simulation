@@ -86,6 +86,8 @@ add_executable(
         src/View/WindowManager.cpp
         src/Domain/Node.cpp
         src/Domain/Node.h
+        src/Domain/NodeActivation.cpp
+        src/Domain/NodeActivation.h
 )
 
 ### ImGui Node Editor ###
