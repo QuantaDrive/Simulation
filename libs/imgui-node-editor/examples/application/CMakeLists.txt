@@ -53,8 +53,10 @@ if (WIN32)
 
     target_link_libraries(application PRIVATE d3d11.lib d3dcompiler.lib d3dx11)
 else()
+    include_directories(../../../glfw-3.4/include)
+    add_subdirectory(../../../glfw-3.4 build)
+    set(glfw3_FOUND YES)
     find_package(OpenGL REQUIRED)
-    find_package(glfw3 3 REQUIRED)
 
     if (APPLE)
         target_link_libraries(application PRIVATE

@@ -23,7 +23,7 @@ int main()
 
 	simulation::RobotArm arm = simulation::RobotArm( "src/Simulation/arms/Moveo/moveo.ini");
 
-	arm.moveAngle(1, 30.0f, false, true);
+	arm.moveAngle(1, 45.0f, false, true);
 	arm.moveAngle(2, -35.0f, false, true);
 	arm.moveAngle(3, 90.0f, false, true);
 	arm.moveAngle(5, 50.0f, false, true);
