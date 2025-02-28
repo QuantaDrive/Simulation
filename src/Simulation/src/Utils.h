@@ -2,8 +2,8 @@
 // Created by stan on 23/02/25.
 //
 
-#ifndef UTILS_H
-#define UTILS_H
+#ifndef SIMULATION_UTILS_H
+#define SIMULATION_UTILS_H
 #include <sstream>
 #include <glm/glm.hpp>
 
@@ -37,4 +37,4 @@ inline glm::vec4 stringToVec4(const std::string& str) {
     return {x, y, z, w};
 }
 
-#endif //UTILS_H
+#endif //SIMULATION_UTILS_H

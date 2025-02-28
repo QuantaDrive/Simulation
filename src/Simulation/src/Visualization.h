@@ -2,8 +2,8 @@
 // Created by stan on 13/02/25.
 //
 
-#ifndef MODELVISUALIZATION_H
-#define MODELVISUALIZATION_H
+#ifndef SIMULATION_VISUALIZATION_H
+#define SIMULATION_VISUALIZATION_H
 
 #include <glm/glm.hpp>
 
@@ -22,4 +22,4 @@ namespace simulation {
     void setBackgroundColor(float r, float g, float b);
 } // simulation
 
-#endif //MODELVISUALIZATION_H
+#endif //SIMULATION_VISUALIZATION_H

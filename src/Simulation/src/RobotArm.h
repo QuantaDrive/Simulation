@@ -2,8 +2,8 @@
 // Created by stan on 22/02/25.
 //
 
-#ifndef ROBOTARM_H
-#define ROBOTARM_H
+#ifndef SIMULATION_ROBOTARM_H
+#define SIMULATION_ROBOTARM_H
 #include <string>
 
 #include "Mesh.h"
@@ -28,4 +28,4 @@ namespace simulation{
 } // simulation
 
 
-#endif //ROBOTARM_H
+#endif //SIMULATION_ROBOTARM_H
