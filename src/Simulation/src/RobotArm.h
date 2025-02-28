@@ -22,6 +22,7 @@ namespace simulation{
             bool relative = false, bool isDegree = false);
         RobotArm(const std::string& definitionFile);
         ~RobotArm();
+        std::vector<glm::vec4> getDhParameters() const;
         void render();
     };
 } // simulation

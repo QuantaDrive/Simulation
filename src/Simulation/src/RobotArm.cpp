@@ -79,6 +79,11 @@ simulation::RobotArm::~RobotArm()
     }
 }
 
+std::vector<glm::vec4> simulation::RobotArm::getDhParameters() const
+{
+    return dh_parameters;
+}
+
 void simulation::RobotArm::render()
 {
     glm::mat4 transformationMatrix = glm::mat4(1.0f);
