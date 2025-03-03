@@ -78,7 +78,13 @@ private:
     {
         bool showWindow = true;
         ImGui::Begin("Node Selector", &showWindow);
-        ImGui::Button("Movement Left");
+        // Create a button for all NodeActivation enum values
+        for (int i = 0; i < static_cast<int>(RobotActions::NodeActivation::COUNT); ++i) {
+            auto action = static_cast<RobotActions::NodeActivation>(i);
+            if (ImGui::Button(RobotActions::toString(action).data())) {
+                // Handle button click
+            }
+        }
         ImGui::End();
     }
 
