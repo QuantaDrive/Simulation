@@ -4,7 +4,7 @@
 
 #include "Tool.h"
 
-domain::Tool::Tool(const string& name, Position* position) :
+domain::Tool::Tool(const string& name, domain::Position* position) :
 name_(name),
 position_(position){}
 
@@ -18,7 +18,7 @@ void domain::Tool::setName(const string& name)
     name_=name;
 }
 
-Position* domain::Tool::getPosition() const
+domain::Position* domain::Tool::getPosition() const
 {
     return position_;
 }

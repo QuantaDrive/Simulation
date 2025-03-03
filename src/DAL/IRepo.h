@@ -9,21 +9,23 @@
 
 using namespace std;
 
-class RobotArm;
-class User;
+namespace domain {
+    class RobotArm;
+    class User;
+}
 class IRepo {
 public:
     virtual ~IRepo() = default;
 
     IRepo()= default;
 
-    [[nodiscard]] virtual RobotArm* readArm(const std::string& armName) const=0;
-    virtual bool createArm(const RobotArm* arm)=0;
+    [[nodiscard]] virtual domain::RobotArm* readArm(const std::string& armName) const=0;
+    virtual bool createArm(const domain::RobotArm* arm)=0;
     virtual bool updateArm(const string& armName, const string& newName, const string& host)=0;
     virtual bool deleteArm(const string& armName)=0;
 
-    [[nodiscard]] virtual User* readUser(const string& userName) const=0;
-    virtual bool createUser(User* user)=0;
+    [[nodiscard]] virtual domain::User* readUser(const string& userName) const=0;
+    virtual bool createUser(domain::User* user)=0;
     virtual bool updateUser(const string& userName, const string& newName)=0;
     virtual bool deleteUser(const string& userName)=0;
 

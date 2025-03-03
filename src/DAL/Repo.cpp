@@ -18,18 +18,20 @@ Repo::Repo(const Node& db) : IRepo()
     db_=db;
 }
 
-RobotArm* Repo::readArm(const string& armName) const
+domain::RobotArm* Repo::readArm(const string& armName) const
 {
     if (db_["arms"][armName])
     {
         auto arm = db_["arms"][armName];
-        auto* newArm = new RobotArm(armName,{},READY,nullptr,arm["host"].as<string>(),arm["type"].as<string>(),new Tool("default",new Position({0,0,0},{0,0,0})));
+        const auto position = new domain::Position({0,0,0},{0,0,0});
+        const auto tool = new domain::Tool("default", position);
+        auto* newArm = new domain::RobotArm(armName,{},domain::READY,nullptr,arm["host"].as<string>(),arm["type"].as<string>(),tool);
         return newArm;
     }
     return nullptr;
 }
 
-bool Repo::createArm(const RobotArm* arm)
+bool Repo::createArm(const domain::RobotArm* arm)
 {
     try
     {
@@ -93,19 +95,19 @@ bool Repo::deleteArm(const string& armName)
     return false;
 }
 
-User* Repo::readUser(const string& userName) const
+domain::User* Repo::readUser(const string& userName) const
 {
     for (auto user:db_["users"])
     {
         if (user.as<string>()==userName)
         {
-            return new User(userName);
+            return new domain::User(userName);
         }
     }
     return nullptr;
 }
 
-bool Repo::createUser(User* user)
+bool Repo::createUser(domain::User* user)
 {
     if (user->getName().empty())
     {

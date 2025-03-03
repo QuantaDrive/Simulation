@@ -2,8 +2,8 @@
 // Created by dante on 2/12/25.
 //
 
-#ifndef TASK_H
-#define TASK_H
+#ifndef DOMAIN_TASK_H
+#define DOMAIN_TASK_H
 
 #include <ctime>
 #include <string>

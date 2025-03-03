@@ -5,6 +5,8 @@
 #include "../Domain/NodeActivation.h"
 namespace ed = ax::NodeEditor;
 
+using namespace domain;
+
 struct LinkInfo
 {
     ed::LinkId Id;
@@ -132,7 +134,7 @@ private:
         int uniqueId = 1;
 
         // 1) Commit known data to editor
-        Node nodeA("Node A", RobotActions::NodeActivation::Action);
+        domain::Node nodeA("Node A", RobotActions::NodeActivation::Action);
         nodeA.initializeNodeIds(uniqueId);
 
         if (m_FirstFrame)
@@ -143,7 +145,7 @@ private:
         CreateNodeInEditor(nodeA.getTitle(), nodeA.getNodeId(), nodeA.getNodeInputPinId(),
                            nodeA.getNodeOutputPinId());
 
-        Node nodeB("Node B", RobotActions::NodeActivation::Action);
+        domain::Node nodeB("Node B", RobotActions::NodeActivation::Action);
         nodeB.initializeNodeIds(uniqueId);
         if (m_FirstFrame)
         {

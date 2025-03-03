@@ -2,8 +2,8 @@
 // Created by dante on 2/13/25.
 //
 
-#ifndef USER_H
-#define USER_H
+#ifndef DOMAIN_USER_H
+#define DOMAIN_USER_H
 
 #include <string>
 

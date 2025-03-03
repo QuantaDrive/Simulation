@@ -2,18 +2,18 @@
 // Created by dante on 2/24/25.
 //
 
-#ifndef TOOL_H
-#define TOOL_H
+#ifndef DOMAIN_TOOL_H
+#define DOMAIN_TOOL_H
 #include <string>
 #include <glm/glm.hpp>
 
 
-class Position;
 using namespace std;
 using namespace glm;
 
 namespace domain
 {
+    class Position;
     class Tool {
     private:
         string name_;
@@ -30,4 +30,4 @@ namespace domain
 }
 
 
-#endif //TOOL_H
+#endif //DOMAIN_TOOL_H
