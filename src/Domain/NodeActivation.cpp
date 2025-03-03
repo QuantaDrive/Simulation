@@ -19,7 +19,6 @@ namespace RobotActions {
         "Hold",
         "Action"
     };
-
     // Add namespace to function implementation
     std::string_view toString(NodeActivation action) {
         auto index = static_cast<size_t>(action);
