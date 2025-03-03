@@ -6,6 +6,7 @@
 #define NODE_H
 #include "imgui_node_editor.h"
 #include <atomic>
+#include <string>
 
 namespace ed = ax::NodeEditor;
 namespace RobotActions
@@ -15,7 +16,7 @@ namespace RobotActions
 
 
 class Node {
-    const char * title_;
+    std::string title_;
     RobotActions::NodeActivation activation_;
     ed::NodeId nodeId_;
     ed::PinId nodeInputPinId_;
@@ -23,7 +24,7 @@ class Node {
 public:
     explicit Node(const char* title, RobotActions::NodeActivation activation);
 
-    [[nodiscard]] const char* getTitle() const;
+    [[nodiscard]] std::string getTitle() const;
 
     [[nodiscard]] RobotActions::NodeActivation getActivation() const;
 

@@ -27,8 +27,11 @@ class WindowManager : public IWindowManager
 
     // Render Nodes Window
     ImVector<LinkInfo> m_Links;
+    ImVector<Node> m_Nodes;
     bool m_FirstFrame = true;
     int m_NextLinkId = 100;
+    ImVec2 m_NextNodePosition = ImVec2(0, 0);
+    int m_NextNodeId = 1;
 
     // Node Selector Window
 
@@ -74,15 +77,25 @@ public:
     }
 
 private:
-    void RenderNodeSelectorWindow()
-    {
+    void RenderNodeSelectorWindow() {
         bool showWindow = true;
         ImGui::Begin("Node Selector", &showWindow);
+
         // Create a button for all NodeActivation enum values
         for (int i = 0; i < static_cast<int>(RobotActions::NodeActivation::COUNT); ++i) {
             auto action = static_cast<RobotActions::NodeActivation>(i);
             if (ImGui::Button(RobotActions::toString(action).data())) {
-                // Handle button click
+                // Create a new node at the next position
+                std::string title = RobotActions::toString(action).data();
+                Node newNode(title.c_str(), action);
+                int currentId = m_NextNodeId;
+                newNode.initializeNodeIds(currentId);
+                m_NextNodeId = currentId;
+                m_Nodes.push_back(newNode);
+
+                // Increment position for next node
+                m_NextNodePosition.x += 50;
+                m_NextNodePosition.y += 50;
             }
         }
         ImGui::End();
@@ -135,29 +148,11 @@ private:
         ed::SetCurrentEditor(g_Context);
         ed::Begin("My Editor");
 
-        int uniqueId = 1;
-
-        // 1) Commit known data to editor
-        Node nodeA("Node A", RobotActions::NodeActivation::Action);
-        nodeA.initializeNodeIds(uniqueId);
-
-        if (m_FirstFrame)
-        {
-        ed::SetNodePosition(nodeA.getNodeId(), ImVec2(0, 0));
-
+        // Render all stored nodes
+        for (const auto& node : m_Nodes) {
+            CreateNodeInEditor(node.getTitle().c_str(), node.getNodeId(),
+                             node.getNodeInputPinId(), node.getNodeOutputPinId());
         }
-        CreateNodeInEditor(nodeA.getTitle(), nodeA.getNodeId(), nodeA.getNodeInputPinId(),
-                           nodeA.getNodeOutputPinId());
-
-        Node nodeB("Node B", RobotActions::NodeActivation::Action);
-        nodeB.initializeNodeIds(uniqueId);
-        if (m_FirstFrame)
-        {
-            ed::SetNodePosition(nodeB.getNodeId(), ImVec2(20, 20));
-        }
-        CreateNodeInEditor(nodeB.getTitle(), nodeB.getNodeId(), nodeB.getNodeInputPinId(),
-                           nodeB.getNodeOutputPinId());
-
         // Submit Links
         for (auto &linkInfo: m_Links) {
             ed::Link(linkInfo.Id, linkInfo.InputId, linkInfo.OutputId);
@@ -207,6 +202,19 @@ private:
                     for (auto &link: m_Links) {
                         if (link.Id == deletedLinkId) {
                             m_Links.erase(&link);
+                            break;
+                        }
+                    }
+                }
+            }
+            // Add node deletion
+            ed::NodeId deletedNodeId;
+            while (ed::QueryDeletedNode(&deletedNodeId)) {
+                if (ed::AcceptDeletedItem()) {
+                    // Here you would remove the node from your data structure
+                    for (auto& node : m_Nodes) {
+                        if (node.getNodeId() == deletedNodeId) {
+                            m_Nodes.erase(&node);
                             break;
                         }
                     }
