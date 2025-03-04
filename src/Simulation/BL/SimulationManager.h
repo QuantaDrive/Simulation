@@ -39,7 +39,7 @@ protected:
     void inverseToolFrame(mat4 &toolFrame);
     mat4 toolToArm(const domain::Position* position, const domain::Tool* tool);
     mat4 armToSphericalWrist(mat4 j6);
-    vector<vector<float>> getParamsJ1Zero(float j1, mat4& sphericalWrist);
+    vector<vector<float>> getParamsJ1Zero(mat4& sphericalWrist);
     float findJ3(float j1, float j2);
 public:
     explicit SimulationManager(Repo* repo, simulation::RobotArm* simulationArm);
