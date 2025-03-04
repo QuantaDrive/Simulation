@@ -125,17 +125,17 @@ vector<float> SimulationManager::inverseKinematics(domain::RobotArm* arm, domain
     mat4 j1M = getDhTransformationMatrix(j1,dhParams[0][1],dhParams[0][2],dhParams[0][3]);
     mat4 j2M = getDhTransformationMatrix(params[3][0]-90.0f,dhParams[1][1],dhParams[1][2],dhParams[1][3]);
     mat4 j3M = getDhTransformationMatrix(params[3][1] + 180.0f,dhParams[2][1],dhParams[2][2],dhParams[2][3]);
-    mat4 R02 = j1M * j2M;
-    mat4 R03 = R02 * j3M;
+    mat4 R02 = j2M * j1M;
+    mat4 R03 = j3M * R02;
     mat3 R03Sub = {R03[0][0],R03[0][1],R03[0][2],
                             R03[1][0],R03[1][1],R03[1][2],
-                            R03[2][0],R03[2][2],R03[2][2]};
+                            R03[2][0],R03[2][1],R03[2][2]};
     mat3 j6Rot = {j6Matrix[0][0],j6Matrix[0][1],j6Matrix[0][2],
                             j6Matrix[1][0],j6Matrix[1][1],j6Matrix[1][2],
                             j6Matrix[2][0],j6Matrix[2][1],j6Matrix[2][2]};
-    mat3 j3Orientation = transpose(R03Sub)*j6Rot;
-    float j5 = atan2(j3Orientation[2][2],sqrtf(1-powf(j3Orientation[2][2],2)));
-    float j4 = atan2(j3Orientation[0][2],j3Orientation[1][2]);
-    float j6 = atan2(-j3Orientation[2][0],j3Orientation[2][1]);
-    return {j1,params[3][0],params[3][1],degrees(j4),degrees(j5),degrees(j6)};
+    mat3 j3Orientation = j6Rot * transpose(R03Sub);
+    float j5 = degrees(atan2(-sqrtf(1-powf(j3Orientation[2][2],2)),j3Orientation[2][2]));
+    float j4 = degrees(atan2(-j3Orientation[1][2],-j3Orientation[0][2]));
+    float j6 = degrees(atan2(-j3Orientation[2][1],j3Orientation[2][0]));
+    return {j1,params[3][0],params[3][1],j4,j5,j6};
 }
