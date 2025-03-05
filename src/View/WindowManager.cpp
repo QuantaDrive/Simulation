@@ -69,6 +69,13 @@ class WindowManager : public IWindowManager {
                     int currentId = m_NextNodeId;
                     newNode.initializeNodeIds(currentId);
                     m_NextNodeId = currentId;
+
+                    if (action == RobotActions::NodeActivation::LoopStart) {
+                        int loopCount = 1;
+                        ImGui::InputInt("Loop Count", &loopCount);
+                        newNode.setLoopCount(loopCount);
+                    }
+
                     m_Nodes.push_back(newNode);
 
                     // generate random position around the last node
@@ -138,9 +145,8 @@ class WindowManager : public IWindowManager {
             ed::Begin("My Editor");
 
             // Render all stored nodes
-            for (const auto &node: m_Nodes) {
-                RenderNodesInEditor(node.getTitle().c_str(), node.getNodeId(),
-                                    node.getNodeInputPinId(), node.getNodeOutputPinId());
+            for (auto &node: m_Nodes) {
+                RenderNodesInEditor(node);
             }
             // Submit Links
             for (auto &linkInfo: m_Links) {
@@ -237,15 +243,24 @@ class WindowManager : public IWindowManager {
 
 
 
-    void RenderNodesInEditor(const char *nodeTitle, ed::NodeId nodeA_Id, ed::PinId nodeA_InputPinId,
-                             ed::PinId nodeA_OutputPinId) {
-        ed::BeginNode(nodeA_Id);
-        ImGui::Text(nodeTitle);
-        ed::BeginPin(nodeA_InputPinId, ed::PinKind::Input);
+    void RenderNodesInEditor(Node& node) {
+        ed::BeginNode(node.getNodeId());
+        ImGui::Text(node.getTitle().c_str());
+
+        if (node.getActivation() == RobotActions::NodeActivation::LoopStart) {
+            ImGui::PushItemWidth(100);
+            ImGui::Text("# loops");
+            int loopCount = node.getLoopCount();
+            ImGui::InputInt("", &loopCount);
+            ImGui::PopItemWidth();
+            node.setLoopCount(loopCount);
+        }
+
+        ed::BeginPin(node.getNodeInputPinId(), ed::PinKind::Input);
         ImGui::Text("-> In");
         ed::EndPin();
         ImGui::SameLine();
-        ed::BeginPin(nodeA_OutputPinId, ed::PinKind::Output);
+        ed::BeginPin(node.getNodeOutputPinId(), ed::PinKind::Output);
         ImGui::Text("Out ->");
         ed::EndPin();
         ed::EndNode();

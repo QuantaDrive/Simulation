@@ -14,10 +14,12 @@ namespace RobotActions {
         Home,
         EnableMotors,
         DisableMotors,
-        Loop,
         Grip,
         Hold,
-        Action, COUNT
+        Action,
+        LoopStart,
+        LoopEnd,
+        COUNT
     };
     std::string_view toString(NodeActivation action);
 }

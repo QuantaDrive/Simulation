@@ -21,6 +21,7 @@ class Node {
     ed::NodeId nodeId_;
     ed::PinId nodeInputPinId_;
     ed::PinId nodeOutputPinId_;
+    int loopCount_ = 0;
 public:
     explicit Node(const char* title, RobotActions::NodeActivation activation);
 
@@ -35,6 +36,10 @@ public:
     [[nodiscard]] ed::PinId getNodeOutputPinId() const;
 
     void initializeNodeIds(int& nodeId);
+
+    void setLoopCount(int count);
+
+    [[nodiscard]] int getLoopCount() const;
 };
 
 #endif //NODE_H
