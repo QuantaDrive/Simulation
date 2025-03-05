@@ -37,8 +37,7 @@ class WindowManager : public IWindowManager {
     bool m_ShowNodeEditor = true;
 
     void RenderNodeSelectorWindow() {
-        bool showWindow = true;
-        ImGui::Begin("Node Selector", &showWindow, ImGuiWindowFlags_MenuBar);
+        ImGui::Begin("Node Selector", &m_ShowNodeSelector, ImGuiWindowFlags_MenuBar);
 
         if (ImGui::BeginMenuBar()) {
             ImGui::EndMenuBar();
@@ -72,8 +71,12 @@ class WindowManager : public IWindowManager {
                     m_NextNodeId = currentId;
                     m_Nodes.push_back(newNode);
 
-                    m_NextNodePosition.x += 50;
-                    m_NextNodePosition.y += 50;
+                    // generate random position around the last node
+                    float randomXNumber = (rand() % 100) - 30;
+                    float randomYNumber = (rand() % 100) - 30;
+                    m_NextNodePosition.x += randomXNumber;
+                    m_NextNodePosition.y += randomYNumber;
+
                 }
                 ImGui::SameLine();
                 //Button -
@@ -92,8 +95,7 @@ class WindowManager : public IWindowManager {
     }
 
     void RenderSingleInstructionWindow() {
-        bool showWindow = true;
-        ImGui::Begin("Single instruction", &showWindow, ImGuiWindowFlags_MenuBar);
+        ImGui::Begin("Single instruction", &m_ShowSingleInstruction, ImGuiWindowFlags_MenuBar);
 
         // Add minimize/maximize in the menu bar
         if (ImGui::BeginMenuBar()) {
@@ -123,9 +125,8 @@ class WindowManager : public IWindowManager {
         ImGui::End();
     }
 
-
-    void RenderImGuiNodesEditor(ed::EditorContext *g_Context) {
-        ImGui::Begin("Node Editor", nullptr, ImGuiWindowFlags_MenuBar);
+    void RenderImGuiNodesEditorWindow(ed::EditorContext *g_Context) {
+        ImGui::Begin("Node Editor", &m_ShowNodeEditor, ImGuiWindowFlags_MenuBar);
 
         // Add minimize/maximize in the menu bar
         if (ImGui::BeginMenuBar()) {
@@ -148,49 +149,7 @@ class WindowManager : public IWindowManager {
 
             // Handle creation action, returns true if editor want to create new object (node or link)
             if (ed::BeginCreate()) {
-                ed::PinId inputPinId, outputPinId;
-                if (ed::QueryNewLink(&inputPinId, &outputPinId)) {
-                    if (inputPinId && outputPinId) {
-                        // Validate connection between pins
-                        // Can't connect input to input or output to output
-                        // Can't create self-loops
-                        bool validateLink = true;
-
-                        // Find source and target nodes
-                        Node *sourceNode = nullptr;
-                        Node *targetNode = nullptr;
-                        for (auto &node: m_Nodes) {
-                            if (node.getNodeOutputPinId() == outputPinId ||
-                                node.getNodeInputPinId() == inputPinId) {
-                                sourceNode = &node;
-                            }
-                            if (node.getNodeInputPinId() == inputPinId ||
-                                node.getNodeOutputPinId() == outputPinId) {
-                                targetNode = &node;
-                            }
-                        }
-
-                        // Validate connection
-                        if (sourceNode && targetNode) {
-                            // Check for self-loops
-                            if (sourceNode == targetNode) {
-                                validateLink = false;
-                            }
-
-                            // Ensure input connects to output
-                            if (outputPinId == sourceNode->getNodeInputPinId() ||
-                                inputPinId == targetNode->getNodeOutputPinId()) {
-                                validateLink = false;
-                            }
-                        }
-
-                        if (validateLink && ed::AcceptNewItem()) {
-                            // Create new link
-                            m_Links.push_back({ed::LinkId(m_NextLinkId++), inputPinId, outputPinId});
-                            ed::Link(m_Links.back().Id, m_Links.back().InputId, m_Links.back().OutputId);
-                        }
-                    }
-                }
+                LinkHandler();
             }
             ed::EndCreate();
 
@@ -198,19 +157,7 @@ class WindowManager : public IWindowManager {
             // Handle deletion action
             if (ed::BeginDelete()) {
                 // There may be many links marked for deletion, let's loop over them.
-                ed::LinkId deletedLinkId;
-                while (ed::QueryDeletedLink(&deletedLinkId)) {
-                    // If you agree that link can be deleted, accept deletion.
-                    if (ed::AcceptDeletedItem()) {
-                        // Then remove link from your data.
-                        for (auto &link: m_Links) {
-                            if (link.Id == deletedLinkId) {
-                                m_Links.erase(&link);
-                                break;
-                            }
-                        }
-                    }
-                }
+                LinkDeleteHandler();
             }
             ed::EndDelete();
 
@@ -224,6 +171,70 @@ class WindowManager : public IWindowManager {
         m_FirstFrame = false;
         ImGui::End();
     }
+
+    void LinkHandler() {
+        ed::PinId inputPinId, outputPinId;
+        if (ed::QueryNewLink(&inputPinId, &outputPinId)) {
+            if (inputPinId && outputPinId) {
+                // Validate connection between pins
+                // Can't connect input to input or output to output
+                // Can't create self-loops
+                bool validateLink = true;
+
+                // Find source and target nodes
+                Node *sourceNode = nullptr;
+                Node *targetNode = nullptr;
+                for (auto &node: m_Nodes) {
+                    if (node.getNodeOutputPinId() == outputPinId ||
+                        node.getNodeInputPinId() == inputPinId) {
+                        sourceNode = &node;
+                    }
+                    if (node.getNodeInputPinId() == inputPinId ||
+                        node.getNodeOutputPinId() == outputPinId) {
+                        targetNode = &node;
+                    }
+                }
+
+                // Validate connection
+                if (sourceNode && targetNode) {
+                    // Check for self-loops
+                    if (sourceNode == targetNode) {
+                        validateLink = false;
+                    }
+
+                    // Ensure input connects to output
+                    if (outputPinId == sourceNode->getNodeInputPinId() ||
+                        inputPinId == targetNode->getNodeOutputPinId()) {
+                        validateLink = false;
+                    }
+                }
+
+                if (validateLink && ed::AcceptNewItem()) {
+                    // Create new link
+                    m_Links.push_back({ed::LinkId(m_NextLinkId++), inputPinId, outputPinId});
+                    ed::Link(m_Links.back().Id, m_Links.back().InputId, m_Links.back().OutputId);
+                }
+            }
+        }
+    }
+
+    void LinkDeleteHandler() {
+        ed::LinkId deletedLinkId;
+        while (ed::QueryDeletedLink(&deletedLinkId)) {
+            // If you agree that link can be deleted, accept deletion.
+            if (ed::AcceptDeletedItem()) {
+                // Then remove link from your data.
+                for (auto &link: m_Links) {
+                    if (link.Id == deletedLinkId) {
+                        m_Links.erase(&link);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+
 
 
     void RenderNodesInEditor(const char *nodeTitle, ed::NodeId nodeA_Id, ed::PinId nodeA_InputPinId,
@@ -267,10 +278,27 @@ public:
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        // Render both UI windows
-        RenderSingleInstructionWindow();
-        RenderNodeSelectorWindow();
-        RenderImGuiNodesEditor(g_Context);
+        // Menu to toggle windows
+        if (ImGui::BeginMainMenuBar()) {
+            if (ImGui::BeginMenu("Windows")) {
+                ImGui::MenuItem("Node Selector", nullptr, &m_ShowNodeSelector);
+                ImGui::MenuItem("Single Instruction", nullptr, &m_ShowSingleInstruction);
+                ImGui::MenuItem("Node Editor", nullptr, &m_ShowNodeEditor);
+                ImGui::EndMenu();
+            }
+            ImGui::EndMainMenuBar();
+        }
+
+        // Render windows based on their visibility flags
+        if (m_ShowSingleInstruction) {
+            RenderSingleInstructionWindow();
+        }
+        if (m_ShowNodeSelector) {
+            RenderNodeSelectorWindow();
+        }
+        if (m_ShowNodeEditor) {
+            RenderImGuiNodesEditorWindow(g_Context);
+        }
 
         // Render the final ImGui frame
         ImGui::Render();
