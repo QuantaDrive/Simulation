@@ -39,21 +39,33 @@ class WindowManager : public IWindowManager {
     void RenderNodeSelectorWindow() {
         bool showWindow = true;
         ImGui::Begin("Node Selector", &showWindow, ImGuiWindowFlags_MenuBar);
-        // Add minimize/maximize in the menu bar
+
         if (ImGui::BeginMenuBar()) {
             ImGui::EndMenuBar();
         }
-        if (ImGui::IsWindowCollapsed()) {
-            // Create a row for each NodeActivation enum value
+
+        if (!ImGui::IsWindowCollapsed()) {
+            // Calculate the widest label to set consistent spacing
+            float maxLabelWidth = 0.0f;
+            for (int i = 0; i < static_cast<int>(RobotActions::NodeActivation::COUNT); ++i) {
+                auto action = static_cast<RobotActions::NodeActivation>(i);
+                std::string label = RobotActions::toString(action).data();
+                maxLabelWidth = std::max(maxLabelWidth, ImGui::CalcTextSize(label.c_str()).x);
+            }
+
+            // Add some padding
+            maxLabelWidth += 20.0f;
+
             for (int i = 0; i < static_cast<int>(RobotActions::NodeActivation::COUNT); ++i) {
                 auto action = static_cast<RobotActions::NodeActivation>(i);
                 std::string label = RobotActions::toString(action).data();
 
-                // Display plus button, label, and minus button in a row
+                // Fixed-width text area
                 ImGui::Text("%s", label.c_str());
-                ImGui::SameLine();
+                ImGui::SameLine(maxLabelWidth);
+
+                // Button +
                 if (ImGui::Button(("+##" + label).c_str())) {
-                    // Create new node
                     Node newNode(label.c_str(), action);
                     int currentId = m_NextNodeId;
                     newNode.initializeNodeIds(currentId);
@@ -64,8 +76,8 @@ class WindowManager : public IWindowManager {
                     m_NextNodePosition.y += 50;
                 }
                 ImGui::SameLine();
+                //Button -
                 if (ImGui::Button(("-##" + label).c_str())) {
-                    // Find and remove the last node of this type
                     for (auto it = m_Nodes.rbegin(); it != m_Nodes.rend(); ++it) {
                         if (it->getActivation() == action) {
                             m_Nodes.erase((++it).base());
