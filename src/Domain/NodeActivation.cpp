@@ -14,10 +14,11 @@ namespace RobotActions {
         "Home",
         "Enable Motors",
         "Disable Motors",
-        "Loop",
         "Grip",
         "Hold",
-        "Action"
+        "Action",
+        "Loop Start",
+        "Loop End"
     };
     // Add namespace to function implementation
     std::string_view toString(NodeActivation action) {

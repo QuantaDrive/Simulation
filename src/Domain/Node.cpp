@@ -4,6 +4,8 @@
 
 #include "Node.h"
 
+#include "NodeActivation.h"
+
 Node::Node(const char* title, RobotActions::NodeActivation activation)
         : title_(title), activation_(activation)
 
@@ -41,4 +43,17 @@ void Node::initializeNodeIds(int& nodeId)
     nodeInputPinId_ = nodeId++;
     nodeOutputPinId_ = nodeId++;
 
+}
+
+void Node::setLoopCount(int count) {
+    if (activation_ == RobotActions::NodeActivation::LoopStart) {
+        loopCount_ = count;
+    }
+}
+
+int Node::getLoopCount() const {
+    if (activation_ == RobotActions::NodeActivation::LoopStart) {
+        return loopCount_;
+    }
+    return 0;
 }
