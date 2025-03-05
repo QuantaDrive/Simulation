@@ -27,7 +27,7 @@ class WindowManager : public IWindowManager
 
     // Render Nodes Window
     ImVector<LinkInfo> m_Links;
-    ImVector<Node> m_Nodes;
+    std::vector<Node> m_Nodes;
     bool m_FirstFrame = true;
     int m_NextLinkId = 100;
     ImVec2 m_NextNodePosition = ImVec2(0, 0);
@@ -81,21 +81,34 @@ private:
         bool showWindow = true;
         ImGui::Begin("Node Selector", &showWindow);
 
-        // Create a button for all NodeActivation enum values
+        // Create a row for each NodeActivation enum value
         for (int i = 0; i < static_cast<int>(RobotActions::NodeActivation::COUNT); ++i) {
             auto action = static_cast<RobotActions::NodeActivation>(i);
-            if (ImGui::Button(RobotActions::toString(action).data())) {
-                // Create a new node at the next position
-                std::string title = RobotActions::toString(action).data();
-                Node newNode(title.c_str(), action);
+            std::string label = RobotActions::toString(action).data();
+
+            // Display plus button, label, and minus button in a row
+            ImGui::Text("%s", label.c_str());
+            ImGui::SameLine();
+            if (ImGui::Button(("+##" + label).c_str())) {
+                // Create new node
+                Node newNode(label.c_str(), action);
                 int currentId = m_NextNodeId;
                 newNode.initializeNodeIds(currentId);
                 m_NextNodeId = currentId;
                 m_Nodes.push_back(newNode);
 
-                // Increment position for next node
                 m_NextNodePosition.x += 50;
                 m_NextNodePosition.y += 50;
+            }
+            ImGui::SameLine();
+            if (ImGui::Button(("-##" + label).c_str())) {
+                // Find and remove the last node of this type
+                for (auto it = m_Nodes.rbegin(); it != m_Nodes.rend(); ++it) {
+                    if (it->getActivation() == action) {
+                        m_Nodes.erase((++it).base());
+                        break;
+                    }
+                }
             }
         }
         ImGui::End();
@@ -163,26 +176,43 @@ private:
         if (ed::BeginCreate()) {
             ed::PinId inputPinId, outputPinId;
             if (ed::QueryNewLink(&inputPinId, &outputPinId)) {
-                // QueryNewLink returns true if editor want to create new link between pins.
-                //
-                // Link can be created only for two valid pins, it is up to you to
-                // validate if connection make sense. Editor is happy to make any.
-                //
-                // Link always goes from input to output. User may choose to drag
-                // link from output pin or input pin. This determine which pin ids
-                // are valid and which are not:
-                //   * input valid, output invalid - user started to drag new line from input pin
-                //   * input invalid, output valid - user started to drag new line from output pin
-                //   * input valid, output valid   - user dragged link over other pin, can be validated
+                if (inputPinId && outputPinId) {
+                    // Validate connection:
+                    // 1. Can't connect input to input or output to output
+                    // 2. Can't create self-loops
+                    bool validateLink = true;
 
-                if (inputPinId && outputPinId) // both are valid, let's accept link
-                {
-                    // ed::AcceptNewItem() return true when user release mouse button.
-                    if (ed::AcceptNewItem()) {
-                        // Since we accepted new link, lets add one to our list of links.
+                    // Find source and target nodes
+                    Node* sourceNode = nullptr;
+                    Node* targetNode = nullptr;
+                    for (auto& node : m_Nodes) {
+                        if (node.getNodeOutputPinId() == outputPinId ||
+                            node.getNodeInputPinId() == inputPinId) {
+                            sourceNode = &node;
+                            }
+                        if (node.getNodeInputPinId() == inputPinId ||
+                            node.getNodeOutputPinId() == outputPinId) {
+                            targetNode = &node;
+                            }
+                    }
+
+                    // Validate connection
+                    if (sourceNode && targetNode) {
+                        // Check for self-loops
+                        if (sourceNode == targetNode) {
+                            validateLink = false;
+                        }
+
+                        // Ensure input connects to output
+                        if (outputPinId == sourceNode->getNodeInputPinId() ||
+                            inputPinId == targetNode->getNodeOutputPinId()) {
+                            validateLink = false;
+                            }
+                    }
+
+                    if (validateLink && ed::AcceptNewItem()) {
+                        // Create new link
                         m_Links.push_back({ed::LinkId(m_NextLinkId++), inputPinId, outputPinId});
-
-                        // Draw new link.
                         ed::Link(m_Links.back().Id, m_Links.back().InputId, m_Links.back().OutputId);
                     }
                 }
@@ -202,19 +232,6 @@ private:
                     for (auto &link: m_Links) {
                         if (link.Id == deletedLinkId) {
                             m_Links.erase(&link);
-                            break;
-                        }
-                    }
-                }
-            }
-            // Add node deletion
-            ed::NodeId deletedNodeId;
-            while (ed::QueryDeletedNode(&deletedNodeId)) {
-                if (ed::AcceptDeletedItem()) {
-                    // Here you would remove the node from your data structure
-                    for (auto& node : m_Nodes) {
-                        if (node.getNodeId() == deletedNodeId) {
-                            m_Nodes.erase(&node);
                             break;
                         }
                     }
