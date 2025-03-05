@@ -5,16 +5,14 @@
 #include "../Domain/NodeActivation.h"
 namespace ed = ax::NodeEditor;
 
-struct LinkInfo
-{
+struct LinkInfo {
     ed::LinkId Id;
     ed::PinId InputId;
     ed::PinId OutputId;
 };
 
-class WindowManager : public IWindowManager
-{
-    GLFWwindow* window = nullptr;
+class WindowManager : public IWindowManager {
+    GLFWwindow *window = nullptr;
     // Single instruction Window
     int inputX = 0;
     int inputY = 0;
@@ -37,21 +35,19 @@ class WindowManager : public IWindowManager
 
 
 public:
-    void SetupImGui(GLFWwindow* existingWindow) override
-    {
+    void SetupImGui(GLFWwindow *existingWindow) override {
         window = existingWindow;
 
         glewExperimental = GL_TRUE;
-        if (glewInit() != GLEW_OK)
-        {
+        if (glewInit() != GLEW_OK) {
             std::cerr << "Failed to initialize GLEW\n";
             return;
         }
 
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
-        ImGuiIO& io = ImGui::GetIO();
-        (void)io;
+        ImGuiIO &io = ImGui::GetIO();
+        (void) io;
         ImGui_ImplGlfw_InitForOpenGL(window, true);
         ImGui_ImplOpenGL3_Init("#version 330");
 
@@ -59,8 +55,7 @@ public:
     }
 
 
-    void RenderUI(ed::EditorContext* g_Context) override
-    {
+    void RenderUI(ed::EditorContext *g_Context) override {
         // Start ImGui frame (only once per frame)
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -114,8 +109,8 @@ private:
         ImGui::End();
     }
 
-    void RenderSingleInstructionWindow()
-    {
+    void RenderSingleInstructionWindow() {
+        // Render the Single Instruction window with input fields
         bool showWindow = true;
         ImGui::Begin("Single instruction", &showWindow);
         ImGui::InputInt("X", &inputX);
@@ -126,23 +121,21 @@ private:
         ImGui::SliderAngle("Z Degrees", &inputZDegrees, -360, 360);
         ImGui::SliderInt("Grip Force", &gripforce, 0, 10);
 
-        if (ImGui::Button("Show values"))
-        {
+        if (ImGui::Button("Show values")) {
             textInput = "X = " + std::to_string(inputX) +
-                ", Y = " + std::to_string(inputY) +
-                ", Z = " + std::to_string(inputZ) +
-                " X Degrees = " + std::to_string(inputXDegrees) +
-                " Y Degrees = " + std::to_string(inputYDegrees) +
-                " Z Degrees = " + std::to_string(inputZDegrees);
+                        ", Y = " + std::to_string(inputY) +
+                        ", Z = " + std::to_string(inputZ) +
+                        " X Degrees = " + std::to_string(inputXDegrees) +
+                        " Y Degrees = " + std::to_string(inputYDegrees) +
+                        " Z Degrees = " + std::to_string(inputZDegrees);
         }
         ImGui::Text(textInput.c_str());
         ImGui::End();
     }
 
 
-    void CreateNodeInEditor(const char* nodeTitle, ed::NodeId nodeA_Id, ed::PinId nodeA_InputPinId,
-                            ed::PinId nodeA_OutputPinId)
-    {
+    void RenderNodesInEditor(const char *nodeTitle, ed::NodeId nodeA_Id, ed::PinId nodeA_InputPinId,
+                             ed::PinId nodeA_OutputPinId) {
         ed::BeginNode(nodeA_Id);
         ImGui::Text(nodeTitle);
         ed::BeginPin(nodeA_InputPinId, ed::PinKind::Input);
@@ -155,45 +148,43 @@ private:
         ed::EndNode();
     }
 
-    void RenderImGuiNodesEditor(ed::EditorContext* g_Context)
-    {
+    void RenderImGuiNodesEditor(ed::EditorContext *g_Context) {
         ImGui::Begin("Node Editor");
         ed::SetCurrentEditor(g_Context);
         ed::Begin("My Editor");
 
         // Render all stored nodes
-        for (const auto& node : m_Nodes) {
-            CreateNodeInEditor(node.getTitle().c_str(), node.getNodeId(),
-                             node.getNodeInputPinId(), node.getNodeOutputPinId());
+        for (const auto &node: m_Nodes) {
+            RenderNodesInEditor(node.getTitle().c_str(), node.getNodeId(),
+                                node.getNodeInputPinId(), node.getNodeOutputPinId());
         }
         // Submit Links
         for (auto &linkInfo: m_Links) {
             ed::Link(linkInfo.Id, linkInfo.InputId, linkInfo.OutputId);
         }
 
-        // 2) Handle interactions
         // Handle creation action, returns true if editor want to create new object (node or link)
         if (ed::BeginCreate()) {
             ed::PinId inputPinId, outputPinId;
             if (ed::QueryNewLink(&inputPinId, &outputPinId)) {
                 if (inputPinId && outputPinId) {
-                    // Validate connection:
-                    // 1. Can't connect input to input or output to output
-                    // 2. Can't create self-loops
+                    // Validate connection between pins
+                    // Can't connect input to input or output to output
+                    // Can't create self-loops
                     bool validateLink = true;
 
                     // Find source and target nodes
-                    Node* sourceNode = nullptr;
-                    Node* targetNode = nullptr;
-                    for (auto& node : m_Nodes) {
+                    Node *sourceNode = nullptr;
+                    Node *targetNode = nullptr;
+                    for (auto &node: m_Nodes) {
                         if (node.getNodeOutputPinId() == outputPinId ||
                             node.getNodeInputPinId() == inputPinId) {
                             sourceNode = &node;
-                            }
+                        }
                         if (node.getNodeInputPinId() == inputPinId ||
                             node.getNodeOutputPinId() == outputPinId) {
                             targetNode = &node;
-                            }
+                        }
                     }
 
                     // Validate connection
@@ -207,7 +198,7 @@ private:
                         if (outputPinId == sourceNode->getNodeInputPinId() ||
                             inputPinId == targetNode->getNodeOutputPinId()) {
                             validateLink = false;
-                            }
+                        }
                     }
 
                     if (validateLink && ed::AcceptNewItem()) {
@@ -218,7 +209,7 @@ private:
                 }
             }
         }
-        ed::EndCreate(); // Wraps up object creation action handling.
+        ed::EndCreate();
 
 
         // Handle deletion action
@@ -240,9 +231,9 @@ private:
         }
         ed::EndDelete();
 
-
-        if (m_FirstFrame)
+        if (m_FirstFrame) {
             ed::NavigateToContent(0.0f);
+        }
 
         ed::End();
         ed::SetCurrentEditor(nullptr);
@@ -251,8 +242,7 @@ private:
     }
 
 public:
-    void CleanupImGui(ed::EditorContext* g_Context) override
-    {
+    void CleanupImGui(ed::EditorContext *g_Context) override {
         ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
