@@ -5,16 +5,14 @@
 #include "../Domain/NodeActivation.h"
 namespace ed = ax::NodeEditor;
 
-struct LinkInfo
-{
+struct LinkInfo {
     ed::LinkId Id;
     ed::PinId InputId;
     ed::PinId OutputId;
 };
 
-class WindowManager : public IWindowManager
-{
-    GLFWwindow* window = nullptr;
+class WindowManager : public IWindowManager {
+    GLFWwindow *window = nullptr;
     // Single instruction Window
     int inputX = 0;
     int inputY = 0;
@@ -27,28 +25,29 @@ class WindowManager : public IWindowManager
 
     // Render Nodes Window
     ImVector<LinkInfo> m_Links;
+    std::vector<Node> m_Nodes;
     bool m_FirstFrame = true;
     int m_NextLinkId = 100;
+    ImVec2 m_NextNodePosition = ImVec2(0, 0);
+    int m_NextNodeId = 1;
 
     // Node Selector Window
 
 
 public:
-    void SetupImGui(GLFWwindow* existingWindow) override
-    {
+    void SetupImGui(GLFWwindow *existingWindow) override {
         window = existingWindow;
 
         glewExperimental = GL_TRUE;
-        if (glewInit() != GLEW_OK)
-        {
+        if (glewInit() != GLEW_OK) {
             std::cerr << "Failed to initialize GLEW\n";
             return;
         }
 
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
-        ImGuiIO& io = ImGui::GetIO();
-        (void)io;
+        ImGuiIO &io = ImGui::GetIO();
+        (void) io;
         ImGui_ImplGlfw_InitForOpenGL(window, true);
         ImGui_ImplOpenGL3_Init("#version 330");
 
@@ -56,8 +55,7 @@ public:
     }
 
 
-    void RenderUI(ed::EditorContext* g_Context) override
-    {
+    void RenderUI(ed::EditorContext *g_Context) override {
         // Start ImGui frame (only once per frame)
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -74,16 +72,45 @@ public:
     }
 
 private:
-    void RenderNodeSelectorWindow()
-    {
+    void RenderNodeSelectorWindow() {
         bool showWindow = true;
         ImGui::Begin("Node Selector", &showWindow);
-        ImGui::Button("Movement Left");
+
+        // Create a row for each NodeActivation enum value
+        for (int i = 0; i < static_cast<int>(RobotActions::NodeActivation::COUNT); ++i) {
+            auto action = static_cast<RobotActions::NodeActivation>(i);
+            std::string label = RobotActions::toString(action).data();
+
+            // Display plus button, label, and minus button in a row
+            ImGui::Text("%s", label.c_str());
+            ImGui::SameLine();
+            if (ImGui::Button(("+##" + label).c_str())) {
+                // Create new node
+                Node newNode(label.c_str(), action);
+                int currentId = m_NextNodeId;
+                newNode.initializeNodeIds(currentId);
+                m_NextNodeId = currentId;
+                m_Nodes.push_back(newNode);
+
+                m_NextNodePosition.x += 50;
+                m_NextNodePosition.y += 50;
+            }
+            ImGui::SameLine();
+            if (ImGui::Button(("-##" + label).c_str())) {
+                // Find and remove the last node of this type
+                for (auto it = m_Nodes.rbegin(); it != m_Nodes.rend(); ++it) {
+                    if (it->getActivation() == action) {
+                        m_Nodes.erase((++it).base());
+                        break;
+                    }
+                }
+            }
+        }
         ImGui::End();
     }
 
-    void RenderSingleInstructionWindow()
-    {
+    void RenderSingleInstructionWindow() {
+        // Render the Single Instruction window with input fields
         bool showWindow = true;
         ImGui::Begin("Single instruction", &showWindow);
         ImGui::InputInt("X", &inputX);
@@ -94,23 +121,21 @@ private:
         ImGui::SliderAngle("Z Degrees", &inputZDegrees, -360, 360);
         ImGui::SliderInt("Grip Force", &gripforce, 0, 10);
 
-        if (ImGui::Button("Show values"))
-        {
+        if (ImGui::Button("Show values")) {
             textInput = "X = " + std::to_string(inputX) +
-                ", Y = " + std::to_string(inputY) +
-                ", Z = " + std::to_string(inputZ) +
-                " X Degrees = " + std::to_string(inputXDegrees) +
-                " Y Degrees = " + std::to_string(inputYDegrees) +
-                " Z Degrees = " + std::to_string(inputZDegrees);
+                        ", Y = " + std::to_string(inputY) +
+                        ", Z = " + std::to_string(inputZ) +
+                        " X Degrees = " + std::to_string(inputXDegrees) +
+                        " Y Degrees = " + std::to_string(inputYDegrees) +
+                        " Z Degrees = " + std::to_string(inputZDegrees);
         }
         ImGui::Text(textInput.c_str());
         ImGui::End();
     }
 
 
-    void CreateNodeInEditor(const char* nodeTitle, ed::NodeId nodeA_Id, ed::PinId nodeA_InputPinId,
-                            ed::PinId nodeA_OutputPinId)
-    {
+    void RenderNodesInEditor(const char *nodeTitle, ed::NodeId nodeA_Id, ed::PinId nodeA_InputPinId,
+                             ed::PinId nodeA_OutputPinId) {
         ed::BeginNode(nodeA_Id);
         ImGui::Text(nodeTitle);
         ed::BeginPin(nodeA_InputPinId, ed::PinKind::Input);
@@ -123,71 +148,68 @@ private:
         ed::EndNode();
     }
 
-    void RenderImGuiNodesEditor(ed::EditorContext* g_Context)
-    {
+    void RenderImGuiNodesEditor(ed::EditorContext *g_Context) {
         ImGui::Begin("Node Editor");
         ed::SetCurrentEditor(g_Context);
         ed::Begin("My Editor");
 
-        int uniqueId = 1;
-
-        // 1) Commit known data to editor
-        Node nodeA("Node A", RobotActions::NodeActivation::Action);
-        nodeA.initializeNodeIds(uniqueId);
-
-        if (m_FirstFrame)
-        {
-        ed::SetNodePosition(nodeA.getNodeId(), ImVec2(0, 0));
-
+        // Render all stored nodes
+        for (const auto &node: m_Nodes) {
+            RenderNodesInEditor(node.getTitle().c_str(), node.getNodeId(),
+                                node.getNodeInputPinId(), node.getNodeOutputPinId());
         }
-        CreateNodeInEditor(nodeA.getTitle(), nodeA.getNodeId(), nodeA.getNodeInputPinId(),
-                           nodeA.getNodeOutputPinId());
-
-        Node nodeB("Node B", RobotActions::NodeActivation::Action);
-        nodeB.initializeNodeIds(uniqueId);
-        if (m_FirstFrame)
-        {
-            ed::SetNodePosition(nodeB.getNodeId(), ImVec2(20, 20));
-        }
-        CreateNodeInEditor(nodeB.getTitle(), nodeB.getNodeId(), nodeB.getNodeInputPinId(),
-                           nodeB.getNodeOutputPinId());
-
         // Submit Links
         for (auto &linkInfo: m_Links) {
             ed::Link(linkInfo.Id, linkInfo.InputId, linkInfo.OutputId);
         }
 
-        // 2) Handle interactions
         // Handle creation action, returns true if editor want to create new object (node or link)
         if (ed::BeginCreate()) {
             ed::PinId inputPinId, outputPinId;
             if (ed::QueryNewLink(&inputPinId, &outputPinId)) {
-                // QueryNewLink returns true if editor want to create new link between pins.
-                //
-                // Link can be created only for two valid pins, it is up to you to
-                // validate if connection make sense. Editor is happy to make any.
-                //
-                // Link always goes from input to output. User may choose to drag
-                // link from output pin or input pin. This determine which pin ids
-                // are valid and which are not:
-                //   * input valid, output invalid - user started to drag new line from input pin
-                //   * input invalid, output valid - user started to drag new line from output pin
-                //   * input valid, output valid   - user dragged link over other pin, can be validated
+                if (inputPinId && outputPinId) {
+                    // Validate connection between pins
+                    // Can't connect input to input or output to output
+                    // Can't create self-loops
+                    bool validateLink = true;
 
-                if (inputPinId && outputPinId) // both are valid, let's accept link
-                {
-                    // ed::AcceptNewItem() return true when user release mouse button.
-                    if (ed::AcceptNewItem()) {
-                        // Since we accepted new link, lets add one to our list of links.
+                    // Find source and target nodes
+                    Node *sourceNode = nullptr;
+                    Node *targetNode = nullptr;
+                    for (auto &node: m_Nodes) {
+                        if (node.getNodeOutputPinId() == outputPinId ||
+                            node.getNodeInputPinId() == inputPinId) {
+                            sourceNode = &node;
+                        }
+                        if (node.getNodeInputPinId() == inputPinId ||
+                            node.getNodeOutputPinId() == outputPinId) {
+                            targetNode = &node;
+                        }
+                    }
+
+                    // Validate connection
+                    if (sourceNode && targetNode) {
+                        // Check for self-loops
+                        if (sourceNode == targetNode) {
+                            validateLink = false;
+                        }
+
+                        // Ensure input connects to output
+                        if (outputPinId == sourceNode->getNodeInputPinId() ||
+                            inputPinId == targetNode->getNodeOutputPinId()) {
+                            validateLink = false;
+                        }
+                    }
+
+                    if (validateLink && ed::AcceptNewItem()) {
+                        // Create new link
                         m_Links.push_back({ed::LinkId(m_NextLinkId++), inputPinId, outputPinId});
-
-                        // Draw new link.
                         ed::Link(m_Links.back().Id, m_Links.back().InputId, m_Links.back().OutputId);
                     }
                 }
             }
         }
-        ed::EndCreate(); // Wraps up object creation action handling.
+        ed::EndCreate();
 
 
         // Handle deletion action
@@ -209,9 +231,9 @@ private:
         }
         ed::EndDelete();
 
-
-        if (m_FirstFrame)
+        if (m_FirstFrame) {
             ed::NavigateToContent(0.0f);
+        }
 
         ed::End();
         ed::SetCurrentEditor(nullptr);
@@ -220,8 +242,7 @@ private:
     }
 
 public:
-    void CleanupImGui(ed::EditorContext* g_Context) override
-    {
+    void CleanupImGui(ed::EditorContext *g_Context) override {
         ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();

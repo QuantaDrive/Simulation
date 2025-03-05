@@ -10,7 +10,7 @@ Node::Node(const char* title, RobotActions::NodeActivation activation)
 {
 }
 
-const char* Node::getTitle() const
+ std::string Node::getTitle() const
 {
     return title_;
 }
