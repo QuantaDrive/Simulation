@@ -33,17 +33,19 @@ int main()
 
 	simulation::RobotArm* arm = new simulation::RobotArm( "src/Simulation/arms/Moveo/moveo.ini");
 
-	SimulationManager* mgr= new SimulationManager(repo,arm);
-	auto angles = mgr->inverseKinematics(testarm,new domain::Position({286.830,0,438.520},{180,0,180}));
-	for (auto angle:angles)
-	{
-		cout << angle << endl;
-	}
+	vector<float> angles = {45.0f,-35.0f,90.0f,50.0f};
+	// SimulationManager* mgr= new SimulationManager(repo,arm);
+	// angles = mgr->inverseKinematics(testarm,new domain::Position({0,0,0},{90,0,90}));
+	// for (auto angle:angles)
+	// {
+	// 	cout << angle << endl;
+	// }
 
 	arm->moveAngle(1, angles[0] /*45.0f*/, false, true);
 	arm->moveAngle(2, angles[1] /*-35.0f*/, false, true);
 	arm->moveAngle(3, angles[2] /*90.0f*/, false, true);
 	arm->moveAngle(5, angles[3] /*50.0f*/, false, true);
+
 	// Setup Node Editor
 	ed::Config config;
 	config.SettingsFile = "Simple.json";

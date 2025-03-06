@@ -119,7 +119,7 @@ vector<float> SimulationManager::inverseKinematics(domain::RobotArm* arm, domain
 {
     mat4 j6Matrix = toolToArm(position,arm->getTool());
     mat4 sphericalWrist = armToSphericalWrist(j6Matrix);
-    auto j1 = degrees(atan2(sphericalWrist[0][3],sphericalWrist[1][3]));
+    auto j1 = degrees(atan2(sphericalWrist[1][3],sphericalWrist[0][3]));
     vector<vector<float>> params = getParamsJ1Zero(sphericalWrist);
     auto dhParams = simulationArm_->getDhParameters();
     mat4 j1M = getDhTransformationMatrix(j1,dhParams[0][1],dhParams[0][2],dhParams[0][3]);
@@ -134,8 +134,20 @@ vector<float> SimulationManager::inverseKinematics(domain::RobotArm* arm, domain
                             j6Matrix[1][0],j6Matrix[1][1],j6Matrix[1][2],
                             j6Matrix[2][0],j6Matrix[2][1],j6Matrix[2][2]};
     mat3 j3Orientation = j6Rot * transpose(R03Sub);
-    float j5 = degrees(atan2(-sqrtf(1-powf(j3Orientation[2][2],2)),j3Orientation[2][2]));
-    float j4 = degrees(atan2(-j3Orientation[1][2],-j3Orientation[0][2]));
-    float j6 = degrees(atan2(-j3Orientation[2][1],j3Orientation[2][0]));
+    auto result = degrees(atan2(sqrtf(1-powf(j3Orientation[2][2],2)),j3Orientation[2][2]));
+    float j5 = 0;
+    float mode = degrees(atan2(sqrtf(1-powf(j3Orientation[2][2],2)),j3Orientation[2][2]));
+    mode>0 ? j5 = mode : j5 = degrees(atan2(-sqrtf(1-powf(j3Orientation[2][2],2)),j3Orientation[2][2]));
+    float j4,j6;
+    if (mode > 0)
+    {
+        j4 = degrees(atan2(j3Orientation[1][2],j3Orientation[0][2]));
+        j6 = degrees(atan2(j3Orientation[2][1],-j3Orientation[2][0]));
+    }
+    else
+    {
+        j4 = degrees(atan2(-j3Orientation[1][2],-j3Orientation[0][2]));
+        j6 = degrees(atan2(j3Orientation[2][1],-j3Orientation[2][0]));
+    }
     return {j1,params[3][0],params[3][1],j4,j5,j6};
 }
