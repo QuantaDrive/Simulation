@@ -27,7 +27,7 @@ class WindowManager : public IWindowManager {
 
     // Render Nodes Window
     ImVector<LinkInfo> m_Links;
-    std::vector<Node> m_Nodes;
+    std::vector<domain::Node> m_Nodes;
     bool m_FirstFrame = true;
     int m_NextLinkId = 100;
     ImVec2 m_NextNodePosition = ImVec2(0, 0);
@@ -67,7 +67,7 @@ class WindowManager : public IWindowManager {
 
                 // Button +
                 if (ImGui::Button(("+##" + label).c_str())) {
-                    Node newNode(label.c_str(), action);
+                    domain::Node newNode(label.c_str(), action);
                     int currentId = m_NextNodeId;
                     newNode.initializeNodeIds(currentId);
                     m_NextNodeId = currentId;
@@ -190,8 +190,8 @@ class WindowManager : public IWindowManager {
                 bool validateLink = true;
 
                 // Find source and target nodes
-                Node *sourceNode = nullptr;
-                Node *targetNode = nullptr;
+                domain::Node *sourceNode = nullptr;
+                domain::Node *targetNode = nullptr;
                 for (auto &node: m_Nodes) {
                     if (node.getNodeOutputPinId() == outputPinId ||
                         node.getNodeInputPinId() == inputPinId) {
@@ -245,7 +245,7 @@ class WindowManager : public IWindowManager {
 
 
 
-    void RenderNodesInEditor(Node& node) {
+    void RenderNodesInEditor(domain::Node& node) {
         ed::BeginNode(node.getNodeId());
         ImGui::Text(node.getTitle().c_str());
 
