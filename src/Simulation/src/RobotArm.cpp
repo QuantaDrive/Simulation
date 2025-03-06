@@ -26,8 +26,9 @@ void simulation::RobotArm::moveAngle(const int joint, float angle, const bool re
     this->jointPositions[joint] = std::fmod(this->jointPositions[joint], glm::two_pi<float>());
 }
 
-simulation::RobotArm::RobotArm(const std::string& definitionFile)
+simulation::RobotArm::RobotArm(const std::string& name, const std::string& definitionFile)
 {
+    name_=name;
     // get part directory from definitionFile
     std::string directory;
     if (const size_t pos = definitionFile.find_last_of('/'); pos != std::string::npos)
@@ -97,4 +98,9 @@ void simulation::RobotArm::render()
         glUniformMatrix4fv(MvpMatrixID, 1, GL_FALSE, &MVP[0][0]);
         mesh->renderBare();
     }
+}
+
+std::string simulation::RobotArm::getName() const
+{
+    return name_;
 }

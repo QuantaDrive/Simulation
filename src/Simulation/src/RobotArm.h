@@ -11,6 +11,7 @@
 
 namespace simulation{
     class RobotArm {
+        std::string name_;
         std::vector<Mesh*> joints;
         std::vector<float> jointPositions;
         std::vector<glm::vec3> jointOffsets;
@@ -20,10 +21,11 @@ namespace simulation{
     public:
         void moveAngle(int joint, float angle,
             bool relative = false, bool isDegree = false);
-        RobotArm(const std::string& definitionFile);
+        RobotArm(const std::string& name,const std::string& definitionFile);
         ~RobotArm();
         std::vector<glm::vec4> getDhParameters() const;
         void render();
+        [[nodiscard]] std::string getName() const;
     };
 } // simulation
 
