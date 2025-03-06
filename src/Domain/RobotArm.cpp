@@ -4,15 +4,20 @@
 
 #include "RobotArm.h"
 
-RobotArm::RobotArm(const string& name, const vector<Task*>& tasks, const Status status, Instruction* currPosition, const string& host, const string& type) :
+#include "Position.h"
+#include "../Domain/Instruction.h"
+#include "../Domain/Task.h"
+
+domain::RobotArm::RobotArm(const string& name, const vector<Task*>& tasks, const Status status, Position* currPosition, const string& host, const string& type, Tool* tool) :
 name_(name),
 tasks_(tasks),
 status_(status),
 currPosition_(currPosition),
 host_(host),
-type_(type){}
+type_(type),
+tool_(tool){}
 
-RobotArm::~RobotArm()
+domain::RobotArm::~RobotArm()
 {
     for (const auto t: tasks_)
     {
@@ -21,62 +26,72 @@ RobotArm::~RobotArm()
     delete currPosition_;
 }
 
-Status RobotArm::getStatus() const
+domain::Status domain::RobotArm::getStatus() const
 {
     return status_;
 }
 
-void RobotArm::setStatus(Status status)
+void domain::RobotArm::setStatus(Status status)
 {
     status_=status;
 }
 
-vector<Task*> RobotArm::getTasks() const
+vector<domain::Task*> domain::RobotArm::getTasks() const
 {
     return tasks_;
 }
 
-void RobotArm::setTasks(const vector<Task*>& tasks)
+void domain::RobotArm::setTasks(const vector<Task*>& tasks)
 {
     tasks_=tasks;
 }
 
-Instruction* RobotArm::getCurrPosition() const
+domain::Position* domain::RobotArm::getCurrPosition() const
 {
     return currPosition_;
 }
 
-void RobotArm::setCurrPosition(Instruction* currPosition)
+void domain::RobotArm::setCurrPosition(Position* currPosition)
 {
     currPosition_=currPosition;
 }
 
-string RobotArm::getHost() const
+string domain::RobotArm::getHost() const
 {
     return host_;
 }
 
-void RobotArm::setHost(const string& host)
+void domain::RobotArm::setHost(const string& host)
 {
     host_=host;
 }
 
-string RobotArm::getName() const
+string domain::RobotArm::getName() const
 {
     return name_;
 }
 
-void RobotArm::setName(const string& name)
+void domain::RobotArm::setName(const string& name)
 {
     name_=name;
 }
 
-string RobotArm::getType() const
+string domain::RobotArm::getType() const
 {
     return type_;
 }
 
-void RobotArm::setType(const string& type)
+void domain::RobotArm::setType(const string& type)
 {
     type_=type;
+}
+
+domain::Tool* domain::RobotArm::getTool() const
+{
+    return tool_;
+}
+
+void domain::RobotArm::setTool(Tool* tool)
+{
+    tool_=tool;
 }

@@ -14,32 +14,34 @@ namespace RobotActions
     enum class NodeActivation;
 }
 
+namespace domain
+{
+    class Node {
+        std::string title_;
+        RobotActions::NodeActivation activation_;
+        ed::NodeId nodeId_;
+        ed::PinId nodeInputPinId_;
+        ed::PinId nodeOutputPinId_;
+        int loopCount_ = 0;
+    public:
+        explicit Node(const char* title, RobotActions::NodeActivation activation);
 
-class Node {
-    std::string title_;
-    RobotActions::NodeActivation activation_;
-    ed::NodeId nodeId_;
-    ed::PinId nodeInputPinId_;
-    ed::PinId nodeOutputPinId_;
-    int loopCount_ = 0;
-public:
-    explicit Node(const char* title, RobotActions::NodeActivation activation);
+        [[nodiscard]] std::string getTitle() const;
 
-    [[nodiscard]] std::string getTitle() const;
+        [[nodiscard]] RobotActions::NodeActivation getActivation() const;
 
-    [[nodiscard]] RobotActions::NodeActivation getActivation() const;
+        [[nodiscard]] ed::NodeId getNodeId() const;
 
-    [[nodiscard]] ed::NodeId getNodeId() const;
+        [[nodiscard]] ed::PinId getNodeInputPinId() const;
 
-    [[nodiscard]] ed::PinId getNodeInputPinId() const;
+        [[nodiscard]] ed::PinId getNodeOutputPinId() const;
 
-    [[nodiscard]] ed::PinId getNodeOutputPinId() const;
+        void initializeNodeIds(int& nodeId);
 
-    void initializeNodeIds(int& nodeId);
+        void setLoopCount(int count);
 
-    void setLoopCount(int count);
-
-    [[nodiscard]] int getLoopCount() const;
-};
+        [[nodiscard]] int getLoopCount() const;
+    };
+}
 
 #endif //NODE_H

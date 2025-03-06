@@ -5,6 +5,8 @@
 #include "../Domain/NodeActivation.h"
 namespace ed = ax::NodeEditor;
 
+using namespace domain;
+
 struct LinkInfo {
     ed::LinkId Id;
     ed::PinId InputId;

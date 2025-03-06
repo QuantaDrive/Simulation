@@ -3,13 +3,14 @@
 //
 
 #include "Task.h"
+#include "Instruction.h"
 
-Task::Task(const tm& timestamp, const vector<Instruction*>& instructions) :
+domain::Task::Task(const tm& timestamp, const vector<Instruction*>& instructions) :
 timestamp_(timestamp),
 instructions_(instructions)
 {}
 
-Task::~Task()
+domain::Task::~Task()
 {
     for (const auto i : instructions_)
     {
@@ -17,22 +18,22 @@ Task::~Task()
     }
 }
 
-tm Task::getTimestamp() const
+tm domain::Task::getTimestamp() const
 {
     return timestamp_;
 }
 
-void Task::setTimestamp(const tm& timestamp)
+void domain::Task::setTimestamp(const tm& timestamp)
 {
     timestamp_=timestamp;
 }
 
-vector<Instruction*> Task::getPositions() const
+vector<domain::Instruction*> domain::Task::getInstructions() const
 {
     return instructions_;
 }
 
-void Task::setPositions(const vector<Instruction*>& instructions)
+void domain::Task::setInstructions(const vector<Instruction*>& instructions)
 {
     instructions_=instructions;
 }

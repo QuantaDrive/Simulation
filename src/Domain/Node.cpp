@@ -3,8 +3,9 @@
 //
 
 #include "Node.h"
-
 #include "NodeActivation.h"
+
+using namespace domain;
 
 Node::Node(const char* title, RobotActions::NodeActivation activation)
         : title_(title), activation_(activation)

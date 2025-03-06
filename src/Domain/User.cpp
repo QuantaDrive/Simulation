@@ -4,15 +4,15 @@
 
 #include "User.h"
 
-User::User(const string& name) :
+domain::User::User(const string& name) :
 name_(name){}
 
-string User::getName() const
+string domain::User::getName() const
 {
     return name_;
 }
 
-void User::setName(const string& name)
+void domain::User::setName(const string& name)
 {
     name_ = name;
 }
