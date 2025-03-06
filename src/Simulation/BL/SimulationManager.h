@@ -36,18 +36,17 @@ private:
 protected:
     mat4 getTransformationMatrix(vec3 position, vec3 rotation);
     mat4 getDhTransformationMatrix(float joint, float alpha, float d, float a);
-    void inverseToolFrame(mat4 &toolFrame);
     mat4 toolToArm(const domain::Position* position, const domain::Tool* tool);
-    mat4 armToSphericalWrist(mat4 j6);
+    mat4 armToSphericalWrist(const mat4& j6);
     vector<vector<float>> getParamsJ1Zero(mat4& sphericalWrist);
-    float findJ3(float j1, float j2);
+    vector<domain::Position*> interpolate(domain::Position* currentPosition, domain::Position* newPosition);
 public:
     explicit SimulationManager(Repo* repo, simulation::RobotArm* simulationArm);
     ~SimulationManager();
     void executeTask(const domain::Task* task);
-    bool move(domain::RobotArm* arm, domain::Position* position);
+    bool move(domain::Position* position);
 
-    vector<float> inverseKinematics(domain::RobotArm* arm, domain::Position* position);
+    vector<float> inverseKinematics(domain::Position* position);
 };
 
 
