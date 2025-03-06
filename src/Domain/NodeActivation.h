@@ -1,6 +1,7 @@
 // src/Domain/NodeActivation.h
 #ifndef NODEACTIVATION_H
 #define NODEACTIVATION_H
+#include <string_view>
 
 namespace RobotActions {
     enum class NodeActivation {
@@ -13,11 +14,14 @@ namespace RobotActions {
         Home,
         EnableMotors,
         DisableMotors,
-        Loop,
         Grip,
         Hold,
-        Action
+        Action,
+        LoopStart,
+        LoopEnd,
+        COUNT
     };
+    std::string_view toString(NodeActivation action);
 }
 
 #endif // NODEACTIVATION_H
