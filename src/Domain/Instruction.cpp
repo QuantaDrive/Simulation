@@ -27,3 +27,13 @@ void domain::Instruction::setGripForce(const float gripForce)
 {
     gripForce_=gripForce;
 }
+
+double domain::Instruction::getWait() const
+{
+    return wait_;
+}
+
+void domain::Instruction::setWait(double wait)
+{
+    wait_=wait;
+}

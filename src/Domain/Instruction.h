@@ -29,6 +29,10 @@ namespace domain
         [[nodiscard]] float getGripForce() const;
 
         void setGripForce(float gripForce);
+
+        [[nodiscard]] double getWait() const;
+
+        void setWait(double wait);
     };
 }
 
