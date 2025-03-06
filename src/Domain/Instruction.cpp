@@ -1,5 +1,7 @@
 #include "Instruction.h"
 
+#include <stdexcept>
+
 domain::Instruction::Instruction(Position* position, const float gripForce, const double wait) :
 position_(position),
 gripForce_(gripForce),
@@ -25,7 +27,7 @@ float domain::Instruction::getGripForce() const
 
 void domain::Instruction::setGripForce(const float gripForce)
 {
-    gripForce_=gripForce;
+    gripForce<0 ? throw invalid_argument("grip can't be negative") : gripForce_=gripForce;
 }
 
 double domain::Instruction::getWait() const
@@ -35,5 +37,5 @@ double domain::Instruction::getWait() const
 
 void domain::Instruction::setWait(double wait)
 {
-    wait_=wait;
+    wait<0 ? throw invalid_argument("wait can't be negative") : wait_=wait;
 }
