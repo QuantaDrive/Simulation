@@ -4,6 +4,8 @@
 
 #include "User.h"
 
+#include <stdexcept>
+
 domain::User::User(const string& name) :
 name_(name){}
 
@@ -14,5 +16,5 @@ string domain::User::getName() const
 
 void domain::User::setName(const string& name)
 {
-    name_ = name;
+    name.empty() ? throw invalid_argument("username can't be empty") : name_ = name;
 }

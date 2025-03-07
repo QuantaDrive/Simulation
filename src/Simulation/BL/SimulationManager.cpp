@@ -5,6 +5,7 @@
 #include "SimulationManager.h"
 
 #include <iostream>
+#include <unistd.h>
 
 #include "../../Domain/RobotArm.h"
 #include "../../Domain/Instruction.h"
@@ -16,7 +17,6 @@
 #include "../../Domain/Position.h"
 #include "../src/RobotArm.h"
 
-
 SimulationManager::SimulationManager(Repo* repo, simulation::RobotArm* simulationArm):
 repo_(repo),
 simulationArm_(simulationArm){}
@@ -27,19 +27,61 @@ SimulationManager::~SimulationManager()
     delete simulationArm_;
 }
 
+//
+// Movements
+//
+
+void SimulationManager::executeInstruction(const domain::Instruction* instruction)
+{
+    const auto arm = repo_->readArm(simulationArm_->getName());
+    const auto currentPosition = arm->getCurrPosition();
+    if (instruction->getWait()>0) sleep(instruction->getWait());
+    else if (instruction->getGripForce()>0) grip(instruction->getGripForce());
+    else if (instruction->isGoHome()) move(new domain::Position({0,0,0},{0,0,0}));
+    else if (instruction->isRelative()) move(new domain::Position({currentPosition->getCoords()[0]+instruction->getRelMove()[0], currentPosition->getCoords()[1]+instruction->getRelMove()[1], currentPosition->getCoords()[2]+instruction->getRelMove()[2]},currentPosition->getRotation()));
+    else move(instruction->getPosition());
+}
+
 void SimulationManager::executeTask(const domain::Task* task)
 {
-    for (const auto p : task->getInstructions())
+    for (const auto i : task->getInstructions())
     {
-        //move(p);
+        executeInstruction(i);
     }
 }
 
-bool SimulationManager::move(domain::RobotArm* arm, domain::Position* position)
+vector<domain::Position*> SimulationManager::interpolate(const domain::Position* currentPosition, domain::Position* newPosition)
 {
+    auto currP = currentPosition->getCoords();
+    auto newP = newPosition->getCoords();
+    float d = sqrtf(powf(currP[0] - newP[0],2)+powf(currP[1]-newP[1],2)+powf(currP[2]-newP[2],2));
+    vector<domain::Position*> interpolpoints = {};
+    for (int i = 1; i<static_cast<int>(round(d));i++)
+    {
+        float x = currP[0] + static_cast<float>(i)/d*(newP[0]-currP[0]);
+        float y = currP[1] + static_cast<float>(i)/d*(newP[1]-currP[1]);
+        float z = currP[2] + static_cast<float>(i)/d*(newP[2]-currP[2]);
+        interpolpoints.emplace_back(new domain::Position({x,y,z},currentPosition->getRotation()));
+    }
+    return interpolpoints;
+}
+
+bool SimulationManager::move(domain::Position* position)
+{
+    auto arm = repo_->readArm(simulationArm_->getName());
     if (arm->getStatus() == domain::READY)
     {
         arm->setStatus(domain::BUSY);
+        auto interpolPos = interpolate(arm->getCurrPosition(),position);
+        for (auto pos:interpolPos)
+        {
+            auto angles = inverseKinematics(pos);
+            for (int i = 0; i < angles.size();i++)
+            {
+                simulationArm_->moveAngle(i+1,angles[i],false,true);
+            }
+            usleep(10000);
+        }
         arm->setCurrPosition(position);
         return true;
     }
@@ -54,11 +96,20 @@ bool SimulationManager::move(domain::RobotArm* arm, domain::Position* position)
     return false;
 }
 
+void SimulationManager::grip(float gripForce)
+{
+    cout << "gripped with force: " << gripForce << endl;
+}
+
+//
+// Inverse Kinematics
+//
+
 mat4 SimulationManager::getTransformationMatrix(vec3 position, vec3 rotation)
 {
-    float Rx=radians(rotation[0]);
-    float Ry=radians(rotation[1]);
-    float Rz=radians(rotation[2]);
+    const float Rx=radians(rotation[0]);
+    const float Ry=radians(rotation[1]);
+    const float Rz=radians(rotation[2]);
     auto matrix = mat4(cos(Rx)*cos(Ry), cos(Rx)*sin(Ry)*sin(Rz)-sin(Rx)*cos(Rz), cos(Rx)*sin(Ry)*cos(Rz)+sin(Rx)*sin(Rz), position[0],
                                 sin(Rx)*cos(Ry), sin(Rx)*sin(Ry)*sin(Rz)+cos(Rx)*cos(Rz), sin(Rx)*sin(Ry)*cos(Rz)-cos(Rx)*sin(Rz), position[1],
                                 -sin(Ry), cos(Ry)*sin(Rz), cos(Ry)*cos(Rz), position[2],
@@ -66,7 +117,7 @@ mat4 SimulationManager::getTransformationMatrix(vec3 position, vec3 rotation)
     return matrix;
 }
 
-mat4 SimulationManager::getDhTransformationMatrix(float joint, float alpha, float d, float a)
+mat4 SimulationManager::getDhTransformationMatrix(float joint, float alpha, float d, const float a)
 {
     joint = radians(joint);
     alpha = radians(alpha);
@@ -74,12 +125,6 @@ mat4 SimulationManager::getDhTransformationMatrix(float joint, float alpha, floa
             sin(joint), cos(joint)*cos(alpha), -cos(joint)*sin(alpha), a*sin(joint),
             0, sin(alpha), cos(alpha), d,
             0, 0, 0, 1};
-}
-
-
-void SimulationManager::inverseToolFrame(mat4& toolFrame)
-{
-    toolFrame = inverse(toolFrame);
 }
 
 mat4 SimulationManager::toolToArm(const domain::Position* position, const domain::Tool* tool)
@@ -90,7 +135,7 @@ mat4 SimulationManager::toolToArm(const domain::Position* position, const domain
     return getTransformationMatrix(position->getCoords(),position->getRotation())*toolFrame;
 }
 
-mat4 SimulationManager::armToSphericalWrist(mat4 j6)
+mat4 SimulationManager::armToSphericalWrist(const mat4& j6)
 {
     mat4 negate = {1,0,0,0,0,1,0,0,0,0,1,-simulationArm_->getDhParameters()[5][2],0,0,0,1};
     return negate*j6;
@@ -115,8 +160,9 @@ vector<vector<float>> SimulationManager::getParamsJ1Zero(mat4& sphericalWrist)
 }
 
 
-vector<float> SimulationManager::inverseKinematics(domain::RobotArm* arm, domain::Position* position)
+vector<float> SimulationManager::inverseKinematics(domain::Position* position)
 {
+    auto arm = repo_->readArm(simulationArm_->getName());
     mat4 j6Matrix = toolToArm(position,arm->getTool());
     mat4 sphericalWrist = armToSphericalWrist(j6Matrix);
     auto j1 = degrees(atan2(sphericalWrist[1][3],sphericalWrist[0][3]));

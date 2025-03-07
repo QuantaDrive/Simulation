@@ -31,7 +31,7 @@ int main()
 
 	simulation::setBackgroundColor(0.86f, 0.86f, 0.86f);
 
-	simulation::RobotArm* arm = new simulation::RobotArm( "src/Simulation/arms/Moveo/moveo.ini");
+	simulation::RobotArm* arm = new simulation::RobotArm("arm1", "src/Simulation/arms/Moveo/moveo.ini");
 
 	vector<float> angles = {45.0f,-35.0f,90.0f,50.0f};
 	// SimulationManager* mgr= new SimulationManager(repo,arm);

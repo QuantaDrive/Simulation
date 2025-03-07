@@ -4,6 +4,8 @@
 
 #include "RobotArm.h"
 
+#include <stdexcept>
+
 #include "Position.h"
 #include "../Domain/Instruction.h"
 #include "../Domain/Task.h"
@@ -73,7 +75,7 @@ string domain::RobotArm::getName() const
 
 void domain::RobotArm::setName(const string& name)
 {
-    name_=name;
+    name.empty() ? throw invalid_argument("name can't be empty") : name_=name;
 }
 
 string domain::RobotArm::getType() const
@@ -83,7 +85,7 @@ string domain::RobotArm::getType() const
 
 void domain::RobotArm::setType(const string& type)
 {
-    type_=type;
+    type.empty() ? throw invalid_argument("type can't be empty") : type_=type;
 }
 
 domain::Tool* domain::RobotArm::getTool() const
