@@ -15,10 +15,13 @@ namespace domain
     private:
         Position* position_;
         float gripForce_;
-        double wait_;
+        int wait_;
+        bool goHome_;
+        bool relative_;
+        vec3 relMove_;
 
     public:
-        Instruction(Position* position, float gripForce, double wait);
+        Instruction(Position* position, float gripForce, int wait, bool goHome, bool relative, const vec3& relMove);
 
         ~Instruction();
 
@@ -30,9 +33,21 @@ namespace domain
 
         void setGripForce(float gripForce);
 
-        [[nodiscard]] double getWait() const;
+        [[nodiscard]] int getWait() const;
 
-        void setWait(double wait);
+        void setWait(int wait);
+
+        [[nodiscard]] bool isGoHome() const;
+
+        void setGoHome(bool goHome);
+
+        [[nodiscard]] bool isRelative() const;
+
+        void setRelative(bool relative);
+
+        [[nodiscard]] vec3 getRelMove() const;
+
+        void setRelMove(vec3 relMove);
     };
 }
 

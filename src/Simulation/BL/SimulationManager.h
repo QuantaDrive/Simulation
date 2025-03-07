@@ -21,6 +21,7 @@ using namespace std;
 
 namespace domain
 {
+    class Instruction;
     class RobotArm;
     class Task;
     class Position;
@@ -39,12 +40,14 @@ protected:
     mat4 toolToArm(const domain::Position* position, const domain::Tool* tool);
     mat4 armToSphericalWrist(const mat4& j6);
     vector<vector<float>> getParamsJ1Zero(mat4& sphericalWrist);
-    vector<domain::Position*> interpolate(domain::Position* currentPosition, domain::Position* newPosition);
+    vector<domain::Position*> interpolate(const domain::Position* currentPosition, domain::Position* newPosition);
 public:
     explicit SimulationManager(Repo* repo, simulation::RobotArm* simulationArm);
     ~SimulationManager();
     void executeTask(const domain::Task* task);
+    void executeInstruction(const domain::Instruction* instruction);
     bool move(domain::Position* position);
+    void grip(float gripForce);
 
     vector<float> inverseKinematics(domain::Position* position);
 };

@@ -5,12 +5,14 @@
 #include "SimulationManager.h"
 
 #include <iostream>
+#include <unistd.h>
 
 #include "../../Domain/RobotArm.h"
 #include "../../Domain/Instruction.h"
 #include "../../Domain/Task.h"
 #include "../../Domain/Tool.h"
 #include "../../DAL/Repo.h"
+#include "../../Domain/Instruction.h"
 #include "../../Domain/Instruction.h"
 #include "../../Domain/Position.h"
 #include "../src/RobotArm.h"
@@ -25,16 +27,30 @@ SimulationManager::~SimulationManager()
     delete simulationArm_;
 }
 
+//
+// Movements
+//
+
+void SimulationManager::executeInstruction(const domain::Instruction* instruction)
+{
+    const auto arm = repo_->readArm(simulationArm_->getName());
+    const auto currentPosition = arm->getCurrPosition();
+    if (instruction->getWait()>0) sleep(instruction->getWait());
+    else if (instruction->getGripForce()>0) grip(instruction->getGripForce());
+    else if (instruction->isGoHome()) move(new domain::Position({0,0,0},{0,0,0}));
+    else if (instruction->isRelative()) move(new domain::Position({currentPosition->getCoords()[0]+instruction->getRelMove()[0], currentPosition->getCoords()[1]+instruction->getRelMove()[1], currentPosition->getCoords()[2]+instruction->getRelMove()[2]},currentPosition->getRotation()));
+    else move(instruction->getPosition());
+}
+
 void SimulationManager::executeTask(const domain::Task* task)
 {
-    for (const auto p : task->getInstructions())
+    for (const auto i : task->getInstructions())
     {
-        if (p.)
-        //move(p);
+        executeInstruction(i);
     }
 }
 
-vector<domain::Position*> SimulationManager::interpolate(domain::Position* currentPosition, domain::Position* newPosition)
+vector<domain::Position*> SimulationManager::interpolate(const domain::Position* currentPosition, domain::Position* newPosition)
 {
     auto currP = currentPosition->getCoords();
     auto newP = newPosition->getCoords();
@@ -64,6 +80,7 @@ bool SimulationManager::move(domain::Position* position)
             {
                 simulationArm_->moveAngle(i+1,angles[i],false,true);
             }
+            usleep(10000);
         }
         arm->setCurrPosition(position);
         return true;
@@ -78,6 +95,15 @@ bool SimulationManager::move(domain::Position* position)
     }
     return false;
 }
+
+void SimulationManager::grip(float gripForce)
+{
+    cout << "gripped with force: " << gripForce << endl;
+}
+
+//
+// Inverse Kinematics
+//
 
 mat4 SimulationManager::getTransformationMatrix(vec3 position, vec3 rotation)
 {
