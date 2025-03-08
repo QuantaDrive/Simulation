@@ -92,6 +92,8 @@ add_executable(
         src/Domain/Node.h
         src/Domain/NodeActivation.cpp
         src/Domain/NodeActivation.h
+        src/BL/IManager.cpp
+        src/BL/IManager.h
 )
 
 ### ImGui Node Editor ###
