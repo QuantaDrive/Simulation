@@ -12,7 +12,7 @@
 
 namespace ed = ax::NodeEditor;
 ed::EditorContext *g_Context = nullptr;
-WindowManager windowManager = WindowManager();
+// WindowManager windowManager = WindowManager();
 
 int main()
 {
@@ -34,7 +34,7 @@ int main()
 	simulation::RobotArm* arm = new simulation::RobotArm("arm1", "src/Simulation/arms/Moveo/moveo.ini");
 
 	vector<float> angles = {45.0f,-35.0f,90.0f,50.0f};
-	// SimulationManager* mgr= new SimulationManager(repo,arm);
+	SimulationManager* simulationManager= new SimulationManager(repo,arm);
 	// angles = mgr->inverseKinematics(testarm,new domain::Position({0,0,0},{90,0,90}));
 	// for (auto angle:angles)
 	// {
@@ -52,6 +52,7 @@ int main()
 	g_Context = ed::CreateEditor(&config);
 
 	// Setup ImGui
+	WindowManager windowManager = WindowManager(simulationManager);
 	windowManager.SetupImGui(simulation::window);
 	do
 	{

@@ -58,3 +58,12 @@ int Node::getLoopCount() const {
     }
     return 0;
 }
+
+void Node::setRelativeMove(float x, float y, float z) {
+    relativeMove_ = {x, y, z};
+}
+
+glm::vec3 Node::getRelativeMove() const {
+    return relativeMove_;
+}
+

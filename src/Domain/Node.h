@@ -4,9 +4,13 @@
 
 #ifndef NODE_H
 #define NODE_H
+#include <array>
+
 #include "imgui_node_editor.h"
 #include <atomic>
 #include <string>
+#include <glm/detail/type_vec.hpp>
+#include <glm/detail/type_vec3.hpp>
 
 namespace ed = ax::NodeEditor;
 namespace RobotActions
@@ -23,6 +27,7 @@ namespace domain
         ed::PinId nodeInputPinId_;
         ed::PinId nodeOutputPinId_;
         int loopCount_ = 0;
+        glm::vec3 relativeMove_;
     public:
         explicit Node(const char* title, RobotActions::NodeActivation activation);
 
@@ -41,6 +46,10 @@ namespace domain
         void setLoopCount(int count);
 
         [[nodiscard]] int getLoopCount() const;
+
+        void setRelativeMove(float x, float y, float z);
+
+        [[nodiscard]] glm::vec3 getRelativeMove() const;
     };
 }
 

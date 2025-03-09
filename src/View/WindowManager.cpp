@@ -3,6 +3,7 @@
 
 #include "../Domain/Node.h"
 #include "../Domain/NodeActivation.h"
+#include "../Domain/Instruction.h"
 namespace ed = ax::NodeEditor;
 
 using namespace domain;
@@ -12,6 +13,7 @@ struct LinkInfo {
     ed::PinId InputId;
     ed::PinId OutputId;
 };
+
 
 class WindowManager : public IWindowManager {
     GLFWwindow *window = nullptr;
@@ -37,6 +39,9 @@ class WindowManager : public IWindowManager {
     bool m_ShowNodeSelector = true;
     bool m_ShowSingleInstruction = true;
     bool m_ShowNodeEditor = true;
+    //Simulationmanager
+    SimulationManager *localSimulationManager;
+
 
     void RenderNodeSelectorWindow() {
         ImGui::Begin("Node Selector", &m_ShowNodeSelector, ImGuiWindowFlags_MenuBar);
@@ -85,7 +90,6 @@ class WindowManager : public IWindowManager {
                     float randomYNumber = (rand() % 100) - 30;
                     m_NextNodePosition.x += randomXNumber;
                     m_NextNodePosition.y += randomYNumber;
-
                 }
                 ImGui::SameLine();
                 //Button -
@@ -104,7 +108,7 @@ class WindowManager : public IWindowManager {
     }
 
     void RenderSingleInstructionWindow() {
-        ImGui::Begin("Single instruction", &m_ShowSingleInstruction, ImGuiWindowFlags_MenuBar);
+        ImGui::Begin("Position Window", &m_ShowSingleInstruction, ImGuiWindowFlags_MenuBar);
 
         // Add minimize/maximize in the menu bar
         if (ImGui::BeginMenuBar()) {
@@ -121,16 +125,12 @@ class WindowManager : public IWindowManager {
             ImGui::SliderAngle("Z Degrees", &inputZDegrees, -360, 360);
             ImGui::SliderInt("Grip Force", &gripforce, 0, 10);
 
-            if (ImGui::Button("Show values")) {
-                textInput = "X = " + std::to_string(inputX) +
-                            ", Y = " + std::to_string(inputY) +
-                            ", Z = " + std::to_string(inputZ) +
-                            " X Degrees = " + std::to_string(inputXDegrees) +
-                            " Y Degrees = " + std::to_string(inputYDegrees) +
-                            " Z Degrees = " + std::to_string(inputZDegrees);
+            if (ImGui::Button("Send instructions")) {
+                ExecuteNodeChain();
             }
             ImGui::Text(textInput.c_str());
         }
+
         ImGui::End();
     }
 
@@ -243,13 +243,33 @@ class WindowManager : public IWindowManager {
     }
 
 
-
-
-    void RenderNodesInEditor(domain::Node& node) {
+    void RenderNodesInEditor(domain::Node &node) {
         ed::BeginNode(node.getNodeId());
         ImGui::Text(node.getTitle().c_str());
 
-        if (node.getActivation() == RobotActions::NodeActivation::LoopStart) {
+        // Add relative movement controls for Relative nodes
+        if (node.getActivation() == RobotActions::NodeActivation::Relative) {
+            ImGui::PushItemWidth(100);
+
+            // Get current relative move values
+            glm::vec3 relMove = node.getRelativeMove();
+            float x = relMove.x;
+            float y = relMove.y;
+            float z = relMove.z;
+
+            // Create sliders for X, Y, Z
+            bool changed = false;
+            changed |= ImGui::SliderFloat("X", &x, -10.0f, 10.0f);
+            changed |= ImGui::SliderFloat("Y", &y, -10.0f, 10.0f);
+            changed |= ImGui::SliderFloat("Z", &z, -10.0f, 10.0f);
+
+            // Update values if changed
+            if (changed) {
+                node.setRelativeMove(x, y, z);
+            }
+
+            ImGui::PopItemWidth();
+        } else if (node.getActivation() == RobotActions::NodeActivation::LoopStart) {
             ImGui::PushItemWidth(100);
             ImGui::Text("# loops");
             int loopCount = node.getLoopCount();
@@ -257,7 +277,6 @@ class WindowManager : public IWindowManager {
             ImGui::PopItemWidth();
             node.setLoopCount(loopCount);
         }
-
         ed::BeginPin(node.getNodeInputPinId(), ed::PinKind::Input);
         ImGui::Text("-> In");
         ed::EndPin();
@@ -268,7 +287,106 @@ class WindowManager : public IWindowManager {
         ed::EndNode();
     }
 
+
+    const domain::Node *FindStartNode() const {
+        // If there's only one node and no links, consider it the start node
+        if (m_Nodes.size() == 1 && m_Links.empty()) {
+            return &m_Nodes[0];
+        }
+
+        // Otherwise, find a node that only has output connections
+        for (const auto &node: m_Nodes) {
+            if (IsStartNode(node)) {
+                std::cout << "Starting node: " << node.getTitle() << std::endl;
+                return &node;
+            }
+        }
+        return nullptr;
+    }
+
+    bool IsStartNode(const domain::Node &node) const {
+        // If there are no links at all a single node is considered the start node
+        if (m_Links.empty()) {
+            return true;
+        }
+        // Otherwise, node should have no input connections but have output connections
+        return !HasInputConnection(node) && HasOutputConnection(node);
+    }
+
+    bool HasInputConnection(const domain::Node &node) const {
+        for (const auto &link: m_Links) {
+            if (link.OutputId == node.getNodeInputPinId()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    bool HasOutputConnection(const domain::Node &node) const {
+        for (const auto &link: m_Links) {
+            if (link.InputId == node.getNodeOutputPinId()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    const domain::Node *FindNextNode(const domain::Node *currentNode) const {
+        for (const auto &link: m_Links) {
+            if (link.InputId == currentNode->getNodeOutputPinId()) {
+                for (const auto &node: m_Nodes) {
+                    if (link.OutputId == node.getNodeInputPinId()) {
+                        return &node;
+                    }
+                }
+            }
+        }
+        return nullptr;
+    }
+
+    void ExecuteNodeChain() {
+        const domain::Node *startNode = FindStartNode();
+        if (!startNode) {
+            std::cout << "No starting node found!" << std::endl;
+            return;
+        }
+
+        const domain::Node *currentNode = startNode;
+        while (currentNode) {
+            ExecuteNode(*currentNode);
+            currentNode = FindNextNode(currentNode);
+        }
+    }
+
+    void ExecuteNode(const domain::Node &node) {
+        if (!localSimulationManager) return;
+
+        switch (node.getActivation()) {
+            case RobotActions::NodeActivation::Relative: {
+                // Create an instruction with the relative movement values
+                auto *instruction = new domain::Instruction();
+                instruction->setRelative(true);
+                instruction->setRelMove(node.getRelativeMove());
+                // Execute the instruction using SimulationManager
+                localSimulationManager->executeInstruction(instruction);
+
+                // Cleanup
+                delete instruction;
+                break;
+            }
+            default: ;
+        }
+    }
+
 public:
+    WindowManager() {
+    }
+
+    explicit WindowManager(SimulationManager *simulationManager) {
+        localSimulationManager = simulationManager;
+    }
+
+
     void SetupImGui(GLFWwindow *existingWindow) override {
         window = existingWindow;
 
@@ -316,7 +434,6 @@ public:
         if (m_ShowNodeEditor) {
             RenderImGuiNodesEditorWindow(g_Context);
         }
-
         // Render the final ImGui frame
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

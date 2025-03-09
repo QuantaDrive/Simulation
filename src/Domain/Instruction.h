@@ -23,6 +23,8 @@ namespace domain
     public:
         Instruction(Position* position, float gripForce, int wait, bool goHome, bool relative, const vec3& relMove);
 
+        Instruction() = default;
+
         ~Instruction();
 
         [[nodiscard]] Position* getPosition() const;
