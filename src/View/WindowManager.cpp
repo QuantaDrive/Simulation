@@ -1,5 +1,4 @@
 #include "IWindowManager.h"
-#include <bits/algorithmfwd.h>
 
 #include "../Domain/Node.h"
 #include "../Domain/NodeActivation.h"
@@ -286,9 +285,9 @@ class WindowManager : public IWindowManager {
 
             // Create sliders for X, Y, Z
             bool changed = false;
-            changed |= ImGui::SliderFloat("X", &x, -200.0f, 200.0f);
-            changed |= ImGui::SliderFloat("Y", &y, -200.0f, 200.0f);
-            changed |= ImGui::SliderFloat("Z", &z, -200.0f, 200.0f);
+            changed |= ImGui::SliderFloat("X", &x, -400.0f, 800.0f);
+            changed |= ImGui::SliderFloat("Y", &y, -400.0f, 800.0f);
+            changed |= ImGui::SliderFloat("Z", &z, -400.0f, 800.0f);
 
             // Update values if changed
             if (changed) {

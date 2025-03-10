@@ -3,6 +3,7 @@
 //
 
 #include "Tool.h"
+#include "../Domain/Position.h"
 
 domain::Tool::Tool(const string& name, domain::Position* position) :
 name_(name),

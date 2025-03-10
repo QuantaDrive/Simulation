@@ -12,8 +12,6 @@
 #include "../../Domain/Task.h"
 #include "../../Domain/Tool.h"
 #include "../../DAL/Repo.h"
-#include "../../Domain/Instruction.h"
-#include "../../Domain/Instruction.h"
 #include "../../Domain/Position.h"
 #include "../src/RobotArm.h"
 
@@ -25,6 +23,7 @@ SimulationManager::SimulationManager(Repo *repo, simulation::RobotArm *simulatio
 SimulationManager::~SimulationManager() {
     delete repo_;
     delete simulationArm_;
+    delete robotArm_;
 }
 
 //
@@ -89,6 +88,11 @@ bool SimulationManager::move(domain::Position *position) {
     // auto arm = repo_->readArm(simulationArm_->getName());
     if (robotArm_->getStatus() == domain::READY) {
         robotArm_->setStatus(domain::BUSY);
+        auto anglestest = inverseKinematics(position);
+        for (auto angle:anglestest)
+        {
+            cout << angle << endl;
+        }
         auto interpolPos = interpolate(robotArm_->getCurrPosition(), position);
         for (auto pos: interpolPos) {
             auto angles = inverseKinematics(pos);
@@ -98,6 +102,7 @@ bool SimulationManager::move(domain::Position *position) {
             usleep(5000);
             simulation::refresh();
             simulationArm_->render();
+            delete pos;
         }
         robotArm_->setCurrPosition(position);
         robotArm_->setStatus(domain::READY);

@@ -5,6 +5,7 @@
 #ifndef SIMULATIONMANAGER_H
 #define SIMULATIONMANAGER_H
 
+#include <memory>
 #include <glm/glm.hpp>
 #include <vector>
 

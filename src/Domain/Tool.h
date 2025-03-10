@@ -17,15 +17,15 @@ namespace domain
     class Tool {
     private:
         string name_;
-        Position* position_;
+        domain::Position* position_;
     public:
-        Tool(const string& name, Position* position);
+        Tool(const string& name, domain::Position* position);
         ~Tool() = default;
 
         [[nodiscard]] string getName() const;
         void setName(const string& name);
-        [[nodiscard]] Position* getPosition() const;
-        void setPosition(Position* position);
+        [[nodiscard]] domain::Position* getPosition() const;
+        void setPosition(domain::Position* position);
     };
 }
 
