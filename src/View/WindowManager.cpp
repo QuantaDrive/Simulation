@@ -18,12 +18,6 @@ struct LinkInfo {
 class WindowManager : public IWindowManager {
     GLFWwindow *window = nullptr;
     // Single instruction Window
-    int inputX = 0;
-    int inputY = 0;
-    int inputZ = 0;
-    float inputXDegrees = 0;
-    float inputYDegrees = 0;
-    float inputZDegrees = 0;
     int gripforce = 0;
     std::string textInput;
 
@@ -117,12 +111,12 @@ class WindowManager : public IWindowManager {
 
         // Only show content if window is not collapsed
         if (!ImGui::IsWindowCollapsed()) {
-            ImGui::InputInt("X", &inputX);
-            ImGui::InputInt("Y", &inputY);
-            ImGui::InputInt("Z", &inputZ);
-            ImGui::SliderAngle("X Degrees", &inputXDegrees, -360, 360);
-            ImGui::SliderAngle("Y Degrees", &inputYDegrees, -360, 360);
-            ImGui::SliderAngle("Z Degrees", &inputZDegrees, -360, 360);
+            // ImGui::InputInt("X", &inputX);
+            // ImGui::InputInt("Y", &inputY);
+            // ImGui::InputInt("Z", &inputZ);
+            // ImGui::SliderAngle("X Degrees", &inputXDegrees, -360, 360);
+            // ImGui::SliderAngle("Y Degrees", &inputYDegrees, -360, 360);
+            // ImGui::SliderAngle("Z Degrees", &inputZDegrees, -360, 360);
             ImGui::SliderInt("Grip Force", &gripforce, 0, 10);
 
             if (ImGui::Button("Send instructions")) {
@@ -259,9 +253,9 @@ class WindowManager : public IWindowManager {
 
             // Create sliders for X, Y, Z
             bool changed = false;
-            changed |= ImGui::SliderFloat("X", &x, -10.0f, 10.0f);
-            changed |= ImGui::SliderFloat("Y", &y, -10.0f, 10.0f);
-            changed |= ImGui::SliderFloat("Z", &z, -10.0f, 10.0f);
+            changed |= ImGui::SliderFloat("X", &x, -200.0f, 200.0f);
+            changed |= ImGui::SliderFloat("Y", &y, -200.0f, 200.0f);
+            changed |= ImGui::SliderFloat("Z", &z, -200.0f, 200.0f);
 
             // Update values if changed
             if (changed) {
@@ -269,13 +263,40 @@ class WindowManager : public IWindowManager {
             }
 
             ImGui::PopItemWidth();
-        } else if (node.getActivation() == RobotActions::NodeActivation::LoopStart) {
+        }
+        else if (node.getActivation() == RobotActions::NodeActivation::LoopStart) {
             ImGui::PushItemWidth(100);
             ImGui::Text("# loops");
             int loopCount = node.getLoopCount();
             ImGui::InputInt("", &loopCount);
             ImGui::PopItemWidth();
             node.setLoopCount(loopCount);
+        }
+        else if(node.getActivation() == RobotActions::NodeActivation::Absolute){
+            ImGui::PushItemWidth(100);
+
+            // Get current relative move values
+            glm::vec3 absMove = node.getAbsolutePosition()->getCoords();
+            float x = absMove.x;
+            float y = absMove.y;
+            float z = absMove.z;
+
+            auto idTitle = "absolute_move" + m_NextNodeId;
+            ImGui::PushID(idTitle);
+
+            // Create sliders for X, Y, Z
+            bool changed = false;
+            changed |= ImGui::SliderFloat("X", &x, -200.0f, 200.0f);
+            changed |= ImGui::SliderFloat("Y", &y, -200.0f, 200.0f);
+            changed |= ImGui::SliderFloat("Z", &z, -200.0f, 200.0f);
+
+            // Update values if changed
+            if (changed) {
+                auto* position = new domain::Position(vec3(x, y, z), vec3(0, 0, 0));
+                node.setAbsolutePosition(position);
+            }
+            ImGui::PopID();
+            ImGui::PopItemWidth();
         }
         ed::BeginPin(node.getNodeInputPinId(), ed::PinKind::Input);
         ImGui::Text("-> In");
@@ -371,6 +392,14 @@ class WindowManager : public IWindowManager {
                 localSimulationManager->executeInstruction(instruction);
 
                 // Cleanup
+                delete instruction;
+                break;
+            }
+            case (RobotActions::NodeActivation::Absolute): {
+                auto *instruction = new Instruction();
+                instruction->setRelative(false);
+                instruction->setPosition(node.getAbsolutePosition());
+                localSimulationManager->executeInstruction(instruction);
                 delete instruction;
                 break;
             }

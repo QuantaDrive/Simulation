@@ -9,8 +9,11 @@
 #include "imgui_node_editor.h"
 #include <atomic>
 #include <string>
+#include <vector>
 #include <glm/detail/type_vec.hpp>
 #include <glm/detail/type_vec3.hpp>
+
+#include "Position.h"
 
 namespace ed = ax::NodeEditor;
 namespace RobotActions
@@ -20,6 +23,8 @@ namespace RobotActions
 
 namespace domain
 {
+    class Position;
+
     class Node {
         std::string title_;
         RobotActions::NodeActivation activation_;
@@ -28,6 +33,7 @@ namespace domain
         ed::PinId nodeOutputPinId_;
         int loopCount_ = 0;
         glm::vec3 relativeMove_;
+        Position* absolutePosition_ = new Position({0, 0, 0}, {0, 0, 0});
     public:
         explicit Node(const char* title, RobotActions::NodeActivation activation);
 
@@ -50,6 +56,10 @@ namespace domain
         void setRelativeMove(float x, float y, float z);
 
         [[nodiscard]] glm::vec3 getRelativeMove() const;
+
+        void setAbsolutePosition(Position *absolute_position);
+
+        [[nodiscard]] Position *getAbsolutePosition() const;
     };
 }
 

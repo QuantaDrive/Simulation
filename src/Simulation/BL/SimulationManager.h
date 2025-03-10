@@ -34,6 +34,7 @@ class SimulationManager {
 private:
     Repo* repo_;
     simulation::RobotArm* simulationArm_;
+    domain::RobotArm* robotArm_;
 protected:
     mat4 getTransformationMatrix(vec3 position, vec3 rotation);
     mat4 getDhTransformationMatrix(float joint, float alpha, float d, float a);

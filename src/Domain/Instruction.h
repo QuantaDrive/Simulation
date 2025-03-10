@@ -4,6 +4,8 @@
 #include <vector>
 #include <glm/glm.hpp>
 
+#include "Node.h"
+
 using namespace std;
 using namespace glm;
 
@@ -50,6 +52,7 @@ namespace domain
         [[nodiscard]] vec3 getRelMove() const;
 
         void setRelMove(vec3 relMove);
+
     };
 }
 

@@ -19,6 +19,7 @@
 
 SimulationManager::SimulationManager(Repo *repo, simulation::RobotArm *simulationArm): repo_(repo),
     simulationArm_(simulationArm) {
+    robotArm_ = repo_->readArm(simulationArm_->getName());
 }
 
 SimulationManager::~SimulationManager() {
@@ -31,8 +32,8 @@ SimulationManager::~SimulationManager() {
 //
 
 void SimulationManager::executeInstruction(const domain::Instruction *instruction) {
-    const auto arm = repo_->readArm(simulationArm_->getName());
-    const auto currentPosition = arm->getCurrPosition();
+    // const auto arm = repo_->readArm(simulationArm_->getName());
+    const auto currentPosition = robotArm_->getCurrPosition();
     if (instruction->getWait() > 0) sleep(instruction->getWait());
     else if (instruction->getGripForce() > 0) grip(instruction->getGripForce());
     else if (instruction->isGoHome()) move(new domain::Position({0, 0, 0}, {0, 0, 0}));
@@ -53,12 +54,28 @@ void SimulationManager::executeTask(const domain::Task *task) {
     }
 }
 
-vector<domain::Position *> SimulationManager::interpolate(const domain::Position *currentPosition,
-                                                          domain::Position *newPosition) {
+vector<domain::Position*> SimulationManager::interpolate(const domain::Position* currentPosition, domain::Position* newPosition) {
     auto currP = currentPosition->getCoords();
     auto newP = newPosition->getCoords();
+
+    // Calculate max reach based on arm segments (using DH parameters)
+    float maxReach = simulationArm_->getDhParameters()[1][3] +  // a2
+                     simulationArm_->getDhParameters()[2][3] +  // a3
+                     simulationArm_->getDhParameters()[3][2];   // d4
+
+    // Calculate distance to target
     float d = sqrtf(powf(currP[0] - newP[0], 2) + powf(currP[1] - newP[1], 2) + powf(currP[2] - newP[2], 2));
-    vector<domain::Position *> interpolpoints = {};
+
+    // If target is beyond reach, scale down the position
+    if (d > maxReach) {
+        float scale = maxReach / d;
+        newP[0] = currP[0] + (newP[0] - currP[0]) * scale;
+        newP[1] = currP[1] + (newP[1] - currP[1]) * scale;
+        newP[2] = currP[2] + (newP[2] - currP[2]) * scale;
+        d = maxReach;
+    }
+
+    vector<domain::Position*> interpolpoints = {};
     for (int i = 1; i < static_cast<int>(round(d)); i++) {
         float x = currP[0] + static_cast<float>(i) / d * (newP[0] - currP[0]);
         float y = currP[1] + static_cast<float>(i) / d * (newP[1] - currP[1]);
@@ -69,22 +86,26 @@ vector<domain::Position *> SimulationManager::interpolate(const domain::Position
 }
 
 bool SimulationManager::move(domain::Position *position) {
-    auto arm = repo_->readArm(simulationArm_->getName());
-    if (arm->getStatus() == domain::READY) {
-        arm->setStatus(domain::BUSY);
-        auto interpolPos = interpolate(arm->getCurrPosition(), position);
+    // auto arm = repo_->readArm(simulationArm_->getName());
+    if (robotArm_->getStatus() == domain::READY) {
+        robotArm_->setStatus(domain::BUSY);
+        auto interpolPos = interpolate(robotArm_->getCurrPosition(), position);
         for (auto pos: interpolPos) {
             auto angles = inverseKinematics(pos);
             for (int i = 0; i < angles.size(); i++) {
                 simulationArm_->moveAngle(i + 1, angles[i], false, true);
             }
-            usleep(10000);
+            usleep(5000);
+            simulation::refresh();
+            simulationArm_->render();
         }
-        arm->setCurrPosition(position);
+        robotArm_->setCurrPosition(position);
+        robotArm_->setStatus(domain::READY);
         return true;
-    } else if (arm->getStatus() == domain::BUSY) {
+    }
+    if (robotArm_->getStatus() == domain::BUSY) {
         cout << "Arm is busy" << endl;
-    } else if (arm->getStatus() == domain::DEFECT) {
+    } else if (robotArm_->getStatus() == domain::DEFECT) {
         cout << "Arm is defect" << endl;
     }
     return false;
@@ -161,8 +182,8 @@ vector<vector<float> > SimulationManager::getParamsJ1Zero(mat4 &sphericalWrist) 
 
 
 vector<float> SimulationManager::inverseKinematics(domain::Position *position) {
-    auto arm = repo_->readArm(simulationArm_->getName());
-    mat4 j6Matrix = toolToArm(position, arm->getTool());
+    // auto arm = repo_->readArm(simulationArm_->getName());
+    mat4 j6Matrix = toolToArm(position, robotArm_->getTool());
     mat4 sphericalWrist = armToSphericalWrist(j6Matrix);
     auto j1 = degrees(atan2(sphericalWrist[1][3], sphericalWrist[0][3]));
     vector<vector<float> > params = getParamsJ1Zero(sphericalWrist);

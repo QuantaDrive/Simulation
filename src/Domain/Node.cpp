@@ -8,9 +8,7 @@
 using namespace domain;
 
 Node::Node(const char* title, RobotActions::NodeActivation activation)
-        : title_(title), activation_(activation)
-
-{
+    : title_(title), activation_(activation) {
 }
 
  std::string Node::getTitle() const
@@ -65,5 +63,14 @@ void Node::setRelativeMove(float x, float y, float z) {
 
 glm::vec3 Node::getRelativeMove() const {
     return relativeMove_;
+}
+
+void Node::setAbsolutePosition(Position *absolute_position) {
+    absolutePosition_ = absolute_position;
+}
+
+
+Position *Node::getAbsolutePosition() const {
+    return absolutePosition_;
 }
 

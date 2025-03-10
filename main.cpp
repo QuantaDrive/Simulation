@@ -58,9 +58,9 @@ int main()
 	{
 		simulation::refresh();
 
-		arm->moveAngle(1, 0.2f, true, true);
-		arm->moveAngle(4, 0.3f, true, true);
-		arm->moveAngle(6, 1.0f, true, true);
+		// arm->moveAngle(1, 0.2f, true, true);
+		// arm->moveAngle(4, 0.3f, true, true);
+		// arm->moveAngle(6, 1.0f, true, true);
 		arm->render();
 		// Render ImGui UI and Node Editor together
 		windowManager.RenderUI(g_Context);
