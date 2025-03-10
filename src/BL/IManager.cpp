@@ -42,33 +42,45 @@ string IManager::toGCode(domain::Task* task)
     return gCode;
 }
 
-std::vector<std::string> split(std::string& s, const std::string& delimiter) {
+std::vector<std::string> IManager::split(std::string s, const std::string& delimiter) {
     std::vector<std::string> tokens;
     size_t pos = 0;
     std::string token;
     while ((pos = s.find(delimiter)) != std::string::npos) {
         token = s.substr(0, pos);
         tokens.push_back(token);
-        s.erase(0, pos + delimiter.length());
+        s = s.substr(pos + delimiter.length());
     }
     tokens.push_back(s);
 
     return tokens;
 }
 
-domain::Instruction* IManager::parseGCode(std::string gCode)
+domain::Instruction* IManager::parseGCode(std::string& gCode)
 {
+    bool nextRelative = false;
     regex re("G*");
-    auto codeParts = split(gCode, " ");
-    if (!regex_search(codeParts[0], re))
+    auto lines = split(gCode, "\n");
+    for (auto line : lines)
     {
-        throw runtime_error('Invalid Gcode');
-    }
-    re.assign("(G0|G1) X[0-9]{3} Y[0-9]{3} Z[0-9]{3}");
-    if (regex_search(gCode, re))
-    {
-
-        //return new domain::Instruction();
+        auto codeParts = split(line,)
+        if (!regex_search(codeParts[0], re))
+        {
+            throw runtime_error('Invalid Gcode');
+        }
+        re.assign("(G0|G1) X[0-9]{3} Y[0-9]{3} Z[0-9]{3}");
+        if (regex_search(gCode, re))
+        {
+            auto* p = new domain::Position({codeParts[1].substr(1),codeParts[2].substr(1),codeParts[3].substr(1)}, {0,0,0});
+            return new domain::Instruction(p, 0, 0, false, false, {0,0,0});
+        }
+        re.assign("G91");
+        if (regex_search(gCode, re))
+        {
+            nextRelative = true;
+        }
     }
 
 }
+
+
