@@ -34,13 +34,16 @@ int main()
 
 	vector<float> angles = {45.0f,-35.0f,90.0f,50.0f};
 	SimulationManager* simulationManager= new SimulationManager(repo,arm);
-	domain::Position* examplePos = new domain::Position({200,200,400},{0,0,0});
-	angles = simulationManager->inverseKinematics(examplePos);
-	delete examplePos;
-	for (auto angle:angles)
+	domain::Position* examplePos = new domain::Position({200,200,800},{0,0,0});
+	try
 	{
-		cout << angle << endl;
-	}
+		angles = simulationManager->inverseKinematics(examplePos);
+		delete examplePos;
+		for (auto angle:angles)
+		{
+			cout << angle << endl;
+		}
+	}catch (logic_error error){}
 
 	arm->moveAngle(1, angles[0] /*45.0f*/, false, true);
 	arm->moveAngle(2, angles[1] /*-35.0f*/, false, true);
