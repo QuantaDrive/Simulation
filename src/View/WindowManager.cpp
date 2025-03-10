@@ -4,15 +4,10 @@
 #include "../Domain/Node.h"
 #include "../Domain/NodeActivation.h"
 #include "../Domain/Instruction.h"
+#include "helper/HelperFunctions.h"
 namespace ed = ax::NodeEditor;
 
 using namespace domain;
-
-struct LinkInfo {
-    ed::LinkId Id;
-    ed::PinId InputId;
-    ed::PinId OutputId;
-};
 
 
 class WindowManager : public IWindowManager {
@@ -111,12 +106,6 @@ class WindowManager : public IWindowManager {
 
         // Only show content if window is not collapsed
         if (!ImGui::IsWindowCollapsed()) {
-            // ImGui::InputInt("X", &inputX);
-            // ImGui::InputInt("Y", &inputY);
-            // ImGui::InputInt("Z", &inputZ);
-            // ImGui::SliderAngle("X Degrees", &inputXDegrees, -360, 360);
-            // ImGui::SliderAngle("Y Degrees", &inputYDegrees, -360, 360);
-            // ImGui::SliderAngle("Z Degrees", &inputZDegrees, -360, 360);
             ImGui::SliderInt("Grip Force", &gripforce, 0, 10);
 
             if (ImGui::Button("Send instructions")) {
@@ -309,64 +298,8 @@ class WindowManager : public IWindowManager {
     }
 
 
-    const domain::Node *FindStartNode() const {
-        // If there's only one node and no links, consider it the start node
-        if (m_Nodes.size() == 1 && m_Links.empty()) {
-            return &m_Nodes[0];
-        }
-
-        // Otherwise, find a node that only has output connections
-        for (const auto &node: m_Nodes) {
-            if (IsStartNode(node)) {
-                std::cout << "Starting node: " << node.getTitle() << std::endl;
-                return &node;
-            }
-        }
-        return nullptr;
-    }
-
-    bool IsStartNode(const domain::Node &node) const {
-        // If there are no links at all a single node is considered the start node
-        if (m_Links.empty()) {
-            return true;
-        }
-        // Otherwise, node should have no input connections but have output connections
-        return !HasInputConnection(node) && HasOutputConnection(node);
-    }
-
-    bool HasInputConnection(const domain::Node &node) const {
-        for (const auto &link: m_Links) {
-            if (link.OutputId == node.getNodeInputPinId()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    bool HasOutputConnection(const domain::Node &node) const {
-        for (const auto &link: m_Links) {
-            if (link.InputId == node.getNodeOutputPinId()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    const domain::Node *FindNextNode(const domain::Node *currentNode) const {
-        for (const auto &link: m_Links) {
-            if (link.InputId == currentNode->getNodeOutputPinId()) {
-                for (const auto &node: m_Nodes) {
-                    if (link.OutputId == node.getNodeInputPinId()) {
-                        return &node;
-                    }
-                }
-            }
-        }
-        return nullptr;
-    }
-
     void ExecuteNodeChain() {
-        const domain::Node *startNode = FindStartNode();
+        const domain::Node *startNode = NodeHelpers::FindStartNode(m_Nodes, m_Links);
         if (!startNode) {
             std::cout << "No starting node found!" << std::endl;
             return;
@@ -375,7 +308,7 @@ class WindowManager : public IWindowManager {
         const domain::Node *currentNode = startNode;
         while (currentNode) {
             ExecuteNode(*currentNode);
-            currentNode = FindNextNode(currentNode);
+            currentNode = NodeHelpers::FindNextNode(currentNode, m_Nodes, m_Links);
         }
     }
 
