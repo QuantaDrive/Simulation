@@ -240,6 +240,8 @@ class WindowManager : public IWindowManager {
             float y = relMove.y;
             float z = relMove.z;
 
+            std::string idTitle = "absolute_move_" + node.getNodeId().Get();
+            ImGui::PushID(idTitle.c_str());
             // Create sliders for X, Y, Z
             bool changed = false;
             changed |= ImGui::SliderFloat("X", &x, -200.0f, 200.0f);
@@ -251,6 +253,7 @@ class WindowManager : public IWindowManager {
                 node.setRelativeMove(x, y, z);
             }
 
+            ImGui::PopID();
             ImGui::PopItemWidth();
         }
         else if (node.getActivation() == RobotActions::NodeActivation::LoopStart) {
@@ -270,8 +273,8 @@ class WindowManager : public IWindowManager {
             float y = absMove.y;
             float z = absMove.z;
 
-            auto idTitle = "absolute_move" + m_NextNodeId;
-            ImGui::PushID(idTitle);
+            std::string idTitle = "absolute_move_" + node.getNodeId().Get();
+            ImGui::PushID(idTitle.c_str());
 
             // Create sliders for X, Y, Z
             bool changed = false;
