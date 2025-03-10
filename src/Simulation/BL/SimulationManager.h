@@ -14,6 +14,7 @@
 namespace simulation
 {
     class RobotArm;
+
 }
 
 using namespace glm;
@@ -35,6 +36,20 @@ private:
     Repo* repo_;
     simulation::RobotArm* simulationArm_;
     domain::RobotArm* robotArm_;
+    // Camera control state
+    glm::vec3 m_CameraTarget = glm::vec3(0, 750/2, 0);
+    glm::vec3 m_CameraPosition = glm::vec3(0, 750/2, 1000);
+    float m_CameraDistance = 1000.0f;
+    // Add horizontal rotation angle
+    float m_Yaw = 0.0f;
+    // Add vertical rotation angle
+    float m_Pitch = 0.0f;
+    // Add field of view
+    double m_LastX = 0.0;
+    double m_LastY = 0.0;
+    bool m_FirstMouse = true;
+    bool m_DragActive = false;
+
 protected:
     mat4 getTransformationMatrix(vec3 position, vec3 rotation);
     mat4 getDhTransformationMatrix(float joint, float alpha, float d, float a);
@@ -51,6 +66,13 @@ public:
     void grip(float gripForce);
 
     vector<float> inverseKinematics(domain::Position* position);
+    // camera handling
+    void initializeCamera();
+    void handleMouseDrag(double xpos, double ypos);
+    void handleMouseScroll(double yoffset);
+    void setDragActive(bool active);
+private:
+    void updateCameraPosition();
 };
 
 

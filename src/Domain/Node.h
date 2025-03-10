@@ -32,34 +32,39 @@ namespace domain
         ed::PinId nodeInputPinId_;
         ed::PinId nodeOutputPinId_;
         int loopCount_ = 0;
+        int waitTimer_ = 0;
         glm::vec3 relativeMove_;
         Position* absolutePosition_ = new Position({0, 0, 0}, {0, 0, 0});
     public:
         explicit Node(const char* title, RobotActions::NodeActivation activation);
 
-        [[nodiscard]] std::string getTitle() const;
+        [[nodiscard]] std::string GetTitle() const;
 
-        [[nodiscard]] RobotActions::NodeActivation getActivation() const;
+        [[nodiscard]] RobotActions::NodeActivation GetActivation() const;
 
-        [[nodiscard]] ed::NodeId getNodeId() const;
+        [[nodiscard]] ed::NodeId GetNodeId() const;
 
-        [[nodiscard]] ed::PinId getNodeInputPinId() const;
+        [[nodiscard]] ed::PinId GetNodeInputPinId() const;
 
-        [[nodiscard]] ed::PinId getNodeOutputPinId() const;
+        [[nodiscard]] ed::PinId GetNodeOutputPinId() const;
 
-        void initializeNodeIds(int& nodeId);
+        void InitializeNodeIds(int& nodeId);
 
-        void setLoopCount(int count);
+        void SetLoopCount(int count);
 
-        [[nodiscard]] int getLoopCount() const;
+        [[nodiscard]] int GetLoopCount() const;
 
-        void setRelativeMove(float x, float y, float z);
+        void SetRelativeMove(float x, float y, float z);
 
-        [[nodiscard]] glm::vec3 getRelativeMove() const;
+        [[nodiscard]] glm::vec3 GetRelativeMove() const;
 
-        void setAbsolutePosition(Position *absolute_position);
+        void SetAbsolutePosition(Position *absolute_position);
 
-        [[nodiscard]] Position *getAbsolutePosition() const;
+        [[nodiscard]] Position *GetAbsolutePosition() const;
+
+        [[nodiscard]] int GetWaitTimer() const;
+
+        void SetWaitTimer(int wait_timer);
     };
 }
 

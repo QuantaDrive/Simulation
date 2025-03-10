@@ -16,7 +16,7 @@ const domain::Node *NodeHelpers::FindStartNode(const std::vector<domain::Node> &
     // Otherwise, find a node that only has output connections
     for (const auto &node: nodes) {
         if (IsStartNode(node, links)) {
-            std::cout << "Starting node: " << node.getTitle() << std::endl;
+            std::cout << "Starting node: " << node.GetTitle() << std::endl;
             return &node;
         }
     }
@@ -26,10 +26,10 @@ const domain::Node *NodeHelpers::FindStartNode(const std::vector<domain::Node> &
 const domain::Node *NodeHelpers::FindNextNode(const domain::Node *currentNode, const std::vector<domain::Node> &nodes,
                                               const ImVector<LinkInfo> &links) {
     for (const auto &link: links) {
-        if (link.InputId == currentNode->getNodeOutputPinId()) {
+        if (link.InputId == currentNode->GetNodeOutputPinId()) {
             for (const auto &node: nodes) {
-                if (link.OutputId == node.getNodeInputPinId()) {
-                    std::cout << "Next node: " << node.getTitle() << std::endl;
+                if (link.OutputId == node.GetNodeInputPinId()) {
+                    std::cout << "Next node: " << node.GetTitle() << std::endl;
                     return &node;
                 }
             }
@@ -50,7 +50,7 @@ bool NodeHelpers::IsStartNode(const domain::Node &node, const ImVector<LinkInfo>
 
 bool NodeHelpers::HasInputConnection(const domain::Node &node, const ImVector<LinkInfo> &links) {
     for (const auto &link: links) {
-        if (link.OutputId == node.getNodeInputPinId()) {
+        if (link.OutputId == node.GetNodeInputPinId()) {
             return true;
         }
     }
@@ -59,7 +59,7 @@ bool NodeHelpers::HasInputConnection(const domain::Node &node, const ImVector<Li
 
 bool NodeHelpers::HasOutputConnection(const domain::Node &node, const ImVector<LinkInfo> &links) {
     for (const auto &link: links) {
-        if (link.InputId == node.getNodeOutputPinId()) {
+        if (link.InputId == node.GetNodeOutputPinId()) {
             return true;
         }
     }
