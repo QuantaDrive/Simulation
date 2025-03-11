@@ -248,3 +248,61 @@ vector<float> SimulationManager::inverseKinematics(domain::Position *position) {
     }
     return {j1, params[3][0], params[3][1], j4, j5, j6};
 }
+
+// Camera controls
+void SimulationManager::initializeCamera() {
+    m_CameraPosition = glm::vec3(0, 750/2, 1000);
+    updateCameraPosition();
+}
+
+void SimulationManager::handleMouseDrag(double xpos, double ypos) {
+    if (!m_DragActive) return;
+
+    if (m_FirstMouse) {
+        m_LastX = xpos;
+        m_LastY = ypos;
+        m_FirstMouse = false;
+        return;
+    }
+
+    float xoffset = xpos - m_LastX;
+    float yoffset = m_LastY - ypos;
+    m_LastX = xpos;
+    m_LastY = ypos;
+
+    const float sensitivity = 0.3f;
+    xoffset *= sensitivity;
+    yoffset *= sensitivity;
+
+    m_Yaw += xoffset;
+    m_Pitch += yoffset;
+
+    // Constrain pitch to avoid flipping
+    m_Pitch = glm::clamp(m_Pitch, -89.0f, 89.0f);
+
+    updateCameraPosition();
+}
+
+void SimulationManager::handleMouseScroll(double yoffset) {
+    float zoomSpeed = 50.0f;
+    m_CameraDistance -= yoffset * zoomSpeed;
+    m_CameraDistance = glm::clamp(m_CameraDistance, 200.0f, 2000.0f);
+
+    updateCameraPosition();
+}
+
+void SimulationManager::setDragActive(bool active) {
+    m_DragActive = active;
+    m_FirstMouse = true;
+}
+
+void SimulationManager::updateCameraPosition() {
+    // Calculate new camera position using spherical coordinates
+    float x = m_CameraTarget.x + m_CameraDistance * cos(glm::radians(m_Pitch)) * cos(glm::radians(m_Yaw));
+    float y = m_CameraTarget.y + m_CameraDistance * sin(glm::radians(m_Pitch));
+    float z = m_CameraTarget.z + m_CameraDistance * cos(glm::radians(m_Pitch)) * sin(glm::radians(m_Yaw));
+
+    m_CameraPosition = glm::vec3(x, y, z);
+    simulation::lookAt(m_CameraPosition, m_CameraTarget);
+    simulation::lightPosition(m_CameraPosition);
+}

@@ -34,6 +34,7 @@ int main()
 
 	vector<float> angles = {45.0f,-35.0f,90.0f,50.0f};
 	SimulationManager* simulationManager= new SimulationManager(repo,arm);
+	simulationManager->initializeCamera();
 	domain::Position* examplePos = new domain::Position({200,200,800},{0,0,0});
 	try
 	{

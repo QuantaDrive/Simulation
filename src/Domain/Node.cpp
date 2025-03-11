@@ -11,32 +11,32 @@ Node::Node(const char* title, RobotActions::NodeActivation activation)
     : title_(title), activation_(activation) {
 }
 
- std::string Node::getTitle() const
+ std::string Node::GetTitle() const
 {
     return title_;
 }
 
-RobotActions::NodeActivation Node::getActivation() const
+RobotActions::NodeActivation Node::GetActivation() const
 {
     return activation_;
 }
 
-ed::NodeId Node::getNodeId() const
+ed::NodeId Node::GetNodeId() const
 {
     return nodeId_;
 }
 
-ed::PinId Node::getNodeInputPinId() const
+ed::PinId Node::GetNodeInputPinId() const
 {
     return nodeInputPinId_;
 }
 
-ed::PinId Node::getNodeOutputPinId() const
+ed::PinId Node::GetNodeOutputPinId() const
 {
     return nodeOutputPinId_;
 }
 
-void Node::initializeNodeIds(int& nodeId)
+void Node::InitializeNodeIds(int& nodeId)
 {
     nodeId_ = nodeId++;
     nodeInputPinId_ = nodeId++;
@@ -44,33 +44,41 @@ void Node::initializeNodeIds(int& nodeId)
 
 }
 
-void Node::setLoopCount(int count) {
+void Node::SetLoopCount(int count) {
     if (activation_ == RobotActions::NodeActivation::LoopStart) {
         loopCount_ = count;
     }
 }
 
-int Node::getLoopCount() const {
+int Node::GetLoopCount() const {
     if (activation_ == RobotActions::NodeActivation::LoopStart) {
         return loopCount_;
     }
     return 0;
 }
 
-void Node::setRelativeMove(float x, float y, float z) {
+void Node::SetRelativeMove(float x, float y, float z) {
     relativeMove_ = {x, y, z};
 }
 
-glm::vec3 Node::getRelativeMove() const {
+glm::vec3 Node::GetRelativeMove() const {
     return relativeMove_;
 }
 
-void Node::setAbsolutePosition(Position *absolute_position) {
+void Node::SetAbsolutePosition(Position *absolute_position) {
     absolutePosition_ = absolute_position;
 }
 
 
-Position *Node::getAbsolutePosition() const {
+Position *Node::GetAbsolutePosition() const {
     return absolutePosition_;
+}
+
+int Node::GetWaitTimer() const {
+    return waitTimer_;
+}
+
+void Node::SetWaitTimer(int wait_timer) {
+    waitTimer_ = wait_timer;
 }
 
