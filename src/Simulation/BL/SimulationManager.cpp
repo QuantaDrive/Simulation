@@ -60,22 +60,22 @@ vector<domain::Position*> SimulationManager::interpolate(const domain::Position*
     auto currP = currentPosition->getCoords();
     auto newP = newPosition->getCoords();
 
-    // Calculate max reach based on arm segments (using DH parameters)
-    float maxReach = simulationArm_->getDhParameters()[1][3] +  // a2
-                     simulationArm_->getDhParameters()[2][3] +  // a3
-                     simulationArm_->getDhParameters()[3][2];   // d4
+    // // Calculate max reach based on arm segments (using DH parameters)
+    // float maxReach = simulationArm_->getDhParameters()[1][3] +  // a2
+    //                  simulationArm_->getDhParameters()[2][3] +  // a3
+    //                  simulationArm_->getDhParameters()[3][2];   // d4
 
     // Calculate distance to target
     float d = sqrtf(powf(currP[0] - newP[0], 2) + powf(currP[1] - newP[1], 2) + powf(currP[2] - newP[2], 2));
 
-    // If target is beyond reach, scale down the position
-    if (d > maxReach) {
-        float scale = maxReach / d;
-        newP[0] = currP[0] + (newP[0] - currP[0]) * scale;
-        newP[1] = currP[1] + (newP[1] - currP[1]) * scale;
-        newP[2] = currP[2] + (newP[2] - currP[2]) * scale;
-        d = maxReach;
-    }
+    // // If target is beyond reach, scale down the position
+    // if (d > maxReach) {
+    //     float scale = maxReach / d;
+    //     newP[0] = currP[0] + (newP[0] - currP[0]) * scale;
+    //     newP[1] = currP[1] + (newP[1] - currP[1]) * scale;
+    //     newP[2] = currP[2] + (newP[2] - currP[2]) * scale;
+    //     d = maxReach;
+    // }
 
     vector<domain::Position*> interpolpoints = {};
     for (int i = 1; i < static_cast<int>(round(d)); i++) {
@@ -112,13 +112,17 @@ bool SimulationManager::move(domain::Position *position) {
                 robotArm_->setStatus(domain::READY);
                 throw;
             }
+            allAngles.emplace_back(angles);
+            delete pos;
+        }
+        for (auto angles: allAngles)
+        {
             for (int i = 0; i < angles.size(); i++) {
                 simulationArm_->moveAngle(i + 1, angles[i], false, true);
             }
             usleep(5000);
             simulation::refresh();
             simulationArm_->render();
-            delete pos;
         }
         robotArm_->setCurrPosition(position);
         robotArm_->setStatus(domain::READY);
