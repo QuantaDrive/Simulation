@@ -161,6 +161,32 @@ private:
         }
     }
 
+    void HandleNodeCopy() {
+        ed::NodeId selectedNodeId;
+        if (ed::GetSelectedNodes(&selectedNodeId, 1) &&
+            ImGui::GetIO().KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_C)) {
+            // Find the selected node
+            auto nodeIt = std::find_if(m_Nodes.begin(), m_Nodes.end(), NodeIdMatcher(selectedNodeId));
+            if (nodeIt != m_Nodes.end()) {
+                // Create a copy of the node
+                domain::Node newNode = *nodeIt; // Copy constructor
+
+                // Generate new IDs for the copy
+                int currentId = m_NextNodeId;
+                newNode.InitializeNodeIds(currentId);
+                m_NextNodeId = currentId;
+
+                // Offset the position slightly for visual clarity
+                float offsetX = 50.0f;
+                float offsetY = 50.0f;
+                m_NextNodePosition.x += offsetX;
+                m_NextNodePosition.y += offsetY;
+
+                // Add the copy to nodes vector
+                m_Nodes.push_back(newNode);
+            }
+        }
+    }
 
     void RenderImGuiNodesEditorWindow(ed::EditorContext *g_Context) {
         ImGui::Begin("Node Editor", &m_ShowNodeEditor, ImGuiWindowFlags_MenuBar);
@@ -173,6 +199,10 @@ private:
         if (!ImGui::IsWindowCollapsed()) {
             ed::SetCurrentEditor(g_Context);
             ed::Begin("My Editor");
+
+
+            // Handle copying
+            HandleNodeCopy();
 
             // Render all stored nodes
             for (auto &node: m_Nodes) {
