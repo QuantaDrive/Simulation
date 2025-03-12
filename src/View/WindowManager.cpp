@@ -27,17 +27,21 @@ class WindowManager : public IWindowManager {
     // Window states
     bool m_ShowNodeSelector = true;
     bool m_ShowNodeEditor = true;
+    bool m_ShowHelpWindow = false;
 
     //Simulationmanager
     SimulationManager *localSimulationManager;
 
 
-    void CalcRandomPosNextNode() {
-        float randomXNumber = (rand() % 100) - 30;
-        float randomYNumber = (rand() % 100) - 30;
-        m_NextNodePosition.x += randomXNumber;
-        m_NextNodePosition.y += randomYNumber;
+
+    void RenderHelpWindow() {
+        if (!m_ShowHelpWindow) return;
+        ImGui::SetNextWindowSizeConstraints(ImVec2(400, 300), ImVec2(600, 800));
+        ImGui::Begin("Node Editor Help", &m_ShowHelpWindow);
+        NodeHelpers::RenderHelpText();
+        ImGui::End();
     }
+
 
     void RenderNodeSelectorWindow() {
         // Set max width to 250
@@ -83,7 +87,7 @@ class WindowManager : public IWindowManager {
 
                     m_Nodes.push_back(newNode);
 
-                    CalcRandomPosNextNode();
+                    NodeHelpers::CalcRandomPosNextNode( &m_NextNodePosition);
                 }
                 // Add tooltip for each button
                 if (ImGui::IsItemHovered()) {
@@ -536,6 +540,7 @@ public:
             if (ImGui::BeginMenu("Windows")) {
                 ImGui::MenuItem("Node Selector", nullptr, &m_ShowNodeSelector);
                 ImGui::MenuItem("Node Editor", nullptr, &m_ShowNodeEditor);
+                ImGui::MenuItem("Help", nullptr, &m_ShowHelpWindow);
                 ImGui::EndMenu();
             }
             ImGui::EndMainMenuBar();
@@ -547,6 +552,9 @@ public:
         }
         if (m_ShowNodeEditor) {
             RenderImGuiNodesEditorWindow(g_Context);
+        }
+        if (m_ShowHelpWindow) {
+            RenderHelpWindow();
         }
         // Render the final ImGui frame
         ImGui::Render();

@@ -95,3 +95,44 @@ void NodeHelpers::RenderNodeTooltip(RobotActions::NodeActivation action) {
             break;
     }
 }
+
+void NodeHelpers::CalcRandomPosNextNode(ImVec2* m_NextNodePosition) {
+    float randomXNumber = (rand() % 100) - 30;
+    float randomYNumber = (rand() % 100) - 30;
+    m_NextNodePosition->x += randomXNumber;
+    m_NextNodePosition->y += randomYNumber;
+}
+
+void NodeHelpers::RenderHelpText() {
+    ImGui::Text("Basic Controls:");
+    ImGui::BulletText("Left-click and drag: Move nodes");
+    ImGui::BulletText("Left-click on pin and drag: Create connections");
+    ImGui::BulletText("Right-click on node/connection: Delete");
+    ImGui::BulletText("Ctrl + C while node selected: Copy node");
+    ImGui::Spacing();
+
+    ImGui::Text("Creating Nodes:");
+    ImGui::BulletText("Click buttons in Node Selector to create nodes");
+    ImGui::BulletText("New nodes are placed at random positions");
+    ImGui::BulletText("Hover over node buttons for detailed descriptions");
+    ImGui::Spacing();
+
+    ImGui::Text("Node Types:");
+    ImGui::BulletText("Relative Move: Move robot relative to current position");
+    ImGui::BulletText("Absolute Move: Move robot to exact coordinates");
+    ImGui::BulletText("Loop Start/End: Create repeating sequences");
+    ImGui::BulletText("Wait: Pause execution for specified duration");
+    ImGui::BulletText("Home: Return robot to home position");
+    ImGui::Spacing();
+
+    ImGui::Text("Connections:");
+    ImGui::BulletText("Connect 'Out' to 'In' pins to create sequence");
+    ImGui::BulletText("Each node can have one input and one output");
+    ImGui::BulletText("Cannot create loops or self-connections");
+    ImGui::Spacing();
+
+    ImGui::Text("Execution:");
+    ImGui::BulletText("Click 'Send Instructions' to execute node sequence");
+    ImGui::BulletText("Sequence starts from node with no input connection");
+    ImGui::BulletText("Nodes execute in order of connections");
+}

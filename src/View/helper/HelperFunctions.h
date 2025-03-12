@@ -34,6 +34,8 @@ public:
     static bool HasInputConnection(const domain::Node& node, const ImVector<LinkInfo>& links);
     static bool HasOutputConnection(const domain::Node& node, const ImVector<LinkInfo>& links);
     static void RenderNodeTooltip(RobotActions::NodeActivation action);
+    static void CalcRandomPosNextNode(ImVec2* m_NextNodePosition);
+    static void RenderHelpText();
 };
 
 
