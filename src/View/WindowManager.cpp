@@ -26,104 +26,144 @@ class WindowManager : public IWindowManager {
 
     // Window states
     bool m_ShowNodeSelector = true;
-    bool m_ShowSingleInstruction = true;
     bool m_ShowNodeEditor = true;
 
     //Simulationmanager
     SimulationManager *localSimulationManager;
 
 
-   void RenderNodeSelectorWindow() {
-    ImGui::Begin("Node Selector", &m_ShowNodeSelector, ImGuiWindowFlags_MenuBar);
+    void RenderNodeSelectorWindow() {
+        ImGui::Begin("Node Selector", &m_ShowNodeSelector, ImGuiWindowFlags_MenuBar);
 
-    if (ImGui::BeginMenuBar()) {
-        ImGui::EndMenuBar();
-    }
-
-    if (!ImGui::IsWindowCollapsed()) {
-        // Calculate the widest label to set consistent spacing
-        float maxLabelWidth = 0.0f;
-        for (int i = 0; i < static_cast<int>(RobotActions::NodeActivation::COUNT); ++i) {
-            auto action = static_cast<RobotActions::NodeActivation>(i);
-            std::string label = RobotActions::toString(action).data();
-            maxLabelWidth = std::max(maxLabelWidth, ImGui::CalcTextSize(label.c_str()).x);
-        }
-
-        maxLabelWidth += 20.0f;
-
-        for (int i = 0; i < static_cast<int>(RobotActions::NodeActivation::COUNT); ++i) {
-            auto action = static_cast<RobotActions::NodeActivation>(i);
-            std::string label = RobotActions::toString(action).data();
-
-            ImGui::Text("%s", label.c_str());
-            ImGui::SameLine(maxLabelWidth);
-
-            if (ImGui::Button(("+##" + label).c_str())) {
-                domain::Node newNode(label.c_str(), action);
-                int currentId = m_NextNodeId;
-                newNode.InitializeNodeIds(currentId);
-                m_NextNodeId = currentId;
-
-                switch (action) {
-                    case RobotActions::NodeActivation::LoopStart: {
-                        int loopCount = 1;
-                        ImGui::InputInt("Loop Count", &loopCount);
-                        newNode.SetLoopCount(loopCount);
-                        break;
-                    }
-                    case RobotActions::NodeActivation::Wait: {
-                        int waitTimer = 1;
-                        ImGui::InputInt("Wait Timer", &waitTimer);
-                        newNode.SetWaitTimer(waitTimer);
-                        break;
-                    }
-                    default:
-                        break;
-                }
-
-                m_Nodes.push_back(newNode);
-
-                float randomXNumber = (rand() % 100) - 30;
-                float randomYNumber = (rand() % 100) - 30;
-                m_NextNodePosition.x += randomXNumber;
-                m_NextNodePosition.y += randomYNumber;
-            }
-            ImGui::SameLine();
-
-            if (ImGui::Button(("-##" + label).c_str())) {
-                for (auto it = m_Nodes.rbegin(); it != m_Nodes.rend(); ++it) {
-                    if (it->GetActivation() == action) {
-                        m_Nodes.erase((++it).base());
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
-    ImGui::End();
-}
-
-    void RenderSingleInstructionWindow() {
-        ImGui::Begin("Position Window", &m_ShowSingleInstruction, ImGuiWindowFlags_MenuBar);
-
-        // Add minimize/maximize in the menu bar
         if (ImGui::BeginMenuBar()) {
             ImGui::EndMenuBar();
         }
 
-        // Only show content if window is not collapsed
         if (!ImGui::IsWindowCollapsed()) {
-            ImGui::SliderInt("Grip Force", &gripforce, 0, 10);
-
-            if (ImGui::Button("Send instructions")) {
-                ExecuteNodeChain();
+            // Calculate the widest label to set consistent spacing
+            float maxLabelWidth = 0.0f;
+            for (int i = 0; i < static_cast<int>(RobotActions::NodeActivation::COUNT); ++i) {
+                auto action = static_cast<RobotActions::NodeActivation>(i);
+                std::string label = RobotActions::toString(action).data();
+                maxLabelWidth = std::max(maxLabelWidth, ImGui::CalcTextSize(label.c_str()).x);
             }
-            ImGui::Text(textInput.c_str());
+
+            maxLabelWidth += 20.0f;
+
+            for (int i = 0; i < static_cast<int>(RobotActions::NodeActivation::COUNT); ++i) {
+                auto action = static_cast<RobotActions::NodeActivation>(i);
+                std::string label = RobotActions::toString(action).data();
+
+                ImGui::Text("%s", label.c_str());
+                ImGui::SameLine(maxLabelWidth);
+
+                if (ImGui::Button(("+##" + label).c_str())) {
+                    domain::Node newNode(label.c_str(), action);
+                    int currentId = m_NextNodeId;
+                    newNode.InitializeNodeIds(currentId);
+                    m_NextNodeId = currentId;
+
+                    switch (action) {
+                        case RobotActions::NodeActivation::LoopStart: {
+                            int loopCount = 1;
+                            ImGui::InputInt("Loop Count", &loopCount);
+                            newNode.SetLoopCount(loopCount);
+                            break;
+                        }
+                        case RobotActions::NodeActivation::Wait: {
+                            int waitTimer = 1;
+                            ImGui::InputInt("Wait Timer", &waitTimer);
+                            newNode.SetWaitTimer(waitTimer);
+                            break;
+                        }
+                        default:
+                            break;
+                    }
+
+                    m_Nodes.push_back(newNode);
+
+                    float randomXNumber = (rand() % 100) - 30;
+                    float randomYNumber = (rand() % 100) - 30;
+                    m_NextNodePosition.x += randomXNumber;
+                    m_NextNodePosition.y += randomYNumber;
+                }
+                ImGui::SameLine();
+
+                if (ImGui::Button(("-##" + label).c_str())) {
+                    for (auto it = m_Nodes.rbegin(); it != m_Nodes.rend(); ++it) {
+                        if (it->GetActivation() == action) {
+                            m_Nodes.erase((++it).base());
+                            break;
+                        }
+                    }
+                }
+            }
         }
 
+        if (ImGui::Button("Send instructions")) {
+            ExecuteNodeChain();
+        }
         ImGui::End();
     }
+
+private:
+    // Add these as private member functions in the WindowManager class
+    static bool compareNodeById(const domain::Node &node, ed::NodeId nodeId) {
+        return node.GetNodeId() == nodeId;
+    }
+
+    bool shouldRemoveLink(const LinkInfo &link, const domain::Node &node) const {
+        return link.InputId == node.GetNodeInputPinId() ||
+               link.OutputId == node.GetNodeOutputPinId();
+    }
+
+    struct NodeIdMatcher {
+        explicit NodeIdMatcher(ed::NodeId id) : nodeId(id) {
+        }
+
+        bool operator()(const domain::Node &node) const {
+            return node.GetNodeId() == nodeId;
+        }
+
+        ed::NodeId nodeId;
+    };
+
+    struct LinkNodeMatcher {
+        explicit LinkNodeMatcher(const domain::Node &n) : node(n) {
+        }
+
+        bool operator()(const LinkInfo &link) const {
+            return link.InputId == node.GetNodeInputPinId() ||
+                   link.OutputId == node.GetNodeOutputPinId();
+        }
+
+        const domain::Node &node;
+    };
+
+    void deleteNodeAndConnectedLinks(ed::NodeId nodeId) {
+        // First find the node
+        auto nodeIt = std::find_if(m_Nodes.begin(), m_Nodes.end(), NodeIdMatcher(nodeId));
+
+        if (nodeIt != m_Nodes.end()) {
+            // Create a temporary vector for valid links
+            ImVector<LinkInfo> newLinks;
+            newLinks.reserve(m_Links.size());
+
+            // Copy only the links that are not connected to the node
+            for (const auto& link : m_Links) {
+                if (!LinkNodeMatcher(*nodeIt)(link)) {
+                    newLinks.push_back(link);
+                }
+            }
+
+            // Replace the old links with the filtered ones
+            m_Links = newLinks;
+
+            // Remove the node
+            m_Nodes.erase(nodeIt);
+        }
+    }
+
 
     void RenderImGuiNodesEditorWindow(ed::EditorContext *g_Context) {
         ImGui::Begin("Node Editor", &m_ShowNodeEditor, ImGuiWindowFlags_MenuBar);
@@ -155,10 +195,16 @@ class WindowManager : public IWindowManager {
 
             // Handle deletion action
             if (ed::BeginDelete()) {
-                // There may be many links marked for deletion, let's loop over them.
+                // Handle link deletion
                 LinkDeleteHandler();
+
+                // Handle node deletion
+                ed::NodeId selectedNodeId;
+                if (ed::GetSelectedNodes(&selectedNodeId, 1)) {
+                        deleteNodeAndConnectedLinks(selectedNodeId);
+                }
+                ed::EndDelete();
             }
-            ed::EndDelete();
 
             if (m_FirstFrame) {
                 ed::NavigateToContent(0.0f);
@@ -263,8 +309,7 @@ class WindowManager : public IWindowManager {
 
             ImGui::PopID();
             ImGui::PopItemWidth();
-        }
-        else if (node.GetActivation() == RobotActions::NodeActivation::LoopStart) {
+        } else if (node.GetActivation() == RobotActions::NodeActivation::LoopStart) {
             ImGui::PushItemWidth(100);
             std::string idTitle = "loop " + node.GetNodeId().Get();
             ImGui::PushID(idTitle.c_str());
@@ -275,8 +320,7 @@ class WindowManager : public IWindowManager {
             ImGui::PopID();
             ImGui::PopItemWidth();
             node.SetLoopCount(loopCount);
-        }
-        else if (node.GetActivation() == RobotActions::NodeActivation::Wait) {
+        } else if (node.GetActivation() == RobotActions::NodeActivation::Wait) {
             std::string idTitle = "wait " + node.GetNodeId().Get();
             ImGui::PushID(idTitle.c_str());
             ImGui::PushItemWidth(100);
@@ -287,10 +331,9 @@ class WindowManager : public IWindowManager {
             ImGui::PopID();
             ImGui::PopItemWidth();
             node.SetWaitTimer(waitTimer);
-
         }
         // Add absolute movement controls for Absolute nodes
-        else if(node.GetActivation() == RobotActions::NodeActivation::Absolute){
+        else if (node.GetActivation() == RobotActions::NodeActivation::Absolute) {
             ImGui::PushItemWidth(100);
 
             // Get current relative move values
@@ -310,7 +353,7 @@ class WindowManager : public IWindowManager {
 
             // Update values if changed
             if (changed) {
-                auto* position = new domain::Position(vec3(x, y, z), vec3(0, 0, 0));
+                auto *position = new domain::Position(vec3(x, y, z), vec3(0, 0, 0));
                 node.SetAbsolutePosition(position);
             }
             ImGui::PopID();
@@ -387,7 +430,6 @@ class WindowManager : public IWindowManager {
     }
 
 public:
-
     explicit WindowManager(SimulationManager *simulationManager) {
         localSimulationManager = simulationManager;
     }
@@ -400,22 +442,22 @@ public:
         glfwSetWindowUserPointer(window, this);
 
         // Add input callbacks
-        glfwSetMouseButtonCallback(window, [](GLFWwindow* w, int button, int action, int mods) {
-            auto* manager = static_cast<WindowManager*>(glfwGetWindowUserPointer(w));
+        glfwSetMouseButtonCallback(window, [](GLFWwindow *w, int button, int action, int mods) {
+            auto *manager = static_cast<WindowManager *>(glfwGetWindowUserPointer(w));
             if (button == GLFW_MOUSE_BUTTON_LEFT && !ImGui::GetIO().WantCaptureMouse) {
                 manager->localSimulationManager->setDragActive(action == GLFW_PRESS);
             }
         });
 
-        glfwSetCursorPosCallback(window, [](GLFWwindow* w, double xpos, double ypos) {
-            auto* manager = static_cast<WindowManager*>(glfwGetWindowUserPointer(w));
+        glfwSetCursorPosCallback(window, [](GLFWwindow *w, double xpos, double ypos) {
+            auto *manager = static_cast<WindowManager *>(glfwGetWindowUserPointer(w));
             if (!ImGui::GetIO().WantCaptureMouse) {
                 manager->localSimulationManager->handleMouseDrag(xpos, ypos);
             }
         });
 
-        glfwSetScrollCallback(window, [](GLFWwindow* w, double xoffset, double yoffset) {
-            auto* manager = static_cast<WindowManager*>(glfwGetWindowUserPointer(w));
+        glfwSetScrollCallback(window, [](GLFWwindow *w, double xoffset, double yoffset) {
+            auto *manager = static_cast<WindowManager *>(glfwGetWindowUserPointer(w));
             if (!ImGui::GetIO().WantCaptureMouse) {
                 manager->localSimulationManager->handleMouseScroll(yoffset);
             }
@@ -448,7 +490,6 @@ public:
         if (ImGui::BeginMainMenuBar()) {
             if (ImGui::BeginMenu("Windows")) {
                 ImGui::MenuItem("Node Selector", nullptr, &m_ShowNodeSelector);
-                ImGui::MenuItem("Single Instruction", nullptr, &m_ShowSingleInstruction);
                 ImGui::MenuItem("Node Editor", nullptr, &m_ShowNodeEditor);
                 ImGui::EndMenu();
             }
@@ -456,9 +497,6 @@ public:
         }
 
         // Render windows based on their visibility flags
-        if (m_ShowSingleInstruction) {
-            RenderSingleInstructionWindow();
-        }
         if (m_ShowNodeSelector) {
             RenderNodeSelectorWindow();
         }
