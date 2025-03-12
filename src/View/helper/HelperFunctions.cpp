@@ -65,3 +65,33 @@ bool NodeHelpers::HasOutputConnection(const domain::Node &node, const ImVector<L
     }
     return false;
 }
+
+void NodeHelpers::RenderNodeTooltip(RobotActions::NodeActivation action) {
+    switch (action) {
+        case RobotActions::NodeActivation::Relative:
+            ImGui::Text("Move the robot relative to its current position");
+        ImGui::Text("X, Y, Z coordinates can be adjusted");
+        break;
+        case RobotActions::NodeActivation::Absolute:
+            ImGui::Text("Move the robot to an absolute position");
+        ImGui::Text("Specify exact X, Y, Z coordinates");
+        break;
+        case RobotActions::NodeActivation::LoopStart:
+            ImGui::Text("Start a loop sequence");
+        ImGui::Text("Specify number of iterations");
+        break;
+        case RobotActions::NodeActivation::LoopEnd:
+            ImGui::Text("End a loop sequence");
+        ImGui::Text("Must be connected to a Loop Start node");
+        break;
+        case RobotActions::NodeActivation::Wait:
+            ImGui::Text("Pause execution for specified time");
+        ImGui::Text("Duration in seconds");
+        break;
+        case RobotActions::NodeActivation::Home:
+            ImGui::Text("Return robot to home position");
+        break;
+        default:
+            break;
+    }
+}

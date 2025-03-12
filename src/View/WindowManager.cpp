@@ -32,6 +32,13 @@ class WindowManager : public IWindowManager {
     SimulationManager *localSimulationManager;
 
 
+    void CalcRandomPosNextNode() {
+        float randomXNumber = (rand() % 100) - 30;
+        float randomYNumber = (rand() % 100) - 30;
+        m_NextNodePosition.x += randomXNumber;
+        m_NextNodePosition.y += randomYNumber;
+    }
+
     void RenderNodeSelectorWindow() {
         // Set max width to 250
         ImGui::SetNextWindowSizeConstraints(ImVec2(200, 0), ImVec2(250, FLT_MAX));
@@ -76,10 +83,13 @@ class WindowManager : public IWindowManager {
 
                     m_Nodes.push_back(newNode);
 
-                    float randomXNumber = (rand() % 100) - 30;
-                    float randomYNumber = (rand() % 100) - 30;
-                    m_NextNodePosition.x += randomXNumber;
-                    m_NextNodePosition.y += randomYNumber;
+                    CalcRandomPosNextNode();
+                }
+                // Add tooltip for each button
+                if (ImGui::IsItemHovered()) {
+                    ImGui::BeginTooltip();
+                    NodeHelpers::RenderNodeTooltip(action);
+                    ImGui::EndTooltip();
                 }
                 ImGui::PopItemWidth();
             }
@@ -96,6 +106,14 @@ class WindowManager : public IWindowManager {
 
             if (ImGui::Button("Send instructions", ImVec2(windowWidth, 0))) {
                 ExecuteNodeChain();
+            }
+
+            // Add tooltip for Send instructions button
+            if (ImGui::IsItemHovered()) {
+                ImGui::BeginTooltip();
+                ImGui::Text("Execute the current node sequence");
+                ImGui::Text("Nodes must be properly connected");
+                ImGui::EndTooltip();
             }
 
             ImGui::PopStyleColor(3);
