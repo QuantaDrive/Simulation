@@ -20,7 +20,7 @@ public:
     virtual ~IManager() = default;
 protected:
     std::string toGCode(domain::Task* task);
-    domain::Instruction* parseGCode(std::string& gCode);
+    domain::Task* parseGCode(std::string& gCode);
     std::vector<std::string> split(std::string s, const std::string& delimiter);
 };
 
