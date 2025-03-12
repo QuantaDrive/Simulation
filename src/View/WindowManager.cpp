@@ -33,6 +33,8 @@ class WindowManager : public IWindowManager {
 
 
     void RenderNodeSelectorWindow() {
+        // Set max width to 250
+        ImGui::SetNextWindowSizeConstraints(ImVec2(200, 0), ImVec2(250, FLT_MAX));
         ImGui::Begin("Node Selector", &m_ShowNodeSelector, ImGuiWindowFlags_MenuBar);
 
         if (ImGui::BeginMenuBar()) {
@@ -40,24 +42,16 @@ class WindowManager : public IWindowManager {
         }
 
         if (!ImGui::IsWindowCollapsed()) {
-            // Calculate the widest label to set consistent spacing
-            float maxLabelWidth = 0.0f;
-            for (int i = 0; i < static_cast<int>(RobotActions::NodeActivation::COUNT); ++i) {
-                auto action = static_cast<RobotActions::NodeActivation>(i);
-                std::string label = RobotActions::toString(action).data();
-                maxLabelWidth = std::max(maxLabelWidth, ImGui::CalcTextSize(label.c_str()).x);
-            }
-
-            maxLabelWidth += 20.0f;
+            // Make buttons fill the width
+            float windowWidth = ImGui::GetContentRegionAvail().x;
 
             for (int i = 0; i < static_cast<int>(RobotActions::NodeActivation::COUNT); ++i) {
                 auto action = static_cast<RobotActions::NodeActivation>(i);
-                std::string label = RobotActions::toString(action).data();
+                std::string label = toString(action).data();
 
-                ImGui::Text("%s", label.c_str());
-                ImGui::SameLine(maxLabelWidth);
-
-                if (ImGui::Button(("+##" + label).c_str())) {
+                // Set button width to match window width
+                ImGui::PushItemWidth(windowWidth);
+                if (ImGui::Button(label.c_str(), ImVec2(windowWidth, 0))) {
                     domain::Node newNode(label.c_str(), action);
                     int currentId = m_NextNodeId;
                     newNode.InitializeNodeIds(currentId);
@@ -87,21 +81,24 @@ class WindowManager : public IWindowManager {
                     m_NextNodePosition.x += randomXNumber;
                     m_NextNodePosition.y += randomYNumber;
                 }
-                ImGui::SameLine();
-
-                if (ImGui::Button(("-##" + label).c_str())) {
-                    for (auto it = m_Nodes.rbegin(); it != m_Nodes.rend(); ++it) {
-                        if (it->GetActivation() == action) {
-                            m_Nodes.erase((++it).base());
-                            break;
-                        }
-                    }
-                }
+                ImGui::PopItemWidth();
             }
-        }
+            // Add spacing before the Send instructions button
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
 
-        if (ImGui::Button("Send instructions")) {
-            ExecuteNodeChain();
+
+            // Style the Send instructions button differently
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.7f, 0.2f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.8f, 0.3f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.1f, 0.6f, 0.1f, 1.0f));
+
+            if (ImGui::Button("Send instructions", ImVec2(windowWidth, 0))) {
+                ExecuteNodeChain();
+            }
+
+            ImGui::PopStyleColor(3);
         }
         ImGui::End();
     }
@@ -150,7 +147,7 @@ private:
             newLinks.reserve(m_Links.size());
 
             // Copy only the links that are not connected to the node
-            for (const auto& link : m_Links) {
+            for (const auto &link: m_Links) {
                 if (!LinkNodeMatcher(*nodeIt)(link)) {
                     newLinks.push_back(link);
                 }
@@ -201,7 +198,7 @@ private:
                 // Handle node deletion
                 ed::NodeId selectedNodeId;
                 if (ed::GetSelectedNodes(&selectedNodeId, 1)) {
-                        deleteNodeAndConnectedLinks(selectedNodeId);
+                    deleteNodeAndConnectedLinks(selectedNodeId);
                 }
                 ed::EndDelete();
             }
@@ -324,7 +321,7 @@ private:
             std::string idTitle = "wait " + node.GetNodeId().Get();
             ImGui::PushID(idTitle.c_str());
             ImGui::PushItemWidth(100);
-            ImGui::Text("ms");
+            ImGui::Text("s");
             int waitTimer = node.GetWaitTimer();
             ImGui::InputInt("", &waitTimer);
 
