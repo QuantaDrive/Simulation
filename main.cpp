@@ -32,15 +32,13 @@ int main()
 
 	simulation::RobotArm* arm = new simulation::RobotArm("arm1", "src/Simulation/arms/Moveo/moveo.ini");
 
-	vector<float> angles = {45.0f,-35.0f,90.0f,50.0f};
 	SimulationManager* simulationManager= new SimulationManager(repo,arm);
 	simulationManager->initializeCamera();
-	domain::Position* examplePos = new domain::Position({200,200,800},{0,0,0});
+	vector<float> angles = {0,0,0,0};
 	try
 	{
-		angles = simulationManager->inverseKinematics(examplePos);
-		delete examplePos;
-		for (auto angle:angles)
+		angles = simulationManager->inverseKinematics(simulationManager->getRobotArm()->getCurrPosition());
+		for (const auto angle:angles)
 		{
 			cout << angle << endl;
 		}

@@ -61,6 +61,8 @@ protected:
 public:
     explicit SimulationManager(Repo* repo, simulation::RobotArm* simulationArm);
     ~SimulationManager();
+    void setRobotArm(domain::RobotArm* robotArm);
+    [[nodiscard]] domain::RobotArm* getRobotArm();
     void executeTask(const domain::Task* task);
     void executeInstruction(const domain::Instruction* instruction);
     bool move(domain::Position* position);
