@@ -33,7 +33,7 @@ namespace domain
         ed::PinId nodeOutputPinId_;
         int loopCount_ = 0;
         int waitTimer_ = 0;
-        glm::vec3 relativeMove_;
+        Position* relativeMove_;
         Position* absolutePosition_ = new Position({0, 0, 0}, {0, 0, 0});
     public:
         explicit Node(const char* title, RobotActions::NodeActivation activation);
@@ -54,9 +54,9 @@ namespace domain
 
         [[nodiscard]] int GetLoopCount() const;
 
-        void SetRelativeMove(float x, float y, float z);
+        void SetRelativeMove(Position* relMove);
 
-        [[nodiscard]] glm::vec3 GetRelativeMove() const;
+        [[nodiscard]] Position* GetRelativeMove() const;
 
         void SetAbsolutePosition(Position *absolute_position);
 
