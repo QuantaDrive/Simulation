@@ -347,9 +347,9 @@ private:
             ImGui::PushID(idTitle.c_str());
             // Create sliders for X, Y, Z
             bool changed = false;
-            changed |= ImGui::SliderFloat("X", &x, -200.0f, 200.0f);
-            changed |= ImGui::SliderFloat("Y", &y, -200.0f, 200.0f);
-            changed |= ImGui::SliderFloat("Z", &z, -200.0f, 200.0f);
+            changed |= ImGui::InputFloat("X", &x, -200.0f, 200.0f);
+            changed |= ImGui::InputFloat("Y", &y, -200.0f, 200.0f);
+            changed |= ImGui::InputFloat("Z", &z, -200.0f, 200.0f);
 
             // Update values if changed
             if (changed) {
@@ -396,9 +396,9 @@ private:
 
             // Create sliders for X, Y, Z
             bool changed = false;
-            changed |= ImGui::SliderFloat("X", &x, -200.0f, 200.0f);
-            changed |= ImGui::SliderFloat("Y", &y, -200.0f, 200.0f);
-            changed |= ImGui::SliderFloat("Z", &z, -200.0f, 200.0f);
+            changed |= ImGui::InputFloat("X", &x, -200.0f, 200.0f);
+            changed |= ImGui::InputFloat("Y", &y, -200.0f, 200.0f);
+            changed |= ImGui::InputFloat("Z", &z, -200.0f, 200.0f);
 
             // Update values if changed
             if (changed) {
