@@ -23,11 +23,8 @@ domain::RobotArm* Repo::readArm(const string& armName) const
     if (db_["arms"][armName])
     {
         auto arm = db_["arms"][armName];
-        const auto position = new domain::Position({0,0,0},{0,0,0});
-        const auto tool = new domain::Tool("default", position);
-        auto* newArm = new domain::RobotArm(armName,{},domain::READY,position,
-            arm["host"].as<string>(),arm["type"].as<string>(),tool);
-        return newArm;
+        return new domain::RobotArm(armName,{},domain::READY,new domain::Position({0,0,754.5},{0,0,0}),
+            arm["host"].as<string>(),arm["type"].as<string>(),new domain::Tool("default", new domain::Position({0,0,0},{0,0,0})));
     }
     return nullptr;
 }

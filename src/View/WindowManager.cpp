@@ -1,5 +1,4 @@
 #include "IWindowManager.h"
-#include <bits/algorithmfwd.h>
 
 #include "../Domain/Node.h"
 #include "../Domain/NodeActivation.h"

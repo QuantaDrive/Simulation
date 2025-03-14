@@ -6,14 +6,13 @@
 
 #include <iostream>
 #include <unistd.h>
+#include <glm/gtc/constants.hpp>
 
 #include "../../Domain/RobotArm.h"
 #include "../../Domain/Instruction.h"
 #include "../../Domain/Task.h"
 #include "../../Domain/Tool.h"
 #include "../../DAL/Repo.h"
-#include "../../Domain/Instruction.h"
-#include "../../Domain/Instruction.h"
 #include "../../Domain/Position.h"
 #include "../src/RobotArm.h"
 
@@ -25,6 +24,17 @@ SimulationManager::SimulationManager(Repo *repo, simulation::RobotArm *simulatio
 SimulationManager::~SimulationManager() {
     delete repo_;
     delete simulationArm_;
+    delete robotArm_;
+}
+
+void SimulationManager::setRobotArm(domain::RobotArm* robotArm)
+{
+    robotArm_ = robotArm;
+}
+
+domain::RobotArm* SimulationManager::getRobotArm()
+{
+    return robotArm_;
 }
 
 //
@@ -34,18 +44,21 @@ SimulationManager::~SimulationManager() {
 void SimulationManager::executeInstruction(const domain::Instruction *instruction) {
     // const auto arm = repo_->readArm(simulationArm_->getName());
     const auto currentPosition = robotArm_->getCurrPosition();
-    if (instruction->getWait() > 0) sleep(instruction->getWait());
-    else if (instruction->getGripForce() > 0) grip(instruction->getGripForce());
-    else if (instruction->isGoHome()) move(new domain::Position({0, 0, 0}, {0, 0, 0}));
-    else if (instruction->isRelative()) move(new domain::Position({
-                                                                      currentPosition->getCoords()[0] + instruction->
-                                                                      getRelMove()[0],
-                                                                      currentPosition->getCoords()[1] + instruction->
-                                                                      getRelMove()[1],
-                                                                      currentPosition->getCoords()[2] + instruction->
-                                                                      getRelMove()[2]
-                                                                  }, currentPosition->getRotation()));
-    else move(instruction->getPosition());
+    try
+    {
+        if (instruction->getWait() > 0) sleep(instruction->getWait());
+        else if (instruction->getGripForce() > 0) grip(instruction->getGripForce());
+        else if (instruction->isGoHome()) move(new domain::Position({0, 0, 754.5}, {0, 0, 0}));
+        else if (instruction->isRelative()) move(new domain::Position({
+                                                                          currentPosition->getCoords()[0] + instruction->
+                                                                          getRelMove()[0],
+                                                                          currentPosition->getCoords()[1] + instruction->
+                                                                          getRelMove()[1],
+                                                                          currentPosition->getCoords()[2] + instruction->
+                                                                          getRelMove()[2]
+                                                                      }, currentPosition->getRotation()));
+        else move(instruction->getPosition());
+    }catch (logic_error e){}
 }
 
 void SimulationManager::executeTask(const domain::Task *task) {
@@ -58,40 +71,53 @@ vector<domain::Position*> SimulationManager::interpolate(const domain::Position*
     auto currP = currentPosition->getCoords();
     auto newP = newPosition->getCoords();
 
-    // Calculate max reach based on arm segments (using DH parameters)
-    float maxReach = simulationArm_->getDhParameters()[1][3] +  // a2
-                     simulationArm_->getDhParameters()[2][3] +  // a3
-                     simulationArm_->getDhParameters()[3][2];   // d4
-
-    // Calculate distance to target
     float d = sqrtf(powf(currP[0] - newP[0], 2) + powf(currP[1] - newP[1], 2) + powf(currP[2] - newP[2], 2));
-
-    // If target is beyond reach, scale down the position
-    if (d > maxReach) {
-        float scale = maxReach / d;
-        newP[0] = currP[0] + (newP[0] - currP[0]) * scale;
-        newP[1] = currP[1] + (newP[1] - currP[1]) * scale;
-        newP[2] = currP[2] + (newP[2] - currP[2]) * scale;
-        d = maxReach;
-    }
 
     vector<domain::Position*> interpolpoints = {};
     for (int i = 1; i < static_cast<int>(round(d)); i++) {
         float x = currP[0] + static_cast<float>(i) / d * (newP[0] - currP[0]);
         float y = currP[1] + static_cast<float>(i) / d * (newP[1] - currP[1]);
         float z = currP[2] + static_cast<float>(i) / d * (newP[2] - currP[2]);
-        interpolpoints.emplace_back(new domain::Position({x, y, z}, currentPosition->getRotation()));
+        interpolpoints.emplace_back(new domain::Position({x, y, z}, newPosition->getRotation()));
     }
     return interpolpoints;
 }
 
-bool SimulationManager::move(domain::Position *position) {
+bool SimulationManager::move(domain::Position *position, float velocity) {
     // auto arm = repo_->readArm(simulationArm_->getName());
     if (robotArm_->getStatus() == domain::READY) {
         robotArm_->setStatus(domain::BUSY);
+        vector<float> anglestest = {};
+        try
+        {
+            anglestest = inverseKinematics(position);
+        }catch (logic_error e)
+        {
+            robotArm_->setStatus(domain::READY);
+            throw;
+        }
+        for (auto angle:anglestest)
+        {
+            cout << angle << endl;
+        }
         auto interpolPos = interpolate(robotArm_->getCurrPosition(), position);
+        vector<vector<float>> allAngles = {};
         for (auto pos: interpolPos) {
-            auto angles = inverseKinematics(pos);
+            vector<float> angles = {};
+            try
+            {
+                // cout << "Position: " << pos->getCoords()[0] << " " << pos->getCoords()[1] << " " << pos->getCoords()[2] << endl;
+                angles = inverseKinematics(pos);
+            }catch (logic_error e)
+            {
+                robotArm_->setStatus(domain::READY);
+                throw;
+            }
+            allAngles.emplace_back(angles);
+            delete pos;
+        }
+        for (auto angles: allAngles)
+        {
             for (int i = 0; i < angles.size(); i++) {
                 simulationArm_->moveAngle(i + 1, angles[i], false, true);
             }
@@ -129,70 +155,80 @@ mat4 SimulationManager::getTransformationMatrix(vec3 position, vec3 rotation) {
                        sin(Rx) * sin(Ry) * cos(Rz) - cos(Rx) * sin(Rz), position[1],
                        -sin(Ry), cos(Ry) * sin(Rz), cos(Ry) * cos(Rz), position[2],
                        0, 0, 0, 1);
-    return matrix;
+    auto matrix2 = mat4(cos(Rx) * cos(Ry),sin(Rx) * cos(Ry),-sin(Ry),0,
+                        cos(Rx) * sin(Ry) * sin(Rz) - sin(Rx) * cos(Rz),sin(Rx) * sin(Ry) * sin(Rz) + cos(Rx) * cos(Rz),cos(Ry) * sin(Rz),0,
+                        cos(Rx) * sin(Ry) * cos(Rz) + sin(Rx) * sin(Rz),sin(Rx) * sin(Ry) * cos(Rz) - cos(Rx) * sin(Rz),cos(Ry) * cos(Rz),0,
+                        position[0],position[1],position[2],1);
+    return matrix2;
 }
 
 mat4 SimulationManager::getDhTransformationMatrix(float joint, float alpha, float d, const float a) {
     joint = radians(joint);
     alpha = radians(alpha);
-    return {
-        cos(joint), -sin(joint) * cos(alpha), sin(joint) * sin(alpha), a * cos(joint),
-        sin(joint), cos(joint) * cos(alpha), -cos(joint) * sin(alpha), a * sin(joint),
-        0, sin(alpha), cos(alpha), d,
-        0, 0, 0, 1
-    };
+    return {cos(joint),sin(joint),0,0,
+            -sin(joint) * cos(alpha),cos(joint) * cos(alpha),sin(alpha),0,
+            sin(joint) * sin(alpha),-cos(joint) * sin(alpha),cos(alpha),0,
+            a * cos(joint),a * sin(joint),d,1};
 }
 
 mat4 SimulationManager::toolToArm(const domain::Position *position, const domain::Tool *tool) {
+    auto positionMat = getTransformationMatrix(position->getCoords(), position->getRotation());
     vec3 radianRotationTool = {
         radians(tool->getPosition()->getRotation()[0]), radians(tool->getPosition()->getRotation()[1]),
         radians(tool->getPosition()->getRotation()[2])
     };
     auto toolFrame = getTransformationMatrix(tool->getPosition()->getCoords(), radianRotationTool);
     toolFrame = inverse(toolFrame);
-    return getTransformationMatrix(position->getCoords(), position->getRotation()) * toolFrame;
+    return positionMat * toolFrame;
 }
 
 mat4 SimulationManager::armToSphericalWrist(const mat4 &j6) {
-    mat4 negate = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, -simulationArm_->getDhParameters()[5][2], 0, 0, 0, 1};
-    return negate * j6;
+    mat4 negate = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, -simulationArm_->getDhParameters()[5][2], 1};
+    return j6 * negate;
 }
 
 vector<vector<float> > SimulationManager::getParamsJ1Zero(mat4 &sphericalWrist) {
     float j1 = 0;
-    float x = sphericalWrist[0][3] * cos(radians(-j1)) - sphericalWrist[1][3] * sin(radians(-j1));
-    float y = sphericalWrist[1][3] * cos(radians(-j1)) + sphericalWrist[0][3] * sin(radians(-j1));
+    float x = sphericalWrist[3][0] * cos(radians(-j1)) - sphericalWrist[3][1] * sin(radians(-j1));
+    float y = sphericalWrist[3][1] * cos(radians(-j1)) + sphericalWrist[3][0] * sin(radians(-j1));
     float L1 = abs(x - simulationArm_->getDhParameters()[0][3]);
-    float L4 = sphericalWrist[2][3] - simulationArm_->getDhParameters()[0][2];
+    float L4 = sphericalWrist[3][2] - simulationArm_->getDhParameters()[0][2];
     float L2 = sqrtf(powf(L1, 2) + powf(L4, 2));
     float L3 = sqrtf(
         powf(simulationArm_->getDhParameters()[3][2], 2) + powf(simulationArm_->getDhParameters()[2][3], 2));
     float thetaB = degrees(atan2(L1, L4));
-    float thetaC = degrees(acosf(
-        (powf(simulationArm_->getDhParameters()[1][3], 2) + powf(L2, 2) - powf(L3, 2)) / (
-            2 * L2 * simulationArm_->getDhParameters()[1][3])));
-    float thetaD = degrees(acosf(
-        (powf(L3, 2) + powf(simulationArm_->getDhParameters()[1][3], 2) - powf(L2, 2)) / (
-            2 * L3 * simulationArm_->getDhParameters()[1][3])));
+    float thetaC = degrees(acosf((powf(simulationArm_->getDhParameters()[1][3], 2) + powf(L2, 2) - powf(L3, 2)) / (2 * L2 * simulationArm_->getDhParameters()[1][3])));
+    float thetaD = degrees(acosf((powf(L3, 2) + powf(simulationArm_->getDhParameters()[1][3], 2) - powf(L2, 2)) / (2 * L3 * simulationArm_->getDhParameters()[1][3])));
     float thetaE = degrees(atan2(simulationArm_->getDhParameters()[2][3], simulationArm_->getDhParameters()[3][2]));
     float j2 = thetaB - thetaC;
-    float j3 = -(thetaD + thetaE) + 90;
+    float j3 = -(thetaD + thetaE) + 180;
+    // cout << "thetaC = " << thetaC << " thetaD = " << thetaD << " j2 = " << j2 << " j3 = " << j3 << endl;
+    if (thetaC!=thetaC || thetaD!=thetaD || j2!=j2 || j3!=j3) throw logic_error("coordinates out of arms reach");
     return {{x, y}, {L1, L2, L3, L4}, {thetaB, thetaC, thetaD, thetaE}, {j2, j3}};
 }
 
 
 vector<float> SimulationManager::inverseKinematics(domain::Position *position) {
-    // auto arm = repo_->readArm(simulationArm_->getName());
     mat4 j6Matrix = toolToArm(position, robotArm_->getTool());
     mat4 sphericalWrist = armToSphericalWrist(j6Matrix);
-    auto j1 = degrees(atan2(sphericalWrist[1][3], sphericalWrist[0][3]));
-    vector<vector<float> > params = getParamsJ1Zero(sphericalWrist);
+    auto j1 = degrees(atan2(sphericalWrist[3][1], sphericalWrist[3][1]));
+    cout << "j1: " << j1 << endl;
+    vector<vector<float> > params = {};
+    try
+    {
+        params = getParamsJ1Zero(sphericalWrist);
+    }
+    catch(logic_error e)
+    {
+        cerr << e.what() << endl;
+        throw;
+    }
     auto dhParams = simulationArm_->getDhParameters();
-    mat4 j1M = getDhTransformationMatrix(j1, dhParams[0][1], dhParams[0][2], dhParams[0][3]);
-    mat4 j2M = getDhTransformationMatrix(params[3][0] - 90.0f, dhParams[1][1], dhParams[1][2], dhParams[1][3]);
-    mat4 j3M = getDhTransformationMatrix(params[3][1] + 180.0f, dhParams[2][1], dhParams[2][2], dhParams[2][3]);
-    mat4 R02 = j2M * j1M;
-    mat4 R03 = j3M * R02;
+    mat4 j1M = getDhTransformationMatrix(j1 + dhParams[0][0], dhParams[0][1], dhParams[0][2], dhParams[0][3]);
+    mat4 j2M = getDhTransformationMatrix(params[3][0] + dhParams[1][0], dhParams[1][1], dhParams[1][2], dhParams[1][3]);
+    mat4 j3M = getDhTransformationMatrix(params[3][1] + dhParams[2][0], dhParams[2][1], dhParams[2][2], dhParams[2][3]);
+    mat4 R02 = j1M * j2M;
+    mat4 R03 = R02 * j3M;
     mat3 R03Sub = {
         R03[0][0], R03[0][1], R03[0][2],
         R03[1][0], R03[1][1], R03[1][2],
@@ -203,18 +239,17 @@ vector<float> SimulationManager::inverseKinematics(domain::Position *position) {
         j6Matrix[1][0], j6Matrix[1][1], j6Matrix[1][2],
         j6Matrix[2][0], j6Matrix[2][1], j6Matrix[2][2]
     };
-    mat3 j3Orientation = j6Rot * transpose(R03Sub);
-    auto result = degrees(atan2(sqrtf(1 - powf(j3Orientation[2][2], 2)), j3Orientation[2][2]));
-    float j5 = 0;
-    float mode = degrees(atan2(sqrtf(1 - powf(j3Orientation[2][2], 2)), j3Orientation[2][2]));
-    mode > 0 ? j5 = mode : j5 = degrees(atan2(-sqrtf(1 - powf(j3Orientation[2][2], 2)), j3Orientation[2][2]));
+    mat3 j3Orientation = transpose(R03Sub) * j6Rot ;
+    float j5 = degrees(atan2(sqrtf(1 - powf(j3Orientation[2][2], 2)), j3Orientation[2][2]));
+    if (j5 <= 0) j5 = degrees(atan2(-sqrtf(1 - powf(j3Orientation[2][2], 2)), j3Orientation[2][2]));
+    // cout << "j5: " << j5 << endl;
     float j4, j6;
-    if (mode > 0) {
-        j4 = degrees(atan2(j3Orientation[1][2], j3Orientation[0][2]));
-        j6 = degrees(atan2(j3Orientation[2][1], -j3Orientation[2][0]));
+    if (j5 > 0) {
+        j4 = degrees(atan2(j3Orientation[2][1], -j3Orientation[2][0]));
+        j6 = degrees(atan2(j3Orientation[1][2], j3Orientation[0][2]));
     } else {
-        j4 = degrees(atan2(-j3Orientation[1][2], -j3Orientation[0][2]));
-        j6 = degrees(atan2(j3Orientation[2][1], -j3Orientation[2][0]));
+        j4 = degrees(atan2(-j3Orientation[2][1], j3Orientation[2][0]));
+        j6 = degrees(atan2(-j3Orientation[1][2], -j3Orientation[0][2]));
     }
     return {j1, params[3][0], params[3][1], j4, j5, j6};
 }
