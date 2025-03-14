@@ -339,10 +339,14 @@ private:
             ImGui::PushItemWidth(100);
 
             // Get current relative move values
-            glm::vec3 relMove = node.GetRelativeMove();
-            float x = relMove.x;
-            float y = relMove.y;
-            float z = relMove.z;
+            domain::Position* relMove = node.GetRelativeMove();
+            float x = relMove->getCoords()[0];
+            float y = relMove->getCoords()[1];
+            float z = relMove->getCoords()[2];
+
+            float Rx = relMove->getRotation()[0];
+            float Ry = relMove->getRotation()[1];
+            float Rz = relMove->getRotation()[2];
 
             std::string idTitle = "absolute_move " + node.GetNodeId().Get();
             ImGui::PushID(idTitle.c_str());
@@ -354,7 +358,7 @@ private:
 
             // Update values if changed
             if (changed) {
-                node.SetRelativeMove(x, y, z);
+                node.SetRelativeMove(new domain::Position({x,y,z},{Rx,Ry,Rz}));
             }
 
             ImGui::PopID();
