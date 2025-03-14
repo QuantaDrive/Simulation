@@ -48,7 +48,7 @@ void SimulationManager::executeInstruction(const domain::Instruction *instructio
     {
         if (instruction->getWait() > 0) sleep(instruction->getWait());
         else if (instruction->getGripForce() > 0) grip(instruction->getGripForce());
-        else if (instruction->isGoHome()) move(new domain::Position({0, 0, 754.5}, {0, 0, 0}));
+        else if (instruction->isGoHome()) move(new domain::Position({0, 0, 754.5}, {0, 0, 0}),0);
         else if (instruction->isRelative()) move(new domain::Position({
                                                                           currentPosition->getCoords()[0] + instruction->
                                                                           getRelMove()[0],
@@ -56,8 +56,8 @@ void SimulationManager::executeInstruction(const domain::Instruction *instructio
                                                                           getRelMove()[1],
                                                                           currentPosition->getCoords()[2] + instruction->
                                                                           getRelMove()[2]
-                                                                      }, currentPosition->getRotation()));
-        else move(instruction->getPosition());
+                                                                      }, currentPosition->getRotation()), 0.0);
+        else move(instruction->getPosition(),0);
     }catch (logic_error e){}
 }
 

@@ -1,10 +1,12 @@
 #include "IWindowManager.h"
+#include <bits/algorithmfwd.h>
 
 #include "../Domain/Node.h"
 #include "../Domain/NodeActivation.h"
 #include "../Domain/Instruction.h"
 #include "helper/HelperFunctions.h"
 namespace ed = ax::NodeEditor;
+
 
 using namespace domain;
 
