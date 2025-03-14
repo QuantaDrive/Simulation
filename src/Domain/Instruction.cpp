@@ -4,13 +4,15 @@
 
 #include "Position.h"
 
-domain::Instruction::Instruction(domain::Position* position, const float gripForce, const int wait, const bool goHome, const bool relative, const vec3& relMove) :
+domain::Instruction::Instruction(domain::Position* position, const float gripForce, const int wait, const bool goHome, const bool relative, const vec3& relMove, const float speed, const float acceleration) :
 position_(position),
 gripForce_(gripForce),
 wait_(wait),
 goHome_(goHome),
 relative_(relative),
-relMove_(relMove){}
+relMove_(relMove),
+speed_(speed),
+acceleration_(acceleration){}
 
 domain::Instruction::~Instruction() = default;
 

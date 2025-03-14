@@ -17,6 +17,8 @@ namespace simulation{
         std::vector<glm::vec3> jointOffsets;
         std::vector<glm::vec3> jointDOFs;
         std::vector<glm::vec4> dh_parameters;
+        float maxVelocity_;
+        float maxAcceleration_;
 
     public:
         void moveAngle(int joint, float angle,

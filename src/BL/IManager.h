@@ -15,6 +15,9 @@ namespace domain
 }
 
 class IManager {
+private:
+    float maxVel_;
+    float maxAcc_;
 public:
     IManager() = default;
     virtual ~IManager() = default;

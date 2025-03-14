@@ -19,9 +19,11 @@ namespace domain
         bool goHome_;
         bool relative_;
         vec3 relMove_;
+        float speed_;
+        float acceleration_;
 
     public:
-        Instruction(Position* position, float gripForce, int wait, bool goHome, bool relative, const vec3& relMove);
+        Instruction(Position* position, float gripForce, int wait, bool goHome, bool relative, const vec3& relMove, float speed, float acceleration);
 
         ~Instruction();
 

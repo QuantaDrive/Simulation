@@ -62,7 +62,7 @@ domain::Task* IManager::parseGCode(std::string& gCode)
     tm datetime = *localtime(&timestamp);
     domain::Task* task = new domain::Task(datetime,{});
     bool nextRelative = false;
-    regex re("G*");
+    regex re("(G|M)*");
     auto lines = split(gCode, "\n");
     for (auto line : lines)
     {
@@ -71,14 +71,26 @@ domain::Task* IManager::parseGCode(std::string& gCode)
         {
             throw runtime_error('Invalid Gcode');
         }
-        re.assign("(G0|G1) X[0-9]{3} Y[0-9]{3} Z[0-9]{3}");
+        re.assign("G0 X[0-9]{3} Y[0-9]{3} Z[0-9]{3}");
         if (regex_search(gCode, re))
         {
             if (nextRelative)
             {
                 vec3 relMove = vec3({codeParts[1].substr(1),codeParts[2].substr(1),codeParts[3].substr(1)});
                 nextRelative = false;
-                task->getInstructions().emplace_back(new domain::Instruction(nullptr,0,0,false,true,relMove));
+                task->getInstructions().emplace_back(new domain::Instruction(nullptr,0,0,false,true,relMove,sim));
+            }
+            auto* p = new domain::Position({codeParts[1].substr(1),codeParts[2].substr(1),codeParts[3].substr(1)}, {0,0,0});
+            task->getInstructions().emplace_back(new domain::Instruction(p, 0, 0, false, false, {0,0,0}));
+        }
+        re.assign("G0 X[0-9]{3} Y[0-9]{3} Z[0-9]{3} F[0-9]{3}");
+        if (regex_search(gCode, re))
+        {
+            if (nextRelative)
+            {
+                vec3 relMove = vec3({codeParts[1].substr(1),codeParts[2].substr(1),codeParts[3].substr(1)});
+                nextRelative = false;
+                task->getInstructions().emplace_back(new domain::Instruction(nullptr,0,0,false,true,relMove,));
             }
             auto* p = new domain::Position({codeParts[1].substr(1),codeParts[2].substr(1),codeParts[3].substr(1)}, {0,0,0});
             task->getInstructions().emplace_back(new domain::Instruction(p, 0, 0, false, false, {0,0,0}));
