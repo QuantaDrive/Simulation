@@ -17,7 +17,8 @@ namespace simulation{
         std::vector<glm::vec3> jointOffsets;
         std::vector<glm::vec3> jointDOFs;
         std::vector<glm::vec4> dh_parameters;
-
+        float maxVel_;
+        float maxAcc_;
     public:
         void moveAngle(int joint, float angle,
             bool relative = false, bool isDegree = false);
@@ -26,6 +27,8 @@ namespace simulation{
         std::vector<glm::vec4> getDhParameters() const;
         void render();
         [[nodiscard]] std::string getName() const;
+        [[nodiscard]] float getMaxVel() const;
+        [[nodiscard]] float getMaxAcc() const;
     };
 } // simulation
 

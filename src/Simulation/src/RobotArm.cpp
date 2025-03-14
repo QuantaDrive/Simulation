@@ -104,3 +104,13 @@ std::string simulation::RobotArm::getName() const
 {
     return name_;
 }
+
+float simulation::RobotArm::getMaxVel() const
+{
+    return maxVel_;
+}
+
+float simulation::RobotArm::getMaxAcc() const
+{
+    return maxAcc_;
+}

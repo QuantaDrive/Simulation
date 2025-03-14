@@ -48,16 +48,31 @@ void SimulationManager::executeInstruction(const domain::Instruction *instructio
     {
         if (instruction->getWait() > 0) sleep(instruction->getWait());
         else if (instruction->getGripForce() > 0) grip(instruction->getGripForce());
-        else if (instruction->isGoHome()) move(new domain::Position({0, 0, 754.5}, {0, 0, 0}));
-        else if (instruction->isRelative()) move(new domain::Position({
-                                                                          currentPosition->getCoords()[0] + instruction->
-                                                                          getRelMove()[0],
-                                                                          currentPosition->getCoords()[1] + instruction->
-                                                                          getRelMove()[1],
-                                                                          currentPosition->getCoords()[2] + instruction->
-                                                                          getRelMove()[2]
-                                                                      }, currentPosition->getRotation()));
-        else move(instruction->getPosition());
+        else if (instruction->isGoHome()) move(new domain::Position({0, 0, 754.5}, {0, 0, 0}),instruction->getVelocity());
+        else if (instruction->isRelative())
+        {
+            if (instruction->isRapid()) move(new domain::Position({
+                                        currentPosition->getCoords()[0] + instruction->
+                                        getRelMove()->getCoords()[0],
+                                        currentPosition->getCoords()[1] + instruction->
+                                        getRelMove()->getCoords()[1],
+                                        currentPosition->getCoords()[2] + instruction->
+                                        getRelMove()->getCoords()[2]
+                                    }, currentPosition->getRotation()),simulationArm_->getMaxVel());
+            else move(new domain::Position({
+                                        currentPosition->getCoords()[0] + instruction->
+                                        getRelMove()->getCoords()[0],
+                                        currentPosition->getCoords()[1] + instruction->
+                                        getRelMove()->getCoords()[1],
+                                        currentPosition->getCoords()[2] + instruction->
+                                        getRelMove()->getCoords()[2]
+                                    }, currentPosition->getRotation()),instruction->getVelocity());
+        }
+        else
+        {
+            if (instruction->isRapid()) move(instruction->getPosition(),simulationArm_->getMaxVel());
+            else move(instruction->getPosition(),instruction->getVelocity());
+        }
     }catch (logic_error e){}
 }
 
@@ -96,10 +111,10 @@ bool SimulationManager::move(domain::Position *position, float velocity) {
             robotArm_->setStatus(domain::READY);
             throw;
         }
-        for (auto angle:anglestest)
-        {
-            cout << angle << endl;
-        }
+        // for (auto angle:anglestest)
+        // {
+        //     cout << angle << endl;
+        // }
         auto interpolPos = interpolate(robotArm_->getCurrPosition(), position);
         vector<vector<float>> allAngles = {};
         for (auto pos: interpolPos) {
