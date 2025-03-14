@@ -48,7 +48,7 @@ void SimulationManager::executeInstruction(const domain::Instruction *instructio
     {
         if (instruction->getWait() > 0) sleep(instruction->getWait());
         else if (instruction->getGripForce() > 0) grip(instruction->getGripForce());
-        else if (instruction->isGoHome()) move(new domain::Position({0, 0, 0}, {0, 0, 0}));
+        else if (instruction->isGoHome()) move(new domain::Position({0, 0, 754.5}, {0, 0, 0}));
         else if (instruction->isRelative()) move(new domain::Position({
                                                                           currentPosition->getCoords()[0] + instruction->
                                                                           getRelMove()[0],
@@ -83,7 +83,7 @@ vector<domain::Position*> SimulationManager::interpolate(const domain::Position*
     return interpolpoints;
 }
 
-bool SimulationManager::move(domain::Position *position) {
+bool SimulationManager::move(domain::Position *position, float velocity) {
     // auto arm = repo_->readArm(simulationArm_->getName());
     if (robotArm_->getStatus() == domain::READY) {
         robotArm_->setStatus(domain::BUSY);
@@ -106,7 +106,7 @@ bool SimulationManager::move(domain::Position *position) {
             vector<float> angles = {};
             try
             {
-                cout << "Position: " << pos->getCoords()[0] << " " << pos->getCoords()[1] << " " << pos->getCoords()[2] << endl;
+                // cout << "Position: " << pos->getCoords()[0] << " " << pos->getCoords()[1] << " " << pos->getCoords()[2] << endl;
                 angles = inverseKinematics(pos);
             }catch (logic_error e)
             {
@@ -202,7 +202,7 @@ vector<vector<float> > SimulationManager::getParamsJ1Zero(mat4 &sphericalWrist) 
     float thetaE = degrees(atan2(simulationArm_->getDhParameters()[2][3], simulationArm_->getDhParameters()[3][2]));
     float j2 = thetaB - thetaC;
     float j3 = -(thetaD + thetaE) + 180;
-    cout << "thetaC = " << thetaC << " thetaD = " << thetaD << " j2 = " << j2 << " j3 = " << j3 << endl;
+    // cout << "thetaC = " << thetaC << " thetaD = " << thetaD << " j2 = " << j2 << " j3 = " << j3 << endl;
     if (thetaC!=thetaC || thetaD!=thetaD || j2!=j2 || j3!=j3) throw logic_error("coordinates out of arms reach");
     return {{x, y}, {L1, L2, L3, L4}, {thetaB, thetaC, thetaD, thetaE}, {j2, j3}};
 }
@@ -212,6 +212,7 @@ vector<float> SimulationManager::inverseKinematics(domain::Position *position) {
     mat4 j6Matrix = toolToArm(position, robotArm_->getTool());
     mat4 sphericalWrist = armToSphericalWrist(j6Matrix);
     auto j1 = degrees(atan2(sphericalWrist[3][1], sphericalWrist[3][1]));
+    cout << "j1: " << j1 << endl;
     vector<vector<float> > params = {};
     try
     {
@@ -241,7 +242,7 @@ vector<float> SimulationManager::inverseKinematics(domain::Position *position) {
     mat3 j3Orientation = transpose(R03Sub) * j6Rot ;
     float j5 = degrees(atan2(sqrtf(1 - powf(j3Orientation[2][2], 2)), j3Orientation[2][2]));
     if (j5 <= 0) j5 = degrees(atan2(-sqrtf(1 - powf(j3Orientation[2][2], 2)), j3Orientation[2][2]));
-    cout << "j5: " << j5 << endl;
+    // cout << "j5: " << j5 << endl;
     float j4, j6;
     if (j5 > 0) {
         j4 = degrees(atan2(j3Orientation[2][1], -j3Orientation[2][0]));

@@ -38,10 +38,10 @@ int main()
 	try
 	{
 		angles = simulationManager->inverseKinematics(simulationManager->getRobotArm()->getCurrPosition());
-		for (const auto angle:angles)
-		{
-			cout << angle << endl;
-		}
+		// for (const auto angle:angles)
+		// {
+		// 	cout << angle << endl;
+		// }
 	}catch (logic_error error){}
 
 	arm->moveAngle(1, angles[0] /*45.0f*/, false, true);

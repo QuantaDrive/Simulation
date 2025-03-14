@@ -65,7 +65,7 @@ public:
     [[nodiscard]] domain::RobotArm* getRobotArm();
     void executeTask(const domain::Task* task);
     void executeInstruction(const domain::Instruction* instruction);
-    bool move(domain::Position* position);
+    bool move(domain::Position* position, float velocity);
     void grip(float gripForce);
 
     vector<float> inverseKinematics(domain::Position* position);
