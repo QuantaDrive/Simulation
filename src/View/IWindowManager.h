@@ -9,6 +9,7 @@
 #include <backends/imgui_impl_opengl3.h>
 #include <iostream>
 #include <vector>
+#include "../Simulation/BL/SimulationManager.h"
 
 
 class IWindowManager {

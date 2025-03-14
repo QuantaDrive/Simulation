@@ -6,7 +6,7 @@
 
 #include <stdexcept>
 
-#include "Position.h"
+#include "Tool.h"
 #include "../Domain/Instruction.h"
 #include "../Domain/Task.h"
 
@@ -25,6 +25,7 @@ domain::RobotArm::~RobotArm()
     {
         delete t;
     }
+    delete tool_;
     delete currPosition_;
 }
 

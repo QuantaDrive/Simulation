@@ -12,12 +12,11 @@
 
 namespace ed = ax::NodeEditor;
 ed::EditorContext *g_Context = nullptr;
-WindowManager windowManager = WindowManager();
+// WindowManager windowManager = WindowManager();
 
 int main()
 {
 	Repo* repo= new Repo(YAML::LoadFile("conf/db.yaml"));
-	auto testarm = repo->readArm("arm1");
 
 	simulation::Init();
 	simulation::CompileShaders();
@@ -33,13 +32,17 @@ int main()
 
 	simulation::RobotArm* arm = new simulation::RobotArm("arm1", "src/Simulation/arms/Moveo/moveo.ini");
 
-	vector<float> angles = {45.0f,-35.0f,90.0f,50.0f};
-	// SimulationManager* mgr= new SimulationManager(repo,arm);
-	// angles = mgr->inverseKinematics(testarm,new domain::Position({0,0,0},{90,0,90}));
-	// for (auto angle:angles)
-	// {
-	// 	cout << angle << endl;
-	// }
+	SimulationManager* simulationManager= new SimulationManager(repo,arm);
+	simulationManager->initializeCamera();
+	vector<float> angles = {0,0,0,0};
+	try
+	{
+		angles = simulationManager->inverseKinematics(simulationManager->getRobotArm()->getCurrPosition());
+		// for (const auto angle:angles)
+		// {
+		// 	cout << angle << endl;
+		// }
+	}catch (logic_error error){}
 
 	arm->moveAngle(1, angles[0] /*45.0f*/, false, true);
 	arm->moveAngle(2, angles[1] /*-35.0f*/, false, true);
@@ -52,14 +55,15 @@ int main()
 	g_Context = ed::CreateEditor(&config);
 
 	// Setup ImGui
+	WindowManager windowManager = WindowManager(simulationManager);
 	windowManager.SetupImGui(simulation::window);
 	do
 	{
 		simulation::refresh();
 
-		arm->moveAngle(1, 0.2f, true, true);
-		arm->moveAngle(4, 0.3f, true, true);
-		arm->moveAngle(6, 1.0f, true, true);
+		// arm->moveAngle(1, 0.2f, true, true);
+		// arm->moveAngle(4, 0.3f, true, true);
+		// arm->moveAngle(6, 1.0f, true, true);
 		arm->render();
 		// Render ImGui UI and Node Editor together
 		windowManager.RenderUI(g_Context);
@@ -69,6 +73,9 @@ int main()
 	simulation::Close();
 	// Cleanup ImGui & Node Editor
 	windowManager.CleanupImGui(g_Context);
+
+	//cleanup
+	delete simulationManager;
 
 	return 0;
 }

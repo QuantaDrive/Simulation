@@ -12,7 +12,7 @@ relMove_(relMove){}
 
 domain::Instruction::~Instruction() = default;
 
-Position* domain::Instruction::getPosition() const
+domain::Position *domain::Instruction::getPosition() const
 {
     return position_;
 }
