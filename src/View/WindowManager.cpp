@@ -25,103 +25,188 @@ class WindowManager : public IWindowManager {
 
     // Window states
     bool m_ShowNodeSelector = true;
-    bool m_ShowSingleInstruction = true;
     bool m_ShowNodeEditor = true;
+    bool m_ShowHelpWindow = false;
 
     //Simulationmanager
     SimulationManager *localSimulationManager;
 
 
-   void RenderNodeSelectorWindow() {
-    ImGui::Begin("Node Selector", &m_ShowNodeSelector, ImGuiWindowFlags_MenuBar);
 
-    if (ImGui::BeginMenuBar()) {
-        ImGui::EndMenuBar();
+    void RenderHelpWindow() {
+        if (!m_ShowHelpWindow) return;
+        ImGui::SetNextWindowSizeConstraints(ImVec2(400, 300), ImVec2(600, 800));
+        ImGui::Begin("Node Editor Help", &m_ShowHelpWindow);
+        NodeHelpers::RenderHelpText();
+        ImGui::End();
     }
 
-    if (!ImGui::IsWindowCollapsed()) {
-        // Calculate the widest label to set consistent spacing
-        float maxLabelWidth = 0.0f;
-        for (int i = 0; i < static_cast<int>(RobotActions::NodeActivation::COUNT); ++i) {
-            auto action = static_cast<RobotActions::NodeActivation>(i);
-            std::string label = RobotActions::toString(action).data();
-            maxLabelWidth = std::max(maxLabelWidth, ImGui::CalcTextSize(label.c_str()).x);
-        }
 
-        maxLabelWidth += 20.0f;
+    void RenderNodeSelectorWindow() {
+        // Set max width to 250
+        ImGui::SetNextWindowSizeConstraints(ImVec2(200, 0), ImVec2(250, FLT_MAX));
+        ImGui::Begin("Node Selector", &m_ShowNodeSelector, ImGuiWindowFlags_MenuBar);
 
-        for (int i = 0; i < static_cast<int>(RobotActions::NodeActivation::COUNT); ++i) {
-            auto action = static_cast<RobotActions::NodeActivation>(i);
-            std::string label = RobotActions::toString(action).data();
-
-            ImGui::Text("%s", label.c_str());
-            ImGui::SameLine(maxLabelWidth);
-
-            if (ImGui::Button(("+##" + label).c_str())) {
-                domain::Node newNode(label.c_str(), action);
-                int currentId = m_NextNodeId;
-                newNode.InitializeNodeIds(currentId);
-                m_NextNodeId = currentId;
-
-                switch (action) {
-                    case RobotActions::NodeActivation::LoopStart: {
-                        int loopCount = 1;
-                        ImGui::InputInt("Loop Count", &loopCount);
-                        newNode.SetLoopCount(loopCount);
-                        break;
-                    }
-                    case RobotActions::NodeActivation::Wait: {
-                        int waitTimer = 1;
-                        ImGui::InputInt("Wait Timer", &waitTimer);
-                        newNode.SetWaitTimer(waitTimer);
-                        break;
-                    }
-                    default:
-                        break;
-                }
-
-                m_Nodes.push_back(newNode);
-
-                float randomXNumber = (rand() % 100) - 30;
-                float randomYNumber = (rand() % 100) - 30;
-                m_NextNodePosition.x += randomXNumber;
-                m_NextNodePosition.y += randomYNumber;
-            }
-            ImGui::SameLine();
-
-            if (ImGui::Button(("-##" + label).c_str())) {
-                for (auto it = m_Nodes.rbegin(); it != m_Nodes.rend(); ++it) {
-                    if (it->GetActivation() == action) {
-                        m_Nodes.erase((++it).base());
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
-    ImGui::End();
-}
-
-    void RenderSingleInstructionWindow() {
-        ImGui::Begin("Position Window", &m_ShowSingleInstruction, ImGuiWindowFlags_MenuBar);
-
-        // Add minimize/maximize in the menu bar
         if (ImGui::BeginMenuBar()) {
             ImGui::EndMenuBar();
         }
 
-        // Only show content if window is not collapsed
         if (!ImGui::IsWindowCollapsed()) {
-            ImGui::SliderInt("Grip Force", &gripforce, 0, 10);
+            // Make buttons fill the width
+            float windowWidth = ImGui::GetContentRegionAvail().x;
 
-            if (ImGui::Button("Send instructions")) {
+            for (int i = 0; i < static_cast<int>(RobotActions::NodeActivation::COUNT); ++i) {
+                auto action = static_cast<RobotActions::NodeActivation>(i);
+                std::string label = toString(action).data();
+
+                // Set button width to match window width
+                ImGui::PushItemWidth(windowWidth);
+                if (ImGui::Button(label.c_str(), ImVec2(windowWidth, 0))) {
+                    domain::Node newNode(label.c_str(), action);
+                    int currentId = m_NextNodeId;
+                    newNode.InitializeNodeIds(currentId);
+                    m_NextNodeId = currentId;
+
+                    switch (action) {
+                        case RobotActions::NodeActivation::LoopStart: {
+                            int loopCount = 1;
+                            ImGui::InputInt("Loop Count", &loopCount);
+                            newNode.SetLoopCount(loopCount);
+                            break;
+                        }
+                        case RobotActions::NodeActivation::Wait: {
+                            int waitTimer = 1;
+                            ImGui::InputInt("Wait Timer", &waitTimer);
+                            newNode.SetWaitTimer(waitTimer);
+                            break;
+                        }
+                        default:
+                            break;
+                    }
+
+                    m_Nodes.push_back(newNode);
+
+                    NodeHelpers::CalcRandomPosNextNode( &m_NextNodePosition);
+                }
+                // Add tooltip for each button
+                if (ImGui::IsItemHovered()) {
+                    ImGui::BeginTooltip();
+                    NodeHelpers::RenderNodeTooltip(action);
+                    ImGui::EndTooltip();
+                }
+                ImGui::PopItemWidth();
+            }
+            // Add spacing before the Send instructions button
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
+
+
+            // Style the Send instructions button differently
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.7f, 0.2f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.8f, 0.3f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.1f, 0.6f, 0.1f, 1.0f));
+
+            if (ImGui::Button("Send instructions", ImVec2(windowWidth, 0))) {
                 ExecuteNodeChain();
             }
-            ImGui::Text(textInput.c_str());
+
+            // Add tooltip for Send instructions button
+            if (ImGui::IsItemHovered()) {
+                ImGui::BeginTooltip();
+                ImGui::Text("Execute the current node sequence");
+                ImGui::Text("Nodes must be properly connected");
+                ImGui::EndTooltip();
+            }
+
+            ImGui::PopStyleColor(3);
+        }
+        ImGui::End();
+    }
+
+private:
+    // Add these as private member functions in the WindowManager class
+    static bool compareNodeById(const domain::Node &node, ed::NodeId nodeId) {
+        return node.GetNodeId() == nodeId;
+    }
+
+    bool shouldRemoveLink(const LinkInfo &link, const domain::Node &node) const {
+        return link.InputId == node.GetNodeInputPinId() ||
+               link.OutputId == node.GetNodeOutputPinId();
+    }
+
+    struct NodeIdMatcher {
+        explicit NodeIdMatcher(ed::NodeId id) : nodeId(id) {
         }
 
-        ImGui::End();
+        bool operator()(const domain::Node &node) const {
+            return node.GetNodeId() == nodeId;
+        }
+
+        ed::NodeId nodeId;
+    };
+
+    struct LinkNodeMatcher {
+        explicit LinkNodeMatcher(const domain::Node &n) : node(n) {
+        }
+
+        bool operator()(const LinkInfo &link) const {
+            return link.InputId == node.GetNodeInputPinId() ||
+                   link.OutputId == node.GetNodeOutputPinId();
+        }
+
+        const domain::Node &node;
+    };
+
+    void deleteNodeAndConnectedLinks(ed::NodeId nodeId) {
+        // First find the node
+        auto nodeIt = std::find_if(m_Nodes.begin(), m_Nodes.end(), NodeIdMatcher(nodeId));
+
+        if (nodeIt != m_Nodes.end()) {
+            // Create a temporary vector for valid links
+            ImVector<LinkInfo> newLinks;
+            newLinks.reserve(m_Links.size());
+
+            // Copy only the links that are not connected to the node
+            for (const auto &link: m_Links) {
+                if (!LinkNodeMatcher(*nodeIt)(link)) {
+                    newLinks.push_back(link);
+                }
+            }
+
+            // Replace the old links with the filtered ones
+            m_Links = newLinks;
+
+            // Remove the node
+            m_Nodes.erase(nodeIt);
+        }
+    }
+
+    void HandleNodeCopy() {
+        ed::NodeId selectedNodeId;
+        if (ed::GetSelectedNodes(&selectedNodeId, 1) &&
+            ImGui::GetIO().KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_C)) {
+            // Find the selected node
+            auto nodeIt = std::find_if(m_Nodes.begin(), m_Nodes.end(), NodeIdMatcher(selectedNodeId));
+            if (nodeIt != m_Nodes.end()) {
+                // Create a copy of the node
+                domain::Node newNode = *nodeIt; // Copy constructor
+
+                // Generate new IDs for the copy
+                int currentId = m_NextNodeId;
+                newNode.InitializeNodeIds(currentId);
+                m_NextNodeId = currentId;
+
+                // Offset the position slightly for visual clarity
+                float offsetX = 50.0f;
+                float offsetY = 50.0f;
+                m_NextNodePosition.x += offsetX;
+                m_NextNodePosition.y += offsetY;
+
+                // Add the copy to nodes vector
+                m_Nodes.push_back(newNode);
+            }
+        }
     }
 
     void RenderImGuiNodesEditorWindow(ed::EditorContext *g_Context) {
@@ -135,6 +220,10 @@ class WindowManager : public IWindowManager {
         if (!ImGui::IsWindowCollapsed()) {
             ed::SetCurrentEditor(g_Context);
             ed::Begin("My Editor");
+
+
+            // Handle copying
+            HandleNodeCopy();
 
             // Render all stored nodes
             for (auto &node: m_Nodes) {
@@ -154,10 +243,16 @@ class WindowManager : public IWindowManager {
 
             // Handle deletion action
             if (ed::BeginDelete()) {
-                // There may be many links marked for deletion, let's loop over them.
+                // Handle link deletion
                 LinkDeleteHandler();
+
+                // Handle node deletion
+                ed::NodeId selectedNodeId;
+                if (ed::GetSelectedNodes(&selectedNodeId, 1)) {
+                    deleteNodeAndConnectedLinks(selectedNodeId);
+                }
+                ed::EndDelete();
             }
-            ed::EndDelete();
 
             if (m_FirstFrame) {
                 ed::NavigateToContent(0.0f);
@@ -251,9 +346,9 @@ class WindowManager : public IWindowManager {
             ImGui::PushID(idTitle.c_str());
             // Create sliders for X, Y, Z
             bool changed = false;
-            changed |= ImGui::SliderFloat("X", &x, -200.0f, 200.0f);
-            changed |= ImGui::SliderFloat("Y", &y, -200.0f, 200.0f);
-            changed |= ImGui::SliderFloat("Z", &z, -200.0f, 200.0f);
+            changed |= ImGui::InputFloat("X", &x, -200.0f, 200.0f);
+            changed |= ImGui::InputFloat("Y", &y, -200.0f, 200.0f);
+            changed |= ImGui::InputFloat("Z", &z, -200.0f, 200.0f);
 
             // Update values if changed
             if (changed) {
@@ -262,8 +357,7 @@ class WindowManager : public IWindowManager {
 
             ImGui::PopID();
             ImGui::PopItemWidth();
-        }
-        else if (node.GetActivation() == RobotActions::NodeActivation::LoopStart) {
+        } else if (node.GetActivation() == RobotActions::NodeActivation::LoopStart) {
             ImGui::PushItemWidth(100);
             std::string idTitle = "loop " + node.GetNodeId().Get();
             ImGui::PushID(idTitle.c_str());
@@ -274,22 +368,20 @@ class WindowManager : public IWindowManager {
             ImGui::PopID();
             ImGui::PopItemWidth();
             node.SetLoopCount(loopCount);
-        }
-        else if (node.GetActivation() == RobotActions::NodeActivation::Wait) {
+        } else if (node.GetActivation() == RobotActions::NodeActivation::Wait) {
             std::string idTitle = "wait " + node.GetNodeId().Get();
             ImGui::PushID(idTitle.c_str());
             ImGui::PushItemWidth(100);
-            ImGui::Text("ms");
+            ImGui::Text("s");
             int waitTimer = node.GetWaitTimer();
             ImGui::InputInt("", &waitTimer);
 
             ImGui::PopID();
             ImGui::PopItemWidth();
             node.SetWaitTimer(waitTimer);
-
         }
         // Add absolute movement controls for Absolute nodes
-        else if(node.GetActivation() == RobotActions::NodeActivation::Absolute){
+        else if (node.GetActivation() == RobotActions::NodeActivation::Absolute) {
             ImGui::PushItemWidth(100);
 
             // Get current relative move values
@@ -303,13 +395,13 @@ class WindowManager : public IWindowManager {
 
             // Create sliders for X, Y, Z
             bool changed = false;
-            changed |= ImGui::SliderFloat("X", &x, -400.0f, 800.0f);
-            changed |= ImGui::SliderFloat("Y", &y, -400.0f, 800.0f);
-            changed |= ImGui::SliderFloat("Z", &z, -400.0f, 800.0f);
+            changed |= ImGui::InputFloat("X", &x, -200.0f, 200.0f);
+            changed |= ImGui::InputFloat("Y", &y, -200.0f, 200.0f);
+            changed |= ImGui::InputFloat("Z", &z, -200.0f, 200.0f);
 
             // Update values if changed
             if (changed) {
-                auto* position = new domain::Position(vec3(x, y, z), vec3(0, 0, 0));
+                auto *position = new domain::Position(vec3(x, y, z), vec3(0, 0, 0));
                 node.SetAbsolutePosition(position);
             }
             ImGui::PopID();
@@ -386,7 +478,6 @@ class WindowManager : public IWindowManager {
     }
 
 public:
-
     explicit WindowManager(SimulationManager *simulationManager) {
         localSimulationManager = simulationManager;
     }
@@ -399,22 +490,22 @@ public:
         glfwSetWindowUserPointer(window, this);
 
         // Add input callbacks
-        glfwSetMouseButtonCallback(window, [](GLFWwindow* w, int button, int action, int mods) {
-            auto* manager = static_cast<WindowManager*>(glfwGetWindowUserPointer(w));
+        glfwSetMouseButtonCallback(window, [](GLFWwindow *w, int button, int action, int mods) {
+            auto *manager = static_cast<WindowManager *>(glfwGetWindowUserPointer(w));
             if (button == GLFW_MOUSE_BUTTON_LEFT && !ImGui::GetIO().WantCaptureMouse) {
                 manager->localSimulationManager->setDragActive(action == GLFW_PRESS);
             }
         });
 
-        glfwSetCursorPosCallback(window, [](GLFWwindow* w, double xpos, double ypos) {
-            auto* manager = static_cast<WindowManager*>(glfwGetWindowUserPointer(w));
+        glfwSetCursorPosCallback(window, [](GLFWwindow *w, double xpos, double ypos) {
+            auto *manager = static_cast<WindowManager *>(glfwGetWindowUserPointer(w));
             if (!ImGui::GetIO().WantCaptureMouse) {
                 manager->localSimulationManager->handleMouseDrag(xpos, ypos);
             }
         });
 
-        glfwSetScrollCallback(window, [](GLFWwindow* w, double xoffset, double yoffset) {
-            auto* manager = static_cast<WindowManager*>(glfwGetWindowUserPointer(w));
+        glfwSetScrollCallback(window, [](GLFWwindow *w, double xoffset, double yoffset) {
+            auto *manager = static_cast<WindowManager *>(glfwGetWindowUserPointer(w));
             if (!ImGui::GetIO().WantCaptureMouse) {
                 manager->localSimulationManager->handleMouseScroll(yoffset);
             }
@@ -447,22 +538,22 @@ public:
         if (ImGui::BeginMainMenuBar()) {
             if (ImGui::BeginMenu("Windows")) {
                 ImGui::MenuItem("Node Selector", nullptr, &m_ShowNodeSelector);
-                ImGui::MenuItem("Single Instruction", nullptr, &m_ShowSingleInstruction);
                 ImGui::MenuItem("Node Editor", nullptr, &m_ShowNodeEditor);
+                ImGui::MenuItem("Help", nullptr, &m_ShowHelpWindow);
                 ImGui::EndMenu();
             }
             ImGui::EndMainMenuBar();
         }
 
         // Render windows based on their visibility flags
-        if (m_ShowSingleInstruction) {
-            RenderSingleInstructionWindow();
-        }
         if (m_ShowNodeSelector) {
             RenderNodeSelectorWindow();
         }
         if (m_ShowNodeEditor) {
             RenderImGuiNodesEditorWindow(g_Context);
+        }
+        if (m_ShowHelpWindow) {
+            RenderHelpWindow();
         }
         // Render the final ImGui frame
         ImGui::Render();
