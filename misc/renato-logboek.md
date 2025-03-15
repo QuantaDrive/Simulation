@@ -10,4 +10,10 @@ Probleem met Id's bij nodes die sliders (input) gebruiken en daardoor conflictee
 
 *TODO*
 
-IK 
+- Node met degrees -> globale var voor het opslaan van degrees in simManager (3 soorten)
+- Absolute & relative zijn Booleans
+- Rapid move and Linear move x,y,z
+- Rapid move is zsm
+- Linear is langzamer en heeft een slider nodig voor snelheid
+
+currentPosition heeft de current degrees ook 

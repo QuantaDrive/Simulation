@@ -156,6 +156,13 @@ void SimulationManager::grip(float gripForce) {
     cout << "gripped with force: " << gripForce << endl;
 }
 
+void SimulationManager::SetRotationOfHead(vec3 rotation) {
+    auto currentPosition = robotArm_->getCurrPosition();
+    // update it with the new rotation
+    currentPosition->setRotation(rotation);
+    robotArm_->setCurrPosition(currentPosition);
+}
+
 //
 // Inverse Kinematics
 //

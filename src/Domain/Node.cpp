@@ -65,13 +65,13 @@ Position* Node::GetRelativeMove() const {
     return relativeMove_;
 }
 
-void Node::SetAbsolutePosition(Position *absolute_position) {
-    absolutePosition_ = absolute_position;
+void Node::SetPosition(Position *absolute_position) {
+    position_ = absolute_position;
 }
 
 
-Position *Node::GetAbsolutePosition() const {
-    return absolutePosition_;
+Position *Node::GetPosition() const {
+    return position_;
 }
 
 int Node::GetWaitTimer() const {
@@ -80,5 +80,13 @@ int Node::GetWaitTimer() const {
 
 void Node::SetWaitTimer(int wait_timer) {
     waitTimer_ = wait_timer;
+}
+
+vec3 Node::GetRotationHead() const {
+    return rotationHead_;
+}
+
+void Node::SetRotationHead(const vec3 &degrees) {
+    rotationHead_ = degrees;
 }
 

@@ -6,6 +6,7 @@
 namespace RobotActions {
     enum class NodeActivation {
         Wait,
+        AngleHead,
         RapidMove,
         LinearMove,
         DirectMove,

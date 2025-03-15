@@ -67,6 +67,7 @@ public:
     void executeInstruction(const domain::Instruction* instruction);
     bool move(domain::Position* position, float velocity);
     void grip(float gripForce);
+    void SetRotationOfHead(vec3 rotation);
 
     vector<float> inverseKinematics(domain::Position* position);
     // camera handling

@@ -13,6 +13,37 @@ using namespace domain;
 
 class WindowManager : public IWindowManager
 {
+
+    struct NodeIdMatcher
+    {
+        explicit NodeIdMatcher(ed::NodeId id) : nodeId(id)
+        {
+        }
+
+        bool operator()(const domain::Node& node) const
+        {
+            return node.GetNodeId() == nodeId;
+        }
+
+        ed::NodeId nodeId;
+    };
+
+    struct LinkNodeMatcher
+    {
+        explicit LinkNodeMatcher(const domain::Node& n) : node(n)
+        {
+        }
+
+        bool operator()(const LinkInfo& link) const
+        {
+            return link.InputId == node.GetNodeInputPinId() ||
+                link.OutputId == node.GetNodeOutputPinId();
+        }
+
+        const domain::Node& node;
+    };
+
+
     GLFWwindow* window = nullptr;
     // Single instruction Window
     int gripforce = 0;
@@ -138,8 +169,6 @@ class WindowManager : public IWindowManager
         ImGui::End();
     }
 
-private:
-    // Add these as private member functions in the WindowManager class
     static bool compareNodeById(const domain::Node& node, ed::NodeId nodeId)
     {
         return node.GetNodeId() == nodeId;
@@ -151,34 +180,6 @@ private:
             link.OutputId == node.GetNodeOutputPinId();
     }
 
-    struct NodeIdMatcher
-    {
-        explicit NodeIdMatcher(ed::NodeId id) : nodeId(id)
-        {
-        }
-
-        bool operator()(const domain::Node& node) const
-        {
-            return node.GetNodeId() == nodeId;
-        }
-
-        ed::NodeId nodeId;
-    };
-
-    struct LinkNodeMatcher
-    {
-        explicit LinkNodeMatcher(const domain::Node& n) : node(n)
-        {
-        }
-
-        bool operator()(const LinkInfo& link) const
-        {
-            return link.InputId == node.GetNodeInputPinId() ||
-                link.OutputId == node.GetNodeOutputPinId();
-        }
-
-        const domain::Node& node;
-    };
 
     void deleteNodeAndConnectedLinks(ed::NodeId nodeId)
     {
@@ -426,32 +427,51 @@ private:
             ImGui::PushItemWidth(100);
 
             // Get current coordinates move values
-            glm::vec3 posCoords = node.GetAbsolutePosition()->getCoords();
+            glm::vec3 posCoords = node.GetPosition()->getCoords();
             float xCoord = posCoords.x;
             float yCoord = posCoords.y;
             float zCoord = posCoords.z;
+            int linearVelocity = 0;
             // Create sliders for X, Y, Z
             bool changed = false;
             changed |= ImGui::InputFloat("X", &xCoord, -200.0f, 200.0f);
             changed |= ImGui::InputFloat("Y", &yCoord, -200.0f, 200.0f);
             changed |= ImGui::InputFloat("Z", &zCoord, -200.0f, 200.0f);
 
+            if (node.GetActivation() == RobotActions::NodeActivation::LinearMove) {
+                changed |= ImGui::SliderInt("Velocity", &linearVelocity, 0, 10);
+            }
+            // Update values if changed
+            if (changed)
+            {
+                auto* position = new domain::Position(vec3(xCoord, yCoord, zCoord), vec3(0, 0, 0 ));
+                node.SetPosition(position);
+                if (node.GetActivation() == RobotActions::NodeActivation::LinearMove) {
+
+                }
+            }
+            ImGui::PopID();
+            ImGui::PopItemWidth();
+        }
+        else if (node.GetActivation() == RobotActions::NodeActivation::AngleHead) {
+            std::string idTitle = "linear_or_rapid_move " + node.GetNodeId().Get();
+            ImGui::PushID(idTitle.c_str());
+            ImGui::PushItemWidth(100);
+
             // create input for yaw, pitch,roll
-            glm::vec3 posDegrees = node.GetAbsolutePosition()->getRotation();
-            float yaw = posDegrees.x;
-            float pitch = posDegrees.y;
-            float roll = posDegrees.z;
+            float yaw = 0;
+            float pitch = 0;
+            float roll = 0;
+            bool changed = false;
 
             changed |= ImGui::InputFloat("Yaw", &yaw, -200.0f, 200.0f);
             changed |= ImGui::InputFloat("Pitch", &pitch, -200.0f, 200.0f);
             changed |= ImGui::InputFloat("Roll", &roll, -200.0f, 200.0f);
-
-
             // Update values if changed
             if (changed)
             {
-                auto* position = new domain::Position(vec3(xCoord, yCoord, zCoord), vec3(yaw, pitch, roll ));
-                node.SetAbsolutePosition(position);
+
+                node.SetRotationHead(vec3(yaw, pitch, roll));
             }
             ImGui::PopID();
             ImGui::PopItemWidth();
@@ -507,7 +527,7 @@ private:
             {
                 auto* instruction = new Instruction();
                 instruction->setRelative(false);
-                instruction->setPosition(node.GetAbsolutePosition());
+                instruction->setPosition(node.GetPosition());
                 localSimulationManager->executeInstruction(instruction);
                 delete instruction;
                 break;
@@ -530,6 +550,9 @@ private:
                 delete instruction;
                 break;
             }
+            case(RobotActions::NodeActivation::AngleHead): {
+            localSimulationManager->SetRotationOfHead(node.GetRotationHead());
+        }
         default:
             break;
         }

@@ -107,7 +107,7 @@ void NodeHelpers::RenderHelpText() {
     ImGui::Text("Basic Controls:");
     ImGui::BulletText("Left-click and drag: Move nodes");
     ImGui::BulletText("Left-click on pin and drag: Create connections");
-    ImGui::BulletText("Right-click on node/connection: Delete");
+    ImGui::BulletText("Left-click on node or link and press Delete: Delete");
     ImGui::BulletText("Ctrl + C while node selected: Copy node");
     ImGui::Spacing();
 

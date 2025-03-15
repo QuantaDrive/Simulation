@@ -34,7 +34,8 @@ namespace domain
         int loopCount_ = 0;
         int waitTimer_ = 0;
         Position* relativeMove_;
-        Position* absolutePosition_ = new Position({0, 0, 0}, {0, 0, 0});
+        Position* position_ = new Position({0, 0, 0}, {0, 0, 0});
+        vec3 rotationHead_ = {0, 0, 0};
     public:
         explicit Node(const char* title, RobotActions::NodeActivation activation);
 
@@ -58,13 +59,17 @@ namespace domain
 
         [[nodiscard]] Position* GetRelativeMove() const;
 
-        void SetAbsolutePosition(Position *absolute_position);
+        void SetPosition(Position *absolute_position);
 
-        [[nodiscard]] Position *GetAbsolutePosition() const;
+        [[nodiscard]] Position *GetPosition() const;
 
         [[nodiscard]] int GetWaitTimer() const;
 
         void SetWaitTimer(int wait_timer);
+
+        [[nodiscard]] vec3 GetRotationHead() const;
+
+        void SetRotationHead(const vec3 &degrees);
     };
 }
 
