@@ -20,12 +20,12 @@ namespace domain
         int wait_;
         bool goHome_;
         bool relative_;
-        Position* relMove_;
         bool rapid_;
+        bool linear_;
         float velocity_;
 
     public:
-        Instruction(Position* position, float gripForce, int wait, bool goHome, bool relative, Position* relMove, float velocity);
+        Instruction(Position* position, float gripForce, int wait, bool goHome, bool relative, float velocity);
 
         Instruction() = default;
 
@@ -51,13 +51,14 @@ namespace domain
 
         void setRelative(bool relative);
 
-        [[nodiscard]] Position* getRelMove() const;
-
-        void setRelMove(Position* relMove);
 
         [[nodiscard]] bool isRapid() const;
 
         void setRapid(bool rapid);
+
+        [[nodiscard]] bool isLinear() const;
+
+        void setLinear(bool linear);
 
         [[nodiscard]] float getVelocity() const;
 

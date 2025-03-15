@@ -33,43 +33,43 @@ namespace domain
         ed::PinId nodeOutputPinId_;
         int loopCount_ = 0;
         int waitTimer_ = 0;
-        Position* relativeMove_;
         Position* position_ = new Position({0, 0, 0}, {0, 0, 0});
         vec3 rotationHead_ = {0, 0, 0};
+        float velocity_ = 0;
     public:
         explicit Node(const char* title, RobotActions::NodeActivation activation);
 
-        [[nodiscard]] std::string GetTitle() const;
+        [[nodiscard]] std::string getTitle() const;
 
-        [[nodiscard]] RobotActions::NodeActivation GetActivation() const;
+        [[nodiscard]] RobotActions::NodeActivation getActivation() const;
 
-        [[nodiscard]] ed::NodeId GetNodeId() const;
+        [[nodiscard]] ed::NodeId getNodeId() const;
 
-        [[nodiscard]] ed::PinId GetNodeInputPinId() const;
+        [[nodiscard]] ed::PinId getNodeInputPinId() const;
 
-        [[nodiscard]] ed::PinId GetNodeOutputPinId() const;
+        [[nodiscard]] ed::PinId getNodeOutputPinId() const;
 
-        void InitializeNodeIds(int& nodeId);
+        void initializeNodeIds(int& nodeId);
 
-        void SetLoopCount(int count);
+        void setLoopCount(int count);
 
-        [[nodiscard]] int GetLoopCount() const;
+        [[nodiscard]] int getLoopCount() const;
 
-        void SetRelativeMove(Position* relMove);
+        void setPosition(Position *absolute_position);
 
-        [[nodiscard]] Position* GetRelativeMove() const;
+        [[nodiscard]] Position *getPosition() const;
 
-        void SetPosition(Position *absolute_position);
+        [[nodiscard]] int getWaitTimer() const;
 
-        [[nodiscard]] Position *GetPosition() const;
+        void setWaitTimer(int wait_timer);
 
-        [[nodiscard]] int GetWaitTimer() const;
+        [[nodiscard]] vec3 getRotationHead() const;
 
-        void SetWaitTimer(int wait_timer);
+        void setRotationHead(const vec3 &degrees);
 
-        [[nodiscard]] vec3 GetRotationHead() const;
+        [[nodiscard]] float getVelocity() const;
 
-        void SetRotationHead(const vec3 &degrees);
+        void setVelocity(float velocity);
     };
 }
 

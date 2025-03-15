@@ -2,13 +2,12 @@
 
 #include <stdexcept>
 
-domain::Instruction::Instruction(Position* position, const float gripForce, const int wait, const bool goHome, const bool relative, Position* relMove, const float velocity) :
+domain::Instruction::Instruction(Position* position, const float gripForce, const int wait, const bool goHome, const bool relative, const float velocity) :
 position_(position),
 gripForce_(gripForce),
 wait_(wait),
 goHome_(goHome),
 relative_(relative),
-relMove_(relMove),
 velocity_(velocity){}
 
 domain::Instruction::~Instruction() = default;
@@ -64,15 +63,6 @@ void domain::Instruction::setRelative(bool relative)
     relative_=relative;
 }
 
-domain::Position* domain::Instruction::getRelMove() const
-{
-    return relMove_;
-}
-
-void domain::Instruction::setRelMove(domain::Position* relMove)
-{
-    relMove_=relMove;
-}
 
 bool domain::Instruction::isRapid() const
 {
@@ -82,6 +72,14 @@ bool domain::Instruction::isRapid() const
 void domain::Instruction::setRapid(bool rapid)
 {
     rapid_=rapid;
+}
+
+bool domain::Instruction::isLinear() const {
+    return linear_;
+}
+
+void domain::Instruction::setLinear(bool linear) {
+    linear_ = linear;
 }
 
 float domain::Instruction::getVelocity() const
