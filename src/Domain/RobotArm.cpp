@@ -98,3 +98,11 @@ void domain::RobotArm::setTool(Tool* tool)
 {
     tool_=tool;
 }
+
+bool domain::RobotArm::isAbsolute() const {
+    return isAbsolute_;
+}
+
+void domain::RobotArm::setAbsolute(bool is_absolute) {
+    isAbsolute_ = is_absolute;
+}

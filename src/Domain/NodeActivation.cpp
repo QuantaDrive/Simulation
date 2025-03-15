@@ -6,6 +6,7 @@ namespace RobotActions {
     // Move array inside namespace
     constexpr std::array<std::string_view, static_cast<size_t>(NodeActivation::COUNT)> NodeActivationNames = {
         "Wait",
+        "Angle Head",
         "Rapid Move",
         "Linear Move",
         "Direct Move",

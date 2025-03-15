@@ -7,10 +7,35 @@
 #include "helper/HelperFunctions.h"
 namespace ed = ax::NodeEditor;
 
+
 using namespace domain;
 
 
 class WindowManager : public IWindowManager {
+    struct NodeIdMatcher {
+        explicit NodeIdMatcher(ed::NodeId id) : nodeId(id) {
+        }
+
+        bool operator()(const domain::Node &node) const {
+            return node.getNodeId() == nodeId;
+        }
+
+        ed::NodeId nodeId;
+    };
+
+    struct LinkNodeMatcher {
+        explicit LinkNodeMatcher(const domain::Node &n) : node(n) {
+        }
+
+        bool operator()(const LinkInfo &link) const {
+            return link.InputId == node.getNodeInputPinId() ||
+                   link.OutputId == node.getNodeOutputPinId();
+        }
+
+        const domain::Node &node;
+    };
+
+
     GLFWwindow *window = nullptr;
     // Single instruction Window
     int gripforce = 0;
@@ -31,7 +56,6 @@ class WindowManager : public IWindowManager {
 
     //Simulationmanager
     SimulationManager *localSimulationManager;
-
 
 
     void RenderHelpWindow() {
@@ -65,20 +89,20 @@ class WindowManager : public IWindowManager {
                 if (ImGui::Button(label.c_str(), ImVec2(windowWidth, 0))) {
                     domain::Node newNode(label.c_str(), action);
                     int currentId = m_NextNodeId;
-                    newNode.InitializeNodeIds(currentId);
+                    newNode.initializeNodeIds(currentId);
                     m_NextNodeId = currentId;
 
                     switch (action) {
                         case RobotActions::NodeActivation::LoopStart: {
                             int loopCount = 1;
                             ImGui::InputInt("Loop Count", &loopCount);
-                            newNode.SetLoopCount(loopCount);
+                            newNode.setLoopCount(loopCount);
                             break;
                         }
                         case RobotActions::NodeActivation::Wait: {
                             int waitTimer = 1;
                             ImGui::InputInt("Wait Timer", &waitTimer);
-                            newNode.SetWaitTimer(waitTimer);
+                            newNode.setWaitTimer(waitTimer);
                             break;
                         }
                         default:
@@ -87,7 +111,7 @@ class WindowManager : public IWindowManager {
 
                     m_Nodes.push_back(newNode);
 
-                    NodeHelpers::CalcRandomPosNextNode( &m_NextNodePosition);
+                    NodeHelpers::CalcRandomPosNextNode(&m_NextNodePosition);
                 }
                 // Add tooltip for each button
                 if (ImGui::IsItemHovered()) {
@@ -125,39 +149,15 @@ class WindowManager : public IWindowManager {
         ImGui::End();
     }
 
-private:
-    // Add these as private member functions in the WindowManager class
     static bool compareNodeById(const domain::Node &node, ed::NodeId nodeId) {
-        return node.GetNodeId() == nodeId;
+        return node.getNodeId() == nodeId;
     }
 
     bool shouldRemoveLink(const LinkInfo &link, const domain::Node &node) const {
-        return link.InputId == node.GetNodeInputPinId() ||
-               link.OutputId == node.GetNodeOutputPinId();
+        return link.InputId == node.getNodeInputPinId() ||
+               link.OutputId == node.getNodeOutputPinId();
     }
 
-    struct NodeIdMatcher {
-        explicit NodeIdMatcher(ed::NodeId id) : nodeId(id) {
-        }
-
-        bool operator()(const domain::Node &node) const {
-            return node.GetNodeId() == nodeId;
-        }
-
-        ed::NodeId nodeId;
-    };
-
-    struct LinkNodeMatcher {
-        explicit LinkNodeMatcher(const domain::Node &n) : node(n) {
-        }
-
-        bool operator()(const LinkInfo &link) const {
-            return link.InputId == node.GetNodeInputPinId() ||
-                   link.OutputId == node.GetNodeOutputPinId();
-        }
-
-        const domain::Node &node;
-    };
 
     void deleteNodeAndConnectedLinks(ed::NodeId nodeId) {
         // First find the node
@@ -195,7 +195,7 @@ private:
 
                 // Generate new IDs for the copy
                 int currentId = m_NextNodeId;
-                newNode.InitializeNodeIds(currentId);
+                newNode.initializeNodeIds(currentId);
                 m_NextNodeId = currentId;
 
                 // Offset the position slightly for visual clarity
@@ -207,7 +207,7 @@ private:
                 // Add the copy to nodes vector
                 m_Nodes.push_back(newNode);
             }
-        }
+            }
     }
 
     void RenderImGuiNodesEditorWindow(ed::EditorContext *g_Context) {
@@ -279,14 +279,14 @@ private:
                 domain::Node *sourceNode = nullptr;
                 domain::Node *targetNode = nullptr;
                 for (auto &node: m_Nodes) {
-                    if (node.GetNodeOutputPinId() == outputPinId ||
-                        node.GetNodeInputPinId() == inputPinId) {
+                    if (node.getNodeOutputPinId() == outputPinId ||
+                        node.getNodeInputPinId() == inputPinId) {
                         sourceNode = &node;
-                    }
-                    if (node.GetNodeInputPinId() == inputPinId ||
-                        node.GetNodeOutputPinId() == outputPinId) {
+                        }
+                    if (node.getNodeInputPinId() == inputPinId ||
+                        node.getNodeOutputPinId() == outputPinId) {
                         targetNode = &node;
-                    }
+                        }
                 }
 
                 // Validate connection
@@ -297,10 +297,10 @@ private:
                     }
 
                     // Ensure input connects to output
-                    if (outputPinId == sourceNode->GetNodeInputPinId() ||
-                        inputPinId == targetNode->GetNodeOutputPinId()) {
+                    if (outputPinId == sourceNode->getNodeInputPinId() ||
+                        inputPinId == targetNode->getNodeOutputPinId()) {
                         validateLink = false;
-                    }
+                        }
                 }
 
                 if (validateLink && ed::AcceptNewItem()) {
@@ -330,93 +330,93 @@ private:
 
 
     void RenderNodesInEditor(domain::Node &node) {
-        ed::BeginNode(node.GetNodeId());
-        ImGui::Text(node.GetTitle().c_str());
+        ed::BeginNode(node.getNodeId());
+        ImGui::Text(node.getTitle().c_str());
 
+        // TODO: Relative and Absolute -> Booleans
         // Add relative movement controls for Relative nodes
-        if (node.GetActivation() == RobotActions::NodeActivation::Relative) {
+
+        if (node.getActivation() == RobotActions::NodeActivation::LoopStart) {
             ImGui::PushItemWidth(100);
-
-            // Get current relative move values
-            domain::Position* relMove = node.GetRelativeMove();
-            float x = relMove->getCoords()[0];
-            float y = relMove->getCoords()[1];
-            float z = relMove->getCoords()[2];
-
-            float Rx = relMove->getRotation()[0];
-            float Ry = relMove->getRotation()[1];
-            float Rz = relMove->getRotation()[2];
-
-            std::string idTitle = "absolute_move " + node.GetNodeId().Get();
-            ImGui::PushID(idTitle.c_str());
-            // Create sliders for X, Y, Z
-            bool changed = false;
-            changed |= ImGui::InputFloat("X", &x, -200.0f, 200.0f);
-            changed |= ImGui::InputFloat("Y", &y, -200.0f, 200.0f);
-            changed |= ImGui::InputFloat("Z", &z, -200.0f, 200.0f);
-
-            // Update values if changed
-            if (changed) {
-                node.SetRelativeMove(new domain::Position({x,y,z},{Rx,Ry,Rz}));
-            }
-
-            ImGui::PopID();
-            ImGui::PopItemWidth();
-        } else if (node.GetActivation() == RobotActions::NodeActivation::LoopStart) {
-            ImGui::PushItemWidth(100);
-            std::string idTitle = "loop " + node.GetNodeId().Get();
+            std::string idTitle = "loop " + node.getNodeId().Get();
             ImGui::PushID(idTitle.c_str());
 
             ImGui::Text("# loops");
-            int loopCount = node.GetLoopCount();
+            int loopCount = node.getLoopCount();
             ImGui::InputInt("", &loopCount);
             ImGui::PopID();
             ImGui::PopItemWidth();
-            node.SetLoopCount(loopCount);
-        } else if (node.GetActivation() == RobotActions::NodeActivation::Wait) {
-            std::string idTitle = "wait " + node.GetNodeId().Get();
+            node.setLoopCount(loopCount);
+        } else if (node.getActivation() == RobotActions::NodeActivation::Wait) {
+            std::string idTitle = "wait " + node.getNodeId().Get();
             ImGui::PushID(idTitle.c_str());
             ImGui::PushItemWidth(100);
             ImGui::Text("s");
-            int waitTimer = node.GetWaitTimer();
+            int waitTimer = node.getWaitTimer();
             ImGui::InputInt("", &waitTimer);
 
             ImGui::PopID();
             ImGui::PopItemWidth();
-            node.SetWaitTimer(waitTimer);
+            node.setWaitTimer(waitTimer);
         }
         // Add absolute movement controls for Absolute nodes
-        else if (node.GetActivation() == RobotActions::NodeActivation::Absolute) {
+        else if (node.getActivation() == RobotActions::NodeActivation::LinearMove || node.getActivation()
+                 == RobotActions::NodeActivation::RapidMove) {
+            std::string idTitle = "linear_or_rapid_move " + node.getNodeId().Get();
+            ImGui::PushID(idTitle.c_str());
             ImGui::PushItemWidth(100);
 
-            // Get current relative move values
-            glm::vec3 absMove = node.GetAbsolutePosition()->getCoords();
-            float x = absMove.x;
-            float y = absMove.y;
-            float z = absMove.z;
-
-            std::string idTitle = "absolute_move " + node.GetNodeId().Get();
-            ImGui::PushID(idTitle.c_str());
-
+            // Get current coordinates move values
+            glm::vec3 posCoords = node.getPosition()->getCoords();
+            float xCoord = posCoords.x;
+            float yCoord = posCoords.y;
+            float zCoord = posCoords.z;
+            int linearVelocity = node.getVelocity();
             // Create sliders for X, Y, Z
             bool changed = false;
-            changed |= ImGui::InputFloat("X", &x, -200.0f, 200.0f);
-            changed |= ImGui::InputFloat("Y", &y, -200.0f, 200.0f);
-            changed |= ImGui::InputFloat("Z", &z, -200.0f, 200.0f);
+            changed |= ImGui::InputFloat("X", &xCoord, -200.0f, 200.0f);
+            changed |= ImGui::InputFloat("Y", &yCoord, -200.0f, 200.0f);
+            changed |= ImGui::InputFloat("Z", &zCoord, -200.0f, 200.0f);
 
+            if (node.getActivation() == RobotActions::NodeActivation::LinearMove) {
+                changed |= ImGui::SliderInt("Velocity", &linearVelocity, 0, 10);
+            }
             // Update values if changed
             if (changed) {
-                auto *position = new domain::Position(vec3(x, y, z), vec3(0, 0, 0));
-                node.SetAbsolutePosition(position);
+                auto *position = new domain::Position(vec3(xCoord, yCoord, zCoord), vec3(0, 0, 0));
+                node.setPosition(position);
+                if (node.getActivation() == RobotActions::NodeActivation::LinearMove) {
+                    node.setVelocity(linearVelocity);
+                }
+            }
+            ImGui::PopID();
+            ImGui::PopItemWidth();
+        } else if (node.getActivation() == RobotActions::NodeActivation::AngleHead) {
+            std::string idTitle = "linear_or_rapid_move " + node.getNodeId().Get();
+            ImGui::PushID(idTitle.c_str());
+            ImGui::PushItemWidth(100);
+
+            // create input for yaw, pitch,roll
+            float yaw = node.getRotationHead().x;
+            float pitch = node.getRotationHead().y;
+            float roll = node.getRotationHead().z;
+            bool changed = false;
+
+            changed |= ImGui::InputFloat("Yaw", &yaw, -200.0f, 200.0f);
+            changed |= ImGui::InputFloat("Pitch", &pitch, -200.0f, 200.0f);
+            changed |= ImGui::InputFloat("Roll", &roll, -200.0f, 200.0f);
+            // Update values if changed
+            if (changed) {
+                node.setRotationHead(vec3(yaw, pitch, roll));
             }
             ImGui::PopID();
             ImGui::PopItemWidth();
         }
-        ed::BeginPin(node.GetNodeInputPinId(), ed::PinKind::Input);
+        ed::BeginPin(node.getNodeInputPinId(), ed::PinKind::Input);
         ImGui::Text("-> In");
         ed::EndPin();
         ImGui::SameLine();
-        ed::BeginPin(node.GetNodeOutputPinId(), ed::PinKind::Output);
+        ed::BeginPin(node.getNodeOutputPinId(), ed::PinKind::Output);
         ImGui::Text("Out ->");
         ed::EndPin();
         ed::EndNode();
@@ -440,12 +440,31 @@ private:
     void ExecuteNode(const domain::Node &node) {
         if (!localSimulationManager) return;
 
-        switch (node.GetActivation()) {
+        switch (node.getActivation()) {
+            case RobotActions::NodeActivation::Absolute: {
+                localSimulationManager->setAbsolute(true);
+                break;
+            }
             case RobotActions::NodeActivation::Relative: {
+                localSimulationManager->setAbsolute(false);
+                break;
+            }
+            case RobotActions::NodeActivation::LinearMove: {
+                auto* instruction = new domain::Instruction();
+                instruction->setPosition(node.getPosition());
+                instruction->setVelocity(node.getVelocity());
+                instruction->setLinear(true);
+                localSimulationManager->executeInstruction(instruction);
+                // Cleanup
+                delete instruction;
+                break;
+
+            }
+            case RobotActions::NodeActivation::RapidMove: {
                 // Create an instruction with the relative movement values
                 auto *instruction = new domain::Instruction();
-                instruction->setRelative(true);
-                instruction->setRelMove(node.GetRelativeMove());
+                instruction->setPosition(node.getPosition());
+                instruction->setRapid(true);
                 // Execute the instruction using SimulationManager
                 localSimulationManager->executeInstruction(instruction);
 
@@ -453,18 +472,10 @@ private:
                 delete instruction;
                 break;
             }
-            case (RobotActions::NodeActivation::Absolute): {
-                auto *instruction = new Instruction();
-                instruction->setRelative(false);
-                instruction->setPosition(node.GetAbsolutePosition());
-                localSimulationManager->executeInstruction(instruction);
-                delete instruction;
-                break;
-            }
             case(RobotActions::NodeActivation::Wait): {
                 auto *instruction = new Instruction();
                 instruction->setRelative(false);
-                instruction->setWait(node.GetWaitTimer());
+                instruction->setWait(node.getWaitTimer());
                 localSimulationManager->executeInstruction(instruction);
                 delete instruction;
                 break;
@@ -476,6 +487,9 @@ private:
                 localSimulationManager->executeInstruction(instruction);
                 delete instruction;
                 break;
+            }
+            case(RobotActions::NodeActivation::AngleHead): {
+                localSimulationManager->setRotationOfHead(node.getRotationHead());
             }
             default:
                 break;
