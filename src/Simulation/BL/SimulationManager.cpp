@@ -89,7 +89,7 @@ vector<domain::Position*> SimulationManager::interpolate(const domain::Position*
     float d = sqrtf(powf(currP[0] - newP[0], 2) + powf(currP[1] - newP[1], 2) + powf(currP[2] - newP[2], 2));
 
     vector<domain::Position*> interpolpoints = {};
-    for (int i = 1; i < static_cast<int>(round(d)); i++) {
+    for (int i = 1; i < static_cast<int>(round(d)); i+=simulationArm_->getInterpolStep()) {
         float x = currP[0] + static_cast<float>(i) / d * (newP[0] - currP[0]);
         float y = currP[1] + static_cast<float>(i) / d * (newP[1] - currP[1]);
         float z = currP[2] + static_cast<float>(i) / d * (newP[2] - currP[2]);
@@ -98,7 +98,41 @@ vector<domain::Position*> SimulationManager::interpolate(const domain::Position*
     return interpolpoints;
 }
 
-bool SimulationManager::move(domain::Position *position, float velocity) {
+bool SimulationManager::checkMove(pair<int, float> joint, float time, bool relative)
+{
+    float delta_angle = 0;
+    if (relative) delta_angle = joint.second;
+    else delta_angle = joint.second - simulationArm_->getJointPositions()[joint.first];
+    if (delta_angle < 10) return true;
+    float speed = abs(delta_angle/(time));
+    float accel = (speed - simulationArm_->getCurrVel()) / (time);
+    if (speed > simulationArm_->getMaxVel() || accel > simulationArm_->getMaxAcc()) return false;
+    return true;
+}
+
+float SimulationManager::calcETA(pair<int,float> joint, bool relative)
+{
+    float delta_angle=0;
+    float currSpeed = simulationArm_->getCurrVel();
+    float maxSpeed = simulationArm_->getMaxVel();
+    float maxAccel = simulationArm_->getMaxAcc();
+    if (relative) delta_angle = joint.second;
+    else delta_angle = joint.second - simulationArm_->getJointPositions()[joint.first];
+    delta_angle = abs(delta_angle);
+    float degreesToFullSpeed = abs((powf(maxSpeed,2)-powf(currSpeed,2))/(2*maxAccel));
+    if (delta_angle < degreesToFullSpeed)
+    {
+        float timeToFullSpeed = (-currSpeed+sqrtf(powf(currSpeed,2)+2*maxAccel*delta_angle)/(2*maxAccel));
+        return timeToFullSpeed;
+    }
+    float timeToFullSpeed = (maxSpeed - currSpeed) / maxAccel;
+    float remainingPosition = delta_angle - degreesToFullSpeed;
+    float remainingTime =  remainingPosition / maxSpeed;
+    return timeToFullSpeed + remainingTime;
+
+}
+
+bool SimulationManager::move(domain::Position *position, float velocity, bool relative) {
     // auto arm = repo_->readArm(simulationArm_->getName());
     if (robotArm_->getStatus() == domain::READY) {
         robotArm_->setStatus(domain::BUSY);
@@ -129,12 +163,36 @@ bool SimulationManager::move(domain::Position *position, float velocity) {
                 throw;
             }
             allAngles.emplace_back(angles);
+            allAngles.emplace_back(anglestest);
             delete pos;
         }
+        float minSpeed = static_cast<float>(simulationArm_->getInterpolStep()*2);
+        simulationArm_->setCurrVel(minSpeed);
         for (auto angles: allAngles)
         {
+            int jointLongestMove = -1;
+            float ETA = 1/simulationArm_->getCurrVel();
             for (int i = 0; i < angles.size(); i++) {
-                simulationArm_->moveAngle(i + 1, angles[i], false, true);
+                if (!checkMove(pair<int,float>(i+1, angles[i]), velocity, relative))
+                {
+                    jointLongestMove = i+1;
+                    float jointETA = calcETA(pair<int,float>(i+1,angles[i]), relative);
+                    ETA = fmaxf(ETA,jointETA);
+                    simulationArm_->setCurrVel(fmaxf(minSpeed,static_cast<float>(simulationArm_->getInterpolStep())/ETA));
+                }
+                simulationArm_->moveAngle(i + 1, angles[i], relative, true);
+                if (jointLongestMove >=0)
+                {
+                    usleep(1000);
+                    simulation::refresh();
+                    simulationArm_->render();
+                }
+                else
+                {
+                    usleep(static_cast<unsigned int>(ETA*1000));
+                    simulation::refresh();
+                    simulationArm_->render();
+                }
             }
             usleep(5000);
             simulation::refresh();
