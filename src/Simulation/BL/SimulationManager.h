@@ -83,7 +83,7 @@ public:
     void setAbsolute(bool is_absolute);
 
     // preview handling
-    void startPreview(domain::Position* position);
+    bool startPreview(domain::Position* position);
     void endPreview();
 private:
     void updateCameraPosition();

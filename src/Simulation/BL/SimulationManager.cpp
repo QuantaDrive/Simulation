@@ -368,22 +368,38 @@ bool SimulationManager::hasPositionChanged(const domain::Position *newPosition) 
 }
 
 
-void SimulationManager::startPreview(domain::Position* position) {
+bool SimulationManager::startPreview(domain::Position* position) {
     if (!isPreviewActive) {
         isPreviewActive = true;
     }
 
     try {
+        // Check if position is reachable before calculating angles
+        glm::vec3 coords = position->getCoords();
+        float distance = glm::length(coords);
+
+        // Get arm's maximum reach (sum of DH parameter 'a' values)
+        float maxReach = 0.0f;
+        auto dhParams = simulationArm_->getDhParameters();
+        for (const auto& param : dhParams) {
+            maxReach += std::abs(param.w); // w component stores the 'a' parameter
+        }
+
+        if (distance > maxReach) {
+       return false;
+        }
+
         previewAngles = calculateFinalAngles(position);
 
         // Apply preview angles
         for (int i = 0; i < previewAngles.size(); ++i) {
             simulationArm_->moveAngle(i + 1, previewAngles[i], false, true);
         }
-    } catch (logic_error& e) {
+    } catch (const std::exception& e) {
         endPreview();
         throw;
     }
+    return true;
 }
 
 void SimulationManager::endPreview() {

@@ -1,6 +1,7 @@
 #include "IWindowManager.h"
 #include <bits/algorithmfwd.h>
 
+#include "imgui_internal.h"
 #include "../Domain/Node.h"
 #include "../Domain/NodeActivation.h"
 #include "../Domain/Instruction.h"
@@ -56,9 +57,47 @@ class WindowManager : public IWindowManager {
     // Select node
     ed::NodeId m_SelectedNodeId = 0;
 
+    // Error handling
+    bool m_ShowInfoWindow = true; // Always visible by default
+    std::string m_InfoMessage = "Welcome to the Robot Arm Simulator";
     //Simulationmanager
     SimulationManager *localSimulationManager;
 
+
+    void RenderInfoWindow() {
+        // Set window position aligned with Node Editor window
+        ImVec2 nodeEditorPos = ImVec2(0, 0);
+        float windowHeight = 50.0f;
+        float padding = 5.0f;
+
+        // Find the Node Editor window position
+        ImGuiWindow* nodeEditorWindow = ImGui::FindWindowByName("Node Editor");
+        if (nodeEditorWindow) {
+            nodeEditorPos = nodeEditorWindow->Pos;
+        }
+
+        ImVec2 windowPos(
+            nodeEditorPos.x,
+            nodeEditorPos.y - windowHeight
+        );
+        ImVec2 windowSize(300.0f, windowHeight);
+
+        ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always);
+        ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
+
+        ImGui::Begin("Status", &m_ShowInfoWindow,
+            ImGuiWindowFlags_NoCollapse |
+            ImGuiWindowFlags_NoResize |
+            ImGuiWindowFlags_NoMove |
+            ImGuiWindowFlags_NoScrollbar |
+            ImGuiWindowFlags_NoScrollWithMouse |
+            ImGuiWindowFlags_NoTitleBar |
+            ImGuiWindowFlags_AlwaysAutoResize
+        );
+
+        ImGui::TextWrapped("%s", m_InfoMessage.c_str());
+        ImGui::End();
+    }
 
     void RenderHelpWindow() {
         if (!m_ShowHelpWindow) return;
@@ -209,7 +248,7 @@ class WindowManager : public IWindowManager {
                 // Add the copy to nodes vector
                 m_Nodes.push_back(newNode);
             }
-            }
+        }
     }
 
     void RenderImGuiNodesEditorWindow(ed::EditorContext *g_Context) {
@@ -286,11 +325,11 @@ class WindowManager : public IWindowManager {
                     if (node.getNodeOutputPinId() == outputPinId ||
                         node.getNodeInputPinId() == inputPinId) {
                         sourceNode = &node;
-                        }
+                    }
                     if (node.getNodeInputPinId() == inputPinId ||
                         node.getNodeOutputPinId() == outputPinId) {
                         targetNode = &node;
-                        }
+                    }
                 }
 
                 // Validate connection
@@ -304,7 +343,7 @@ class WindowManager : public IWindowManager {
                     if (outputPinId == sourceNode->getNodeInputPinId() ||
                         inputPinId == targetNode->getNodeOutputPinId()) {
                         validateLink = false;
-                        }
+                    }
                 }
 
                 if (validateLink && ed::AcceptNewItem()) {
@@ -365,7 +404,7 @@ class WindowManager : public IWindowManager {
         }
         // Add absolute movement controls for Absolute nodes
         else if (node.getActivation() == RobotActions::NodeActivation::LinearMove ||
-        node.getActivation() == RobotActions::NodeActivation::RapidMove) {
+                 node.getActivation() == RobotActions::NodeActivation::RapidMove) {
             std::string idTitle = "linear_or_rapid_move " + node.getNodeId().Get();
             ImGui::PushID(idTitle.c_str());
             ImGui::PushItemWidth(100);
@@ -397,9 +436,10 @@ class WindowManager : public IWindowManager {
                 // Check if this node is currently selected
                 ed::NodeId selectedNodeId;
                 if (ed::GetSelectedNodes(&selectedNodeId, 1) && node.getNodeId() == selectedNodeId) {
-                    localSimulationManager->startPreview(position);
+                    if (!localSimulationManager->startPreview(position)) {
+                        ShowInfo("current position is unreachable");
+                    }
                 }
-
             }
 
             ImGui::PopID();
@@ -463,7 +503,7 @@ class WindowManager : public IWindowManager {
                 break;
             }
             case RobotActions::NodeActivation::LinearMove: {
-                auto* instruction = new domain::Instruction();
+                auto *instruction = new domain::Instruction();
                 instruction->setPosition(node.getPosition());
                 instruction->setVelocity(node.getVelocity());
                 instruction->setLinear(true);
@@ -471,7 +511,6 @@ class WindowManager : public IWindowManager {
                 // Cleanup
                 delete instruction;
                 break;
-
             }
             case RobotActions::NodeActivation::RapidMove: {
                 // Create an instruction with the relative movement values
@@ -510,6 +549,10 @@ class WindowManager : public IWindowManager {
     }
 
 public:
+    void ShowInfo(const std::string &message) {
+        m_InfoMessage = message;
+    }
+
     explicit WindowManager(SimulationManager *simulationManager) {
         localSimulationManager = simulationManager;
     }
@@ -586,6 +629,9 @@ public:
         }
         if (m_ShowHelpWindow) {
             RenderHelpWindow();
+        }
+        if (m_ShowInfoWindow) {
+            RenderInfoWindow();
         }
         // Render the final ImGui frame
         ImGui::Render();
