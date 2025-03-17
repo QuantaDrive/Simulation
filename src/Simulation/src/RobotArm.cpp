@@ -26,10 +26,13 @@ void simulation::RobotArm::moveAngle(const int joint, float angle, const bool re
     this->jointPositions[joint] = std::fmod(this->jointPositions[joint], glm::two_pi<float>());
 }
 
-simulation::RobotArm::RobotArm(const std::string& name, const std::string& definitionFile, int interpolStep)
+const std::vector<float> & simulation::RobotArm::getJointPositions() const {
+    return jointPositions;
+}
+
+simulation::RobotArm::RobotArm(const std::string& name, const std::string& definitionFile)
 {
     name_=name;
-    interpolStep_=interpolStep;
     // get part directory from definitionFile
     std::string directory;
     if (const size_t pos = definitionFile.find_last_of('/'); pos != std::string::npos)
@@ -103,11 +106,6 @@ void simulation::RobotArm::render()
     }
 }
 
-std::vector<float> simulation::RobotArm::getJointPositions()
-{
-    return jointPositions;
-}
-
 std::string simulation::RobotArm::getName() const
 {
     return name_;
@@ -121,24 +119,4 @@ float simulation::RobotArm::getMaxVel() const
 float simulation::RobotArm::getMaxAcc() const
 {
     return maxAcc_;
-}
-
-float simulation::RobotArm::getCurrVel() const
-{
-    return currVel_;
-}
-
-void simulation::RobotArm::setCurrVel(const float currVel)
-{
-    currVel_ = currVel;
-}
-
-int simulation::RobotArm::getInterpolStep() const
-{
-    return interpolStep_;
-}
-
-void simulation::RobotArm::setInterpolStep(int interpolStep)
-{
-    interpolStep_ = interpolStep;
 }

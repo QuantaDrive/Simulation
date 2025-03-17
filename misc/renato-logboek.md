@@ -17,3 +17,7 @@ Probleem met Id's bij nodes die sliders (input) gebruiken en daardoor conflictee
 - Linear is langzamer en heeft een slider nodig voor snelheid
 
 currentPosition heeft de current degrees ook 
+
+16-03 
+- Moeite met het vinden van een manier om een visuele indicatie te geven van
+- de positie waar de arm naartoe zou bewegen. 

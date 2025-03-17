@@ -25,6 +25,7 @@ SimulationManager::~SimulationManager() {
     delete repo_;
     delete simulationArm_;
     delete robotArm_;
+    delete lastPreviewPosition;
 }
 
 void SimulationManager::setRobotArm(domain::RobotArm* robotArm)
@@ -373,4 +374,73 @@ void SimulationManager::updateCameraPosition() {
     m_CameraPosition = glm::vec3(x, y, z);
     simulation::lookAt(m_CameraPosition, m_CameraTarget);
     simulation::lightPosition(m_CameraPosition);
+}
+
+vector<float> SimulationManager::calculateFinalAngles(domain::Position *targetPosition) {
+    try {
+        return inverseKinematics(targetPosition);
+    } catch (logic_error &e) {
+        throw;
+    }
+}
+
+bool SimulationManager::hasPositionChanged(const domain::Position *newPosition) const {
+    if (!lastPreviewPosition) return true;
+
+    const auto &newCoords = newPosition->getCoords();
+    const auto &lastCoords = lastPreviewPosition->getCoords();
+    const auto &newRot = newPosition->getRotation();
+    const auto &lastRot = lastPreviewPosition->getRotation();
+
+    return newCoords != lastCoords || newRot != lastRot;
+}
+
+
+bool SimulationManager::startPreview(domain::Position* position) {
+    if (!isPreviewActive) {
+        isPreviewActive = true;
+    }
+
+    try {
+        // Check if position is reachable before calculating angles
+        glm::vec3 coords = position->getCoords();
+        float distance = glm::length(coords);
+
+        // Get arm's maximum reach (sum of DH parameter 'a' values)
+        float maxReach = 0.0f;
+        auto dhParams = simulationArm_->getDhParameters();
+        for (const auto& param : dhParams) {
+            maxReach += std::abs(param.w); // w component stores the 'a' parameter
+        }
+
+        if (distance > maxReach) {
+       return false;
+        }
+
+        previewAngles = calculateFinalAngles(position);
+
+        // Apply preview angles
+        for (int i = 0; i < previewAngles.size(); ++i) {
+            simulationArm_->moveAngle(i + 1, previewAngles[i], false, true);
+        }
+    } catch (const std::exception& e) {
+        endPreview();
+        throw;
+    }
+    return true;
+}
+
+void SimulationManager::endPreview() {
+    if (isPreviewActive) {
+        // Use current position from robot arm
+        auto currentPos = robotArm_->getCurrPosition();
+        vector<float> angles = calculateFinalAngles(currentPos);
+
+        for (int i = 0; i < angles.size(); ++i) {
+            simulationArm_->moveAngle(i + 1, angles[i], false, true);
+        }
+        simulation::refresh();
+        simulationArm_->render();
+        isPreviewActive = false;
+    }
 }
