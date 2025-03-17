@@ -49,6 +49,7 @@ private:
     bool m_ShowNodeEditor = true;
     bool m_ShowHelpWindow = false;
     ed::NodeId m_SelectedNodeId = 0;
+    ed::NodeId m_LastSelectedNode;
 
     // Info window members
     bool m_ShowInfoWindow = true;

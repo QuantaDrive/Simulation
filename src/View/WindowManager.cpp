@@ -222,7 +222,7 @@ void WindowManager::renderImGuiNodesEditorWindow(ed::EditorContext *g_Context) {
             ed::EndDelete();
         }
 
-        NodeHelpers::HandleNodeSelection(localSimulationManager);
+        NodeHelpers::HandleNodeSelection(localSimulationManager,m_Nodes,  m_LastSelectedNode);
 
         if (m_FirstFrame) {
             ed::NavigateToContent(0.0f);
@@ -325,6 +325,8 @@ void WindowManager::executeNodeChain() {
 
     const domain::Node *currentNode = startNode;
     while (currentNode) {
+        // print current node
+        cout << "Current node: " << currentNode->getTitle() << endl;
         executeNode(*currentNode);
         currentNode = NodeHelpers::FindNextNode(currentNode, m_Nodes, m_Links);
     }

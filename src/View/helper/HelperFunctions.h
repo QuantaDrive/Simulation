@@ -49,7 +49,7 @@ namespace NodeHelpers {
     bool ValidateNewLink(const domain::Node* sourceNode, const domain::Node* targetNode);
     void DeleteNodeAndConnectedLinks(ed::NodeId nodeId, std::vector<domain::Node>& nodes, ImVector<LinkInfo>& links);
     void RenderLinks(const ImVector<LinkInfo>& links);
-    void HandleNodeSelection(SimulationManager* simulationManager);
+    void HandleNodeSelection(SimulationManager* simulationManager, std::vector<domain::Node>& m_Nodes, ed::NodeId& lastSelectedNode);
     void HandleDeleteActions(ed::NodeId selectedNodeId,
                                         std::vector<domain::Node>& nodes,
                                         ImVector<LinkInfo>& links);

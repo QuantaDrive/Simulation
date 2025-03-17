@@ -8,21 +8,36 @@
 
 #include "../../Domain/Instruction.h"
 
-const domain::Node *NodeHelpers::FindStartNode(const std::vector<domain::Node> &nodes,
-                                               const ImVector<LinkInfo> &links) {
-    // If there's only one node and no links, consider it the start node
-    if (nodes.size() == 1 && links.empty()) {
-        return &nodes[0];
-    }
+const domain::Node* NodeHelpers::FindStartNode(const std::vector<domain::Node>& nodes, const ImVector<LinkInfo>& links) {
+    // If no nodes, return nullptr
+    if (nodes.empty()) return nullptr;
 
-    // Otherwise, find a node that only has output connections
-    for (const auto &node: nodes) {
-        if (IsStartNode(node, links)) {
-            std::cout << "Starting node: " << node.getTitle() << std::endl;
-            return &node;
+    // For each node, check if it has any incoming connections
+    std::vector<const domain::Node*> possibleStartNodes;
+
+    for (const auto& node : nodes) {
+        bool hasIncomingLinks = false;
+        for (const auto& link : links) {
+            if (link.InputId == node.getNodeInputPinId()) {
+                hasIncomingLinks = true;
+                break;
+            }
+        }
+
+        if (!hasIncomingLinks) {
+            possibleStartNodes.push_back(&node);
         }
     }
-    return nullptr;
+
+    // If no start nodes found, return nullptr
+    if (possibleStartNodes.empty()) return nullptr;
+
+    // Return the node with the lowest ID (first created)
+    return *std::min_element(possibleStartNodes.begin(), possibleStartNodes.end(),
+      [](const domain::Node* a, const domain::Node* b) {
+          return static_cast<int>(static_cast<uintptr_t>(a->getNodeId())) <
+                 static_cast<int>(static_cast<uintptr_t>(b->getNodeId()));
+      });
 }
 
 const domain::Node *NodeHelpers::FindNextNode(const domain::Node *currentNode, const std::vector<domain::Node> &nodes,
@@ -224,6 +239,9 @@ void NodeHelpers::RenderNodeControls(domain::Node& node, SimulationManager* simu
                     if (!simulationManager->startPreview(position)) {
                         showInfoCallback("Error: current position is unreachable");
                     }
+                    else {
+                        showInfoCallback("Previewing movement to new position");
+                    }
                 }
             }
 
@@ -380,13 +398,30 @@ void NodeHelpers::RenderLinks(const ImVector<LinkInfo>& links) {
     }
 }
 
-void NodeHelpers::HandleNodeSelection(SimulationManager* simulationManager) {
+void NodeHelpers::HandleNodeSelection(SimulationManager* simulationManager, vector<domain::Node>& nodes, ed::NodeId& lastSelectedNode ) {
     ed::NodeId selectedNodeId;
-    if (!ed::GetSelectedNodes(&selectedNodeId, 1)) {
-        simulationManager->endPreview();
+    if (ed::GetSelectedNodes(&selectedNodeId, 1) == 1) {
+        // Check if this is a new selection
+        if (selectedNodeId != lastSelectedNode) {
+            // Find the corresponding node in nodes vector
+            auto it = std::find_if(nodes.begin(), nodes.end(),
+                [selectedNodeId](const domain::Node& node) {
+                    return node.getNodeId() == selectedNodeId;
+                });
+
+            if (it != nodes.end()) {
+                auto* position = it->getPosition();
+                if (position) {
+                    simulationManager->startPreview(position);
+                }
+            }
+            lastSelectedNode = selectedNodeId;
+        }
+    } else {
+        // No node selected, reset last selected node
+        lastSelectedNode = ed::NodeId();
     }
 }
-
 void NodeHelpers::HandleDeleteActions(ed::NodeId selectedNodeId,
                                     std::vector<domain::Node>& nodes,
                                     ImVector<LinkInfo>& links) {
