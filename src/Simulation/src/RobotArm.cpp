@@ -43,6 +43,8 @@ simulation::RobotArm::RobotArm(const std::string& name, const std::string& defin
 
     const unsigned int numJoints = definition["arm"]["degrees_of_freedom"].as<unsigned int>();
     std::string materialFilename = directory + definition["arm"]["material"].as<std::string>();
+    maxVel_ = definition["arm"]["max_velocity"].as<float>();
+    maxAcc_ = definition["arm"]["max_accel"].as<float>();
 
     this->jointPositions.resize(numJoints + 1);
 
