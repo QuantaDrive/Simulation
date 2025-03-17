@@ -26,6 +26,10 @@ void simulation::RobotArm::moveAngle(const int joint, float angle, const bool re
     this->jointPositions[joint] = std::fmod(this->jointPositions[joint], glm::two_pi<float>());
 }
 
+const std::vector<float> & simulation::RobotArm::getJointPositions() const {
+    return jointPositions;
+}
+
 simulation::RobotArm::RobotArm(const std::string& name, const std::string& definitionFile)
 {
     name_=name;
@@ -41,6 +45,8 @@ simulation::RobotArm::RobotArm(const std::string& name, const std::string& defin
     maxVelocity_ = definition["arm"]["max_velocity"].as<float>();
     maxAcceleration_ = definition["arm"]["max_accel"].as<float>();
     std::string materialFilename = directory + definition["arm"]["material"].as<std::string>();
+    maxVel_ = definition["arm"]["max_velocity"].as<float>();
+    maxAcc_ = definition["arm"]["max_accel"].as<float>();
 
     this->jointPositions.resize(numJoints + 1);
 
@@ -105,4 +111,14 @@ void simulation::RobotArm::render()
 std::string simulation::RobotArm::getName() const
 {
     return name_;
+}
+
+float simulation::RobotArm::getMaxVel() const
+{
+    return maxVel_;
+}
+
+float simulation::RobotArm::getMaxAcc() const
+{
+    return maxAcc_;
 }

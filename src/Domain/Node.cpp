@@ -8,9 +8,7 @@
 using namespace domain;
 
 Node::Node(const char* title, RobotActions::NodeActivation activation)
-        : title_(title), activation_(activation)
-
-{
+    : title_(title), activation_(activation) {
 }
 
  std::string Node::getTitle() const
@@ -58,3 +56,42 @@ int Node::getLoopCount() const {
     }
     return 0;
 }
+
+
+
+void Node::setPosition(Position *absolute_position) {
+    position_ = absolute_position;
+}
+
+
+Position *Node::getPosition() const {
+    return position_;
+}
+
+int Node::getWaitTimer() const {
+    return waitTimer_;
+}
+
+void Node::setWaitTimer(int wait_timer) {
+    waitTimer_ = wait_timer;
+}
+
+vec3 Node::getRotationHead() const {
+    return rotationHead_;
+}
+
+void Node::setRotationHead(const vec3 &degrees) {
+    rotationHead_ = degrees;
+}
+
+float Node::getVelocity() const {
+    return velocity_;
+}
+
+void Node::setVelocity(float velocity) {
+    velocity_ = velocity;
+}
+
+
+
+

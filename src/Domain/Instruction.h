@@ -4,9 +4,12 @@
 #include <vector>
 #include <glm/glm.hpp>
 
+#include "Node.h"
+
 using namespace std;
 using namespace glm;
 
+class Position;
 
 namespace domain
 {
@@ -18,12 +21,14 @@ namespace domain
         int wait_;
         bool goHome_;
         bool relative_;
-        vec3 relMove_;
-        float speed_;
-        float acceleration_;
+        bool rapid_;
+        bool linear_;
+        float velocity_;
 
     public:
-        Instruction(Position* position, float gripForce, int wait, bool goHome, bool relative, const vec3& relMove, float speed, float acceleration);
+        Instruction(Position* position, float gripForce, int wait, bool goHome, bool relative, float velocity);
+
+        Instruction() = default;
 
         ~Instruction();
 
@@ -47,9 +52,19 @@ namespace domain
 
         void setRelative(bool relative);
 
-        [[nodiscard]] vec3 getRelMove() const;
 
-        void setRelMove(vec3 relMove);
+        [[nodiscard]] bool isRapid() const;
+
+        void setRapid(bool rapid);
+
+        [[nodiscard]] bool isLinear() const;
+
+        void setLinear(bool linear);
+
+        [[nodiscard]] float getVelocity() const;
+
+        void setVelocity(float velocity);
+
     };
 }
 

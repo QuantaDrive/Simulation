@@ -6,7 +6,7 @@
 
 #include <stdexcept>
 
-#include "Position.h"
+#include "Tool.h"
 #include "../Domain/Instruction.h"
 #include "../Domain/Task.h"
 
@@ -25,6 +25,7 @@ domain::RobotArm::~RobotArm()
     {
         delete t;
     }
+    delete tool_;
     delete currPosition_;
 }
 
@@ -96,4 +97,12 @@ domain::Tool* domain::RobotArm::getTool() const
 void domain::RobotArm::setTool(Tool* tool)
 {
     tool_=tool;
+}
+
+bool domain::RobotArm::isAbsolute() const {
+    return isAbsolute_;
+}
+
+void domain::RobotArm::setAbsolute(bool is_absolute) {
+    isAbsolute_ = is_absolute;
 }

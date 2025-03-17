@@ -92,6 +92,8 @@ add_executable(
         src/Domain/Node.h
         src/Domain/NodeActivation.cpp
         src/Domain/NodeActivation.h
+        src/View/helper/HelperFunctions.cpp
+        src/View/helper/HelperFunctions.h
         src/BL/IManager.cpp
         src/BL/IManager.h
 )

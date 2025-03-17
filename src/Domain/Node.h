@@ -4,9 +4,16 @@
 
 #ifndef NODE_H
 #define NODE_H
+#include <array>
+
 #include "imgui_node_editor.h"
 #include <atomic>
 #include <string>
+#include <vector>
+#include <glm/detail/type_vec.hpp>
+#include <glm/detail/type_vec3.hpp>
+
+#include "Position.h"
 
 namespace ed = ax::NodeEditor;
 namespace RobotActions
@@ -16,6 +23,8 @@ namespace RobotActions
 
 namespace domain
 {
+    class Position;
+
     class Node {
         std::string title_;
         RobotActions::NodeActivation activation_;
@@ -23,6 +32,10 @@ namespace domain
         ed::PinId nodeInputPinId_;
         ed::PinId nodeOutputPinId_;
         int loopCount_ = 0;
+        int waitTimer_ = 0;
+        Position* position_ = new Position({0, 0, 0}, {0, 0, 0});
+        vec3 rotationHead_ = {0, 0, 0};
+        float velocity_ = 0;
     public:
         explicit Node(const char* title, RobotActions::NodeActivation activation);
 
@@ -41,6 +54,22 @@ namespace domain
         void setLoopCount(int count);
 
         [[nodiscard]] int getLoopCount() const;
+
+        void setPosition(Position *absolute_position);
+
+        [[nodiscard]] Position *getPosition() const;
+
+        [[nodiscard]] int getWaitTimer() const;
+
+        void setWaitTimer(int wait_timer);
+
+        [[nodiscard]] vec3 getRotationHead() const;
+
+        void setRotationHead(const vec3 &degrees);
+
+        [[nodiscard]] float getVelocity() const;
+
+        void setVelocity(float velocity);
     };
 }
 

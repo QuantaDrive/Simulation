@@ -5,6 +5,7 @@
 #ifndef IREPO_H
 #define IREPO_H
 
+#include <memory>
 #include <string>
 
 using namespace std;

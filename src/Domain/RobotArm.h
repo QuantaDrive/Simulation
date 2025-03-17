@@ -33,6 +33,7 @@ namespace domain
         string host_;
         string type_;
         Tool* tool_;
+        bool isAbsolute_ = true;
 
     public:
         RobotArm(const string& name, const vector<Task*>& tasks, Status status, Position* currPosition, const string& host, const string& type, Tool* tool);
@@ -67,7 +68,9 @@ namespace domain
 
         void setTool(Tool* tool);
 
+        [[nodiscard]] bool isAbsolute() const;
 
+        void setAbsolute(bool is_absolute);
     };
 };
 

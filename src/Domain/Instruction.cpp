@@ -4,19 +4,17 @@
 
 #include "Position.h"
 
-domain::Instruction::Instruction(domain::Position* position, const float gripForce, const int wait, const bool goHome, const bool relative, const vec3& relMove, const float speed, const float acceleration) :
+domain::Instruction::Instruction(Position* position, const float gripForce, const int wait, const bool goHome, const bool relative, const float velocity) :
 position_(position),
 gripForce_(gripForce),
 wait_(wait),
 goHome_(goHome),
 relative_(relative),
-relMove_(relMove),
-speed_(speed),
-acceleration_(acceleration){}
+velocity_(velocity){}
 
 domain::Instruction::~Instruction() = default;
 
-domain::Position* domain::Instruction::getPosition() const
+domain::Position *domain::Instruction::getPosition() const
 {
     return position_;
 }
@@ -67,12 +65,31 @@ void domain::Instruction::setRelative(bool relative)
     relative_=relative;
 }
 
-vec3 domain::Instruction::getRelMove() const
+
+bool domain::Instruction::isRapid() const
 {
-    return relMove_;
+    return rapid_;
 }
 
-void domain::Instruction::setRelMove(vec3 relMove)
+void domain::Instruction::setRapid(bool rapid)
 {
-    relMove_=relMove;
+    rapid_=rapid;
+}
+
+bool domain::Instruction::isLinear() const {
+    return linear_;
+}
+
+void domain::Instruction::setLinear(bool linear) {
+    linear_ = linear;
+}
+
+float domain::Instruction::getVelocity() const
+{
+    return velocity_;
+}
+
+void domain::Instruction::setVelocity(const float velocity)
+{
+    velocity_=velocity;
 }

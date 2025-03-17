@@ -6,17 +6,12 @@
 namespace RobotActions {
     enum class NodeActivation {
         Wait,
+        AngleHead,
         RapidMove,
         LinearMove,
-        DirectMove,
         Absolute,
         Relative,
         Home,
-        EnableMotors,
-        DisableMotors,
-        Grip,
-        Hold,
-        Action,
         LoopStart,
         LoopEnd,
         COUNT

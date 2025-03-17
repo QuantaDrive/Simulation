@@ -17,17 +17,21 @@ namespace simulation{
         std::vector<glm::vec3> jointOffsets;
         std::vector<glm::vec3> jointDOFs;
         std::vector<glm::vec4> dh_parameters;
-        float maxVelocity_;
-        float maxAcceleration_;
-
+        float maxVel_;
+        float maxAcc_;
     public:
         void moveAngle(int joint, float angle,
             bool relative = false, bool isDegree = false);
+
+        [[nodiscard]] const std::vector<float>& getJointPositions() const;
+
         RobotArm(const std::string& name,const std::string& definitionFile);
         ~RobotArm();
-        std::vector<glm::vec4> getDhParameters() const;
+        [[nodiscard]] std::vector<glm::vec4> getDhParameters() const;
         void render();
         [[nodiscard]] std::string getName() const;
+        [[nodiscard]] float getMaxVel() const;
+        [[nodiscard]] float getMaxAcc() const;
     };
 } // simulation
 
