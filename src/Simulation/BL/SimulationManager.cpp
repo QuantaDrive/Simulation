@@ -25,6 +25,7 @@ SimulationManager::~SimulationManager() {
     delete repo_;
     delete simulationArm_;
     delete robotArm_;
+    delete lastPreviewPosition;
 }
 
 void SimulationManager::setRobotArm(domain::RobotArm *robotArm) {
@@ -345,4 +346,59 @@ void SimulationManager::updateCameraPosition() {
     m_CameraPosition = glm::vec3(x, y, z);
     simulation::lookAt(m_CameraPosition, m_CameraTarget);
     simulation::lightPosition(m_CameraPosition);
+}
+
+vector<float> SimulationManager::calculateFinalAngles(domain::Position *targetPosition) {
+    try {
+        return inverseKinematics(targetPosition);
+    } catch (logic_error &e) {
+        throw;
+    }
+}
+
+bool SimulationManager::hasPositionChanged(const domain::Position *newPosition) const {
+    if (!lastPreviewPosition) return true;
+
+    const auto &newCoords = newPosition->getCoords();
+    const auto &lastCoords = lastPreviewPosition->getCoords();
+    const auto &newRot = newPosition->getRotation();
+    const auto &lastRot = lastPreviewPosition->getRotation();
+
+    return newCoords != lastCoords || newRot != lastRot;
+}
+
+
+void SimulationManager::startPreview(domain::Position* position) {
+    if (!isPreviewActive) {
+        originalPositions.clear();
+        for (int i = 1; i <= 6; i++) {
+            originalPositions.push_back(simulationArm_->getJointPositions()[i]);
+        }
+        isPreviewActive = true;
+    }
+
+    try {
+        previewAngles = calculateFinalAngles(position);
+
+        // Apply preview angles
+        for (int i = 0; i < previewAngles.size(); ++i) {
+            simulationArm_->moveAngle(i + 1, previewAngles[i], false, true);
+        }
+    } catch (logic_error& e) {
+        endPreview();
+        throw;
+    }
+}
+
+void SimulationManager::endPreview() {
+    if (isPreviewActive) {
+        for (int i = 0; i < originalPositions.size(); ++i) {
+            simulationArm_->moveAngle(i + 1, originalPositions[i], false, true);
+        }
+        simulation::refresh();
+        simulationArm_->render();
+        isPreviewActive = false;
+        delete lastPreviewPosition;
+        lastPreviewPosition = nullptr;
+    }
 }

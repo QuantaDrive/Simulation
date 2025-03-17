@@ -53,6 +53,8 @@ class WindowManager : public IWindowManager {
     bool m_ShowNodeSelector = true;
     bool m_ShowNodeEditor = true;
     bool m_ShowHelpWindow = false;
+    // Select node
+    ed::NodeId m_SelectedNodeId = 0;
 
     //Simulationmanager
     SimulationManager *localSimulationManager;
@@ -213,7 +215,6 @@ class WindowManager : public IWindowManager {
     void RenderImGuiNodesEditorWindow(ed::EditorContext *g_Context) {
         ImGui::Begin("Node Editor", &m_ShowNodeEditor, ImGuiWindowFlags_MenuBar);
 
-        // Add minimize/maximize in the menu bar
         if (ImGui::BeginMenuBar()) {
             ImGui::EndMenuBar();
         }
@@ -222,37 +223,40 @@ class WindowManager : public IWindowManager {
             ed::SetCurrentEditor(g_Context);
             ed::Begin("My Editor");
 
-
             // Handle copying
             HandleNodeCopy();
 
             // Render all stored nodes
             for (auto &node: m_Nodes) {
-                RenderNodesInEditor(node);
+                renderNodesInEditor(node);
             }
+
             // Submit Links
             for (auto &linkInfo: m_Links) {
                 ed::Link(linkInfo.Id, linkInfo.InputId, linkInfo.OutputId);
             }
 
-            // Handle creation action, returns true if editor want to create new object (node or link)
+            // Handle creation action
             if (ed::BeginCreate()) {
                 LinkHandler();
             }
             ed::EndCreate();
 
-
             // Handle deletion action
             if (ed::BeginDelete()) {
-                // Handle link deletion
                 LinkDeleteHandler();
 
-                // Handle node deletion
                 ed::NodeId selectedNodeId;
                 if (ed::GetSelectedNodes(&selectedNodeId, 1)) {
                     deleteNodeAndConnectedLinks(selectedNodeId);
                 }
                 ed::EndDelete();
+            }
+
+            // Handle node selection/deselection
+            ed::NodeId selectedNodeId;
+            if (!ed::GetSelectedNodes(&selectedNodeId, 1)) {
+                localSimulationManager->endPreview();
             }
 
             if (m_FirstFrame) {
@@ -329,7 +333,7 @@ class WindowManager : public IWindowManager {
     }
 
 
-    void RenderNodesInEditor(domain::Node &node) {
+    void renderNodesInEditor(domain::Node &node) {
         ed::BeginNode(node.getNodeId());
         ImGui::Text(node.getTitle().c_str());
 
@@ -360,8 +364,8 @@ class WindowManager : public IWindowManager {
             node.setWaitTimer(waitTimer);
         }
         // Add absolute movement controls for Absolute nodes
-        else if (node.getActivation() == RobotActions::NodeActivation::LinearMove || node.getActivation()
-                 == RobotActions::NodeActivation::RapidMove) {
+        else if (node.getActivation() == RobotActions::NodeActivation::LinearMove ||
+        node.getActivation() == RobotActions::NodeActivation::RapidMove) {
             std::string idTitle = "linear_or_rapid_move " + node.getNodeId().Get();
             ImGui::PushID(idTitle.c_str());
             ImGui::PushItemWidth(100);
@@ -372,6 +376,7 @@ class WindowManager : public IWindowManager {
             float yCoord = posCoords.y;
             float zCoord = posCoords.z;
             int linearVelocity = node.getVelocity();
+
             // Create sliders for X, Y, Z
             bool changed = false;
             changed |= ImGui::InputFloat("X", &xCoord, -200.0f, 200.0f);
@@ -381,14 +386,22 @@ class WindowManager : public IWindowManager {
             if (node.getActivation() == RobotActions::NodeActivation::LinearMove) {
                 changed |= ImGui::SliderInt("Velocity", &linearVelocity, 0, 10);
             }
-            // Update values if changed
+
+            // Update values and trigger preview if changed
             if (changed) {
                 auto *position = new domain::Position(vec3(xCoord, yCoord, zCoord), vec3(0, 0, 0));
                 node.setPosition(position);
                 if (node.getActivation() == RobotActions::NodeActivation::LinearMove) {
                     node.setVelocity(linearVelocity);
                 }
+                // Check if this node is currently selected
+                ed::NodeId selectedNodeId;
+                if (ed::GetSelectedNodes(&selectedNodeId, 1) && node.getNodeId() == selectedNodeId) {
+                    localSimulationManager->startPreview(position);
+                }
+
             }
+
             ImGui::PopID();
             ImGui::PopItemWidth();
         } else if (node.getActivation() == RobotActions::NodeActivation::AngleHead) {
