@@ -8,7 +8,7 @@
 #include <ctime>
 #include <stdexcept>
 #include <regex.h>
-#include <bits/regex.h>
+#include <regex>
 #include <glm/gtc/constants.hpp>
 
 #include "../Domain/Task.h"
@@ -17,28 +17,38 @@
 
 string IManager::toGCode(domain::Task* task)
 {
-    bool setRelative = false;
+    bool alreadyRelative = false;
+    bool alreadyAbsolute = false;
     string gCode = "";
     for (const auto instruction : task->getInstructions())
     {
-        if (instruction->getWait()>0) gCode += "G4 P"+to_string(instruction->getWait()*1000)+"\n";
-        else if (instruction->isRelative())
+        if (instruction->getWait()>0)
         {
-            setRelative = true;
+            gCode += "G4 P"+to_string(instruction->getWait()*1000)+"\n";
+            continue;
+        }
+        if (instruction->isGoHome())
+        {
+            gCode += "G28\n";
+            continue;
+        }
+        if (instruction->isRelative() && !alreadyRelative)
+        {
+            alreadyRelative = true;
+            alreadyAbsolute = false;
             gCode += "G91\n";
-            gCode += "G0 X"+to_string(instruction->getPosition()->getCoords()[0])+" Y"+to_string(instruction->getPosition()->getCoords()[1])+" Z"+to_string(instruction->getPosition()->getCoords()[2])+"\n";
-
         }
-        else if (instruction->isGoHome()) gCode += "G28\n";
-        else
+        if (!instruction->isRelative() && !alreadyAbsolute)
         {
-            if (setRelative)
-            {
-                setRelative = false;
-                gCode += "G90\n";
-            }
+            alreadyRelative = false;
+            alreadyAbsolute = true;
+            gCode += "G90\n";
+        }
+        if (instruction->isRapid())
+        {
             gCode += "G0 X"+to_string(instruction->getPosition()->getCoords()[0])+" Y"+to_string(instruction->getPosition()->getCoords()[1])+" Z"+to_string(instruction->getPosition()->getCoords()[2])+"\n";
         }
+        else gCode += "G1 X"+to_string(instruction->getPosition()->getCoords()[0])+" Y"+to_string(instruction->getPosition()->getCoords()[1])+" Z"+to_string(instruction->getPosition()->getCoords()[2])+" F"+to_string(instruction->getVelocity())+"\n";
     }
     return gCode;
 }
@@ -62,8 +72,8 @@ domain::Task* IManager::parseGCode(std::string& gCode)
     time_t timestamp = time(&timestamp);
     tm datetime = *localtime(&timestamp);
     domain::Task* task = new domain::Task(datetime,{});
-    bool nextRelative = false;
-    std::regex re("(G|M)*");
+    bool relative = false;
+    std::regex re = regex("(G|M)*", regex_constants::basic);
     auto lines = split(gCode, "\n");
     for (auto line : lines)
     {
@@ -75,32 +85,44 @@ domain::Task* IManager::parseGCode(std::string& gCode)
         re.assign("G0 X[0-9]{3} Y[0-9]{3} Z[0-9]{3}");
         if (regex_search(gCode, re))
         {
-            if (nextRelative)
-            {
-                vec3 relMove = vec3({codeParts[1].substr(1),codeParts[2].substr(1),codeParts[3].substr(1)});
-                nextRelative = false;
-                task->getInstructions().emplace_back(new domain::Instruction());
-            }
-            auto* p = new domain::Position({codeParts[1].substr(1),codeParts[2].substr(1),codeParts[3].substr(1)}, {0,0,0});
-            task->getInstructions().emplace_back(new domain::Instruction(p, 0, 0, false, false, maxVel_));
+            auto* p = new domain::Position({strtof(codeParts[1].substr(1).c_str(), nullptr),strtof(codeParts[2].substr(1).c_str(), nullptr),strtof(codeParts[3].substr(1).c_str(), nullptr)}, {0,0,0});
+            task->getInstructions().emplace_back(new domain::Instruction(p, 0, 0, false, relative, maxVel_));
+            continue;
         }
         re.assign("G1 X[0-9]{3} Y[0-9]{3} Z[0-9]{3} F[0-9]{3}");
         if (regex_search(gCode, re))
         {
             float velocity = strtof(codeParts[4].substr(1).c_str(), nullptr);
-            auto* p = new domain::Position({codeParts[1].substr(1),codeParts[2].substr(1),codeParts[3].substr(1)}, {0,0,0});
-            task->getInstructions().emplace_back(new domain::Instruction(p, 0, 0, false, nextRelative, velocity));
-            nextRelative = false;
+            auto* p = new domain::Position({strtof(codeParts[1].substr(1).c_str(), nullptr),strtof(codeParts[2].substr(1).c_str(), nullptr),strtof(codeParts[3].substr(1).c_str(), nullptr)}, {0,0,0});
+            task->getInstructions().emplace_back(new domain::Instruction(p, 0, 0, false, relative, velocity));
+            continue;
         }
         re.assign("G91");
         if (regex_search(gCode, re))
         {
-            nextRelative = true;
-            break;
+            relative = true;
+            continue;
+        }
+        re.assign("G90");
+        if (regex_search(gCode, re))
+        {
+            relative = false;
+            continue;
+        }
+        re.assign("G4 P[0-9]{3}");
+        if (regex_search(gCode, re))
+        {
+            const int wait = stoi(codeParts[1].substr(1));
+            task->getInstructions().emplace_back(new domain::Instruction(nullptr,0,wait/1000, false, relative, 0));
+        }
+        re.assign("G28");
+        if (regex_search(gCode, re))
+        {
+            task->getInstructions().emplace_back(new domain::Instruction(nullptr,0,0,true,false,maxVel_));
         }
 
     }
-
+    return task;
 }
 
 
