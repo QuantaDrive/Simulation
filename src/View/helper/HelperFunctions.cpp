@@ -56,12 +56,18 @@ const domain::Node *NodeHelpers::FindNextNode(const domain::Node *currentNode, c
 }
 
 bool NodeHelpers::IsStartNode(const domain::Node &node, const ImVector<LinkInfo> &links) {
-    // If there are no links at all a single node is considered the start node
+    //If there are no links at all, any node is a start node
     if (links.empty()) {
         return true;
     }
-    // Otherwise, node should have no input connections but have output connections
-    return !HasInputConnection(node,links) && HasOutputConnection(node, links);
+
+    //If the node has no connections at all, it's a start node
+    if (!HasInputConnection(node, links) && !HasOutputConnection(node, links)) {
+        return true;
+    }
+
+    // Node should have no input connections but have output connections (Node Chain)
+    return !HasInputConnection(node, links) && HasOutputConnection(node, links);
 }
 
 bool NodeHelpers::HasInputConnection(const domain::Node &node, const ImVector<LinkInfo> &links) {
