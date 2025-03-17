@@ -370,10 +370,6 @@ bool SimulationManager::hasPositionChanged(const domain::Position *newPosition) 
 
 void SimulationManager::startPreview(domain::Position* position) {
     if (!isPreviewActive) {
-        originalPositions.clear();
-        for (int i = 1; i <= 6; i++) {
-            originalPositions.push_back(simulationArm_->getJointPositions()[i]);
-        }
         isPreviewActive = true;
     }
 
@@ -392,13 +388,15 @@ void SimulationManager::startPreview(domain::Position* position) {
 
 void SimulationManager::endPreview() {
     if (isPreviewActive) {
-        for (int i = 0; i < originalPositions.size(); ++i) {
-            simulationArm_->moveAngle(i + 1, originalPositions[i], false, true);
+        // Use current position from robot arm
+        auto currentPos = robotArm_->getCurrPosition();
+        vector<float> angles = calculateFinalAngles(currentPos);
+
+        for (int i = 0; i < angles.size(); ++i) {
+            simulationArm_->moveAngle(i + 1, angles[i], false, true);
         }
         simulation::refresh();
         simulationArm_->render();
         isPreviewActive = false;
-        delete lastPreviewPosition;
-        lastPreviewPosition = nullptr;
     }
 }
