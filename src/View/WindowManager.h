@@ -67,8 +67,6 @@ private:
     void executeNodeChain();
     void executeNode(const domain::Node& node);
 
-    static bool compareNodeById(const domain::Node& node, ed::NodeId nodeId);
-
     bool shouldRemoveLink(const NodeHelpers::LinkInfo &link, const domain::Node &node);
     void deleteNodeAndConnectedLinks(ed::NodeId nodeId);
 
