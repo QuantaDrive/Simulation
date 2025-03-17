@@ -56,16 +56,16 @@ private:
     SimulationManager* localSimulationManager;
 
     // Private methods
-    void RenderInfoWindow();
-    void RenderHelpWindow();
-    void RenderNodeSelectorWindow();
-    void RenderImGuiNodesEditorWindow(ed::EditorContext* g_Context);
-    void HandleNodeCopy();
-    void LinkHandler();
-    void LinkDeleteHandler();
+    void renderInfoWindow();
+    void renderHelpWindow();
+    void renderNodeSelectorWindow();
+    void renderImGuiNodesEditorWindow(ed::EditorContext* g_Context);
+    void handleNodeCopy();
+    void linkHandler();
+    void linkDeleteHandler();
     void renderNodesInEditor(domain::Node& node);
-    void ExecuteNodeChain();
-    void ExecuteNode(const domain::Node& node);
+    void executeNodeChain();
+    void executeNode(const domain::Node& node);
 
     static bool compareNodeById(const domain::Node& node, ed::NodeId nodeId);
 
@@ -77,10 +77,10 @@ public:
     explicit WindowManager(SimulationManager* simulationManager);
 
     // Interface implementations
-    void SetupImGui(GLFWwindow* existingWindow) override;
-    void RenderUI(ed::EditorContext* g_Context) override;
-    void CleanupImGui(ed::EditorContext* g_Context) override;
+    void setupImGui(GLFWwindow* existingWindow) override;
+    void renderUI(ed::EditorContext* g_Context) override;
+    void rleanupImGui(ed::EditorContext* g_Context) override;
 
     // Public methods
-    void ShowInfo(const std::string& message);
+    void showInfo(const std::string& message);
 };

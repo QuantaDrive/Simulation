@@ -56,7 +56,7 @@ int main()
 
 	// Setup ImGui
 	WindowManager windowManager = WindowManager(simulationManager);
-	windowManager.SetupImGui(simulation::window);
+	windowManager.setupImGui(simulation::window);
 	do
 	{
 		simulation::refresh();
@@ -66,13 +66,13 @@ int main()
 		// arm->moveAngle(6, 1.0f, true, true);
 		arm->render();
 		// Render ImGui UI and Node Editor together
-		windowManager.RenderUI(g_Context);
+		windowManager.renderUI(g_Context);
 	} // Check if the ESC key was pressed or the window was closed
 	while (simulation::needClose());
 
 	simulation::Close();
 	// Cleanup ImGui & Node Editor
-	windowManager.CleanupImGui(g_Context);
+	windowManager.rleanupImGui(g_Context);
 
 	//cleanup
 	delete simulationManager;

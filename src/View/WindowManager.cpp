@@ -23,7 +23,7 @@ bool WindowManager::LinkNodeMatcher::operator()(const NodeHelpers::LinkInfo& lin
 }
 
 
-    void WindowManager::RenderInfoWindow() {
+    void WindowManager::renderInfoWindow() {
         // Set window position aligned with Node Editor window
         ImVec2 nodeEditorPos = ImVec2(0, 0);
         float windowHeight = 50.0f;
@@ -58,7 +58,7 @@ bool WindowManager::LinkNodeMatcher::operator()(const NodeHelpers::LinkInfo& lin
         ImGui::End();
     }
 
-    void WindowManager::RenderHelpWindow() {
+    void WindowManager::renderHelpWindow() {
         if (!m_ShowHelpWindow) return;
         ImGui::SetNextWindowSizeConstraints(ImVec2(400, 300), ImVec2(600, 800));
         ImGui::Begin("Node Editor Help", &m_ShowHelpWindow);
@@ -67,7 +67,7 @@ bool WindowManager::LinkNodeMatcher::operator()(const NodeHelpers::LinkInfo& lin
     }
 
 
-    void WindowManager::RenderNodeSelectorWindow() {
+    void WindowManager::renderNodeSelectorWindow() {
         // Set max width to 250
         ImGui::SetNextWindowSizeConstraints(ImVec2(200, 0), ImVec2(250, FLT_MAX));
         ImGui::Begin("Node Selector", &m_ShowNodeSelector, ImGuiWindowFlags_MenuBar);
@@ -133,7 +133,7 @@ bool WindowManager::LinkNodeMatcher::operator()(const NodeHelpers::LinkInfo& lin
             ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.1f, 0.6f, 0.1f, 1.0f));
 
             if (ImGui::Button("Send instructions", ImVec2(windowWidth, 0))) {
-                ExecuteNodeChain();
+                executeNodeChain();
             }
 
             // Add tooltip for Send instructions button
@@ -183,7 +183,7 @@ bool WindowManager::LinkNodeMatcher::operator()(const NodeHelpers::LinkInfo& lin
         }
     }
 
-    void WindowManager::HandleNodeCopy() {
+    void WindowManager::handleNodeCopy() {
         ed::NodeId selectedNodeId;
         if (ed::GetSelectedNodes(&selectedNodeId, 1) &&
             ImGui::GetIO().KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_C)) {
@@ -210,7 +210,7 @@ bool WindowManager::LinkNodeMatcher::operator()(const NodeHelpers::LinkInfo& lin
         }
     }
 
-    void WindowManager::RenderImGuiNodesEditorWindow(ed::EditorContext *g_Context) {
+    void WindowManager::renderImGuiNodesEditorWindow(ed::EditorContext *g_Context) {
         ImGui::Begin("Node Editor", &m_ShowNodeEditor, ImGuiWindowFlags_MenuBar);
 
         if (ImGui::BeginMenuBar()) {
@@ -233,7 +233,7 @@ bool WindowManager::LinkNodeMatcher::operator()(const NodeHelpers::LinkInfo& lin
             ed::Begin("My Editor");
 
             // Handle copying
-            HandleNodeCopy();
+            handleNodeCopy();
 
             // Render all stored nodes
             for (auto &node: m_Nodes) {
@@ -247,13 +247,13 @@ bool WindowManager::LinkNodeMatcher::operator()(const NodeHelpers::LinkInfo& lin
 
             // Handle creation action
             if (ed::BeginCreate()) {
-                LinkHandler();
+                linkHandler();
             }
             ed::EndCreate();
 
             // Handle deletion action
             if (ed::BeginDelete()) {
-                LinkDeleteHandler();
+                linkDeleteHandler();
 
                 ed::NodeId selectedNodeId;
                 if (ed::GetSelectedNodes(&selectedNodeId, 1)) {
@@ -279,7 +279,7 @@ bool WindowManager::LinkNodeMatcher::operator()(const NodeHelpers::LinkInfo& lin
         ImGui::End();
     }
 
-    void WindowManager::LinkHandler() {
+    void WindowManager::linkHandler() {
         ed::PinId inputPinId, outputPinId;
         if (ed::QueryNewLink(&inputPinId, &outputPinId)) {
             if (inputPinId && outputPinId) {
@@ -325,7 +325,7 @@ bool WindowManager::LinkNodeMatcher::operator()(const NodeHelpers::LinkInfo& lin
         }
     }
 
-    void WindowManager::LinkDeleteHandler() {
+    void WindowManager::linkDeleteHandler() {
         ed::LinkId deletedLinkId;
         while (ed::QueryDeletedLink(&deletedLinkId)) {
             // If you agree that link can be deleted, accept deletion.
@@ -407,7 +407,7 @@ bool WindowManager::LinkNodeMatcher::operator()(const NodeHelpers::LinkInfo& lin
                 ed::NodeId selectedNodeId;
                 if (ed::GetSelectedNodes(&selectedNodeId, 1) && node.getNodeId() == selectedNodeId) {
                     if (!localSimulationManager->startPreview(position)) {
-                        ShowInfo("current position is unreachable");
+                        showInfo("current position is unreachable");
                     }
                 }
             }
@@ -446,7 +446,7 @@ bool WindowManager::LinkNodeMatcher::operator()(const NodeHelpers::LinkInfo& lin
     }
 
 
-    void WindowManager::ExecuteNodeChain() {
+    void WindowManager::executeNodeChain() {
         const domain::Node *startNode = NodeHelpers::FindStartNode(m_Nodes, m_Links);
         if (!startNode) {
             std::cout << "No starting node found!" << std::endl;
@@ -455,12 +455,12 @@ bool WindowManager::LinkNodeMatcher::operator()(const NodeHelpers::LinkInfo& lin
 
         const domain::Node *currentNode = startNode;
         while (currentNode) {
-            ExecuteNode(*currentNode);
+            executeNode(*currentNode);
             currentNode = NodeHelpers::FindNextNode(currentNode, m_Nodes, m_Links);
         }
     }
 
-    void WindowManager::ExecuteNode(const domain::Node &node) {
+    void WindowManager::executeNode(const domain::Node &node) {
         if (!localSimulationManager) return;
 
         switch (node.getActivation()) {
@@ -518,7 +518,7 @@ bool WindowManager::LinkNodeMatcher::operator()(const NodeHelpers::LinkInfo& lin
         }
     }
 
-    void WindowManager::ShowInfo(const std::string &message) {
+    void WindowManager::showInfo(const std::string &message) {
         m_InfoMessage = message;
     }
 
@@ -527,7 +527,7 @@ bool WindowManager::LinkNodeMatcher::operator()(const NodeHelpers::LinkInfo& lin
     }
 
 
-    void WindowManager::SetupImGui(GLFWwindow *existingWindow) {
+    void WindowManager::setupImGui(GLFWwindow *existingWindow) {
         window = existingWindow;
 
         // Set window user pointer for callbacks
@@ -572,7 +572,7 @@ bool WindowManager::LinkNodeMatcher::operator()(const NodeHelpers::LinkInfo& lin
     }
 
 
-    void WindowManager::RenderUI(ed::EditorContext *g_Context){
+    void WindowManager::renderUI(ed::EditorContext *g_Context){
         // Start ImGui frame (only once per frame)
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -591,23 +591,23 @@ bool WindowManager::LinkNodeMatcher::operator()(const NodeHelpers::LinkInfo& lin
 
         // Render windows based on their visibility flags
         if (m_ShowNodeSelector) {
-            RenderNodeSelectorWindow();
+            renderNodeSelectorWindow();
         }
         if (m_ShowNodeEditor) {
-            RenderImGuiNodesEditorWindow(g_Context);
+            renderImGuiNodesEditorWindow(g_Context);
         }
         if (m_ShowHelpWindow) {
-            RenderHelpWindow();
+            renderHelpWindow();
         }
         if (m_ShowInfoWindow) {
-            RenderInfoWindow();
+            renderInfoWindow();
         }
         // Render the final ImGui frame
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     }
 
-    void WindowManager::CleanupImGui(ed::EditorContext *g_Context) {
+    void WindowManager::rleanupImGui(ed::EditorContext *g_Context) {
         ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
