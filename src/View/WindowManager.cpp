@@ -23,40 +23,58 @@ bool WindowManager::LinkNodeMatcher::operator()(const NodeHelpers::LinkInfo& lin
 }
 
 
-    void WindowManager::renderInfoWindow() {
-        // Set window position aligned with Node Editor window
-        ImVec2 nodeEditorPos = ImVec2(0, 0);
-        float windowHeight = 50.0f;
-        float padding = 5.0f;
+void WindowManager::renderInfoWindow() {
+    // Set window position aligned with Node Editor window
+    ImVec2 nodeEditorPos = ImVec2(0, 0);
+    float windowHeight = 100.0f;
+    float padding = 5.0f;
 
-        // Find the Node Editor window position
-        ImGuiWindow* nodeEditorWindow = ImGui::FindWindowByName("Node Editor");
-        if (nodeEditorWindow) {
-            nodeEditorPos = nodeEditorWindow->Pos;
-        }
-
-        ImVec2 windowPos(
-            nodeEditorPos.x,
-            nodeEditorPos.y - windowHeight
-        );
-        ImVec2 windowSize(300.0f, windowHeight);
-
-        ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always);
-        ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
-
-        ImGui::Begin("Status", &m_ShowInfoWindow,
-            ImGuiWindowFlags_NoCollapse |
-            ImGuiWindowFlags_NoResize |
-            ImGuiWindowFlags_NoMove |
-            ImGuiWindowFlags_NoScrollbar |
-            ImGuiWindowFlags_NoScrollWithMouse |
-            ImGuiWindowFlags_NoTitleBar |
-            ImGuiWindowFlags_AlwaysAutoResize
-        );
-
-        ImGui::TextWrapped("%s", m_InfoMessage.c_str());
-        ImGui::End();
+    // Find the Node Editor window position
+    ImGuiWindow* nodeEditorWindow = ImGui::FindWindowByName("Node Editor");
+    if (nodeEditorWindow) {
+        nodeEditorPos = nodeEditorWindow->Pos;
     }
+
+    ImVec2 windowPos(
+        nodeEditorPos.x,
+        nodeEditorPos.y - windowHeight
+    );
+    ImVec2 windowSize(300.0f, windowHeight);
+
+    ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always);
+    ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
+
+    ImGui::Begin("Info Window", &m_ShowInfoWindow,
+        ImGuiWindowFlags_NoCollapse |
+        ImGuiWindowFlags_NoResize |
+        ImGuiWindowFlags_NoMove |
+        ImGuiWindowFlags_NoScrollbar |
+        ImGuiWindowFlags_NoScrollWithMouse |
+        ImGuiWindowFlags_AlwaysAutoResize
+    );
+
+    // Check if message starts with Error
+    bool isError = m_InfoMessage.find("Error") == 0;
+
+    float oldFontSize = ImGui::GetFont()->Scale;
+    ImGui::GetFont()->Scale = 1.5f;
+    ImGui::PushFont(ImGui::GetFont());
+
+    if (isError) {
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
+    }
+
+    ImGui::TextWrapped("%s", m_InfoMessage.c_str());
+
+    if (isError) {
+        ImGui::PopStyleColor();
+    }
+
+    ImGui::PopFont();
+    ImGui::GetFont()->Scale = oldFontSize;
+
+    ImGui::End();
+}
 
     void WindowManager::renderHelpWindow() {
         if (!m_ShowHelpWindow) return;
@@ -407,7 +425,7 @@ bool WindowManager::LinkNodeMatcher::operator()(const NodeHelpers::LinkInfo& lin
                 ed::NodeId selectedNodeId;
                 if (ed::GetSelectedNodes(&selectedNodeId, 1) && node.getNodeId() == selectedNodeId) {
                     if (!localSimulationManager->startPreview(position)) {
-                        showInfo("current position is unreachable");
+                        showInfo("Error: current position is unreachable");
                     }
                 }
             }
@@ -449,7 +467,7 @@ bool WindowManager::LinkNodeMatcher::operator()(const NodeHelpers::LinkInfo& lin
     void WindowManager::executeNodeChain() {
         const domain::Node *startNode = NodeHelpers::FindStartNode(m_Nodes, m_Links);
         if (!startNode) {
-            std::cout << "No starting node found!" << std::endl;
+            showInfo("Error: No starting node found");
             return;
         }
 
