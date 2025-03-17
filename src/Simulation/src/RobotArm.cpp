@@ -26,6 +26,10 @@ void simulation::RobotArm::moveAngle(const int joint, float angle, const bool re
     this->jointPositions[joint] = std::fmod(this->jointPositions[joint], glm::two_pi<float>());
 }
 
+const std::vector<float> & simulation::RobotArm::getJointPositions() const {
+    return jointPositions;
+}
+
 simulation::RobotArm::RobotArm(const std::string& name, const std::string& definitionFile)
 {
     name_=name;

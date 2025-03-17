@@ -50,6 +50,10 @@ private:
     double m_LastY = 0.0;
     bool m_FirstMouse = true;
     bool m_DragActive = false;
+    // preview handling
+    bool isPreviewActive = false;
+    std::vector<float> previewAngles;
+    domain::Position* lastPreviewPosition = nullptr;
 
 protected:
     mat4 getTransformationMatrix(vec3 position, vec3 rotation);
@@ -78,8 +82,13 @@ public:
 
     void setAbsolute(bool is_absolute);
 
+    // preview handling
+    bool startPreview(domain::Position* position);
+    void endPreview();
 private:
     void updateCameraPosition();
+    vector<float> calculateFinalAngles(domain::Position *targetPosition);
+    bool hasPositionChanged(const domain::Position* newPosition) const;
 };
 
 

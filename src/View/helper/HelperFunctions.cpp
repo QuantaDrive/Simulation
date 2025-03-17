@@ -69,29 +69,50 @@ bool NodeHelpers::HasOutputConnection(const domain::Node &node, const ImVector<L
 void NodeHelpers::RenderNodeTooltip(RobotActions::NodeActivation action) {
     switch (action) {
         case RobotActions::NodeActivation::Relative:
-            ImGui::Text("Move the robot relative to its current position");
-        ImGui::Text("X, Y, Z coordinates can be adjusted");
-        break;
+            ImGui::Text("All following input nodes (Rapid or Linear) will move relative to the arm's current position");
+            break;
+
         case RobotActions::NodeActivation::Absolute:
-            ImGui::Text("Move the robot to an absolute position");
-        ImGui::Text("Specify exact X, Y, Z coordinates");
-        break;
+            ImGui::Text("All following input nodes (Rapid or Linear) will move to position specified by those nodes");
+            break;
+
+        case RobotActions::NodeActivation::AngleHead:
+            ImGui::Text("Rotate the robot's head to a specific angle");
+            ImGui::Text("Specify rotation angles in degrees");
+            break;
+
+        case RobotActions::NodeActivation::RapidMove:
+            ImGui::Text("Move the robot at maximum speed");
+            ImGui::Text("Use for quick positioning where precision isn't critical");
+            break;
+
+        case RobotActions::NodeActivation::LinearMove:
+            ImGui::Text("Move the robot in a straight line");
+            ImGui::Text("Maintains constant speed and precise path");
+            break;
+
         case RobotActions::NodeActivation::LoopStart:
             ImGui::Text("Start a loop sequence");
-        ImGui::Text("Specify number of iterations");
-        break;
+            ImGui::Text("Specify number of iterations");
+            break;
+
         case RobotActions::NodeActivation::LoopEnd:
             ImGui::Text("End a loop sequence");
-        ImGui::Text("Must be connected to a Loop Start node");
-        break;
+            ImGui::Text("Must be connected to a Loop Start node");
+            break;
+
         case RobotActions::NodeActivation::Wait:
             ImGui::Text("Pause execution for specified time");
-        ImGui::Text("Duration in seconds");
-        break;
+            ImGui::Text("Duration in seconds");
+            break;
+
         case RobotActions::NodeActivation::Home:
             ImGui::Text("Return robot to home position");
-        break;
+            ImGui::Text("Safe position with defined coordinates");
+            break;
+
         default:
+            ImGui::Text("Unknown action type");
             break;
     }
 }

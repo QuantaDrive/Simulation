@@ -9,15 +9,9 @@ namespace RobotActions {
         "Angle Head",
         "Rapid Move",
         "Linear Move",
-        "Direct Move",
         "Absolute",
         "Relative",
         "Home",
-        "Enable Motors",
-        "Disable Motors",
-        "Grip",
-        "Hold",
-        "Action",
         "Loop Start",
         "Loop End"
     };
