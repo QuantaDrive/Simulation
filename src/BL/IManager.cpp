@@ -7,6 +7,7 @@
 #include <string>
 #include <ctime>
 #include <stdexcept>
+#include <regex.h>
 #include <bits/regex.h>
 #include <glm/gtc/constants.hpp>
 
@@ -25,7 +26,7 @@ string IManager::toGCode(domain::Task* task)
         {
             setRelative = true;
             gCode += "G91\n";
-            gCode += "G0 X"+to_string(instruction->getRelMove()[0])+" Y"+to_string(instruction->getRelMove()[1])+" Z"+to_string(instruction->getRelMove()[2])+"\n";
+            gCode += "G0 X"+to_string(instruction->getPosition()->getCoords()[0])+" Y"+to_string(instruction->getPosition()->getCoords()[1])+" Z"+to_string(instruction->getPosition()->getCoords()[2])+"\n";
 
         }
         else if (instruction->isGoHome()) gCode += "G28\n";
@@ -62,14 +63,14 @@ domain::Task* IManager::parseGCode(std::string& gCode)
     tm datetime = *localtime(&timestamp);
     domain::Task* task = new domain::Task(datetime,{});
     bool nextRelative = false;
-    regex re("(G|M)*");
+    std::regex re("(G|M)*");
     auto lines = split(gCode, "\n");
     for (auto line : lines)
     {
         auto codeParts = split(line, " ");
         if (!regex_search(codeParts[0], re))
         {
-            throw runtime_error('Invalid Gcode');
+            throw runtime_error("Invalid Gcode");
         }
         re.assign("G0 X[0-9]{3} Y[0-9]{3} Z[0-9]{3}");
         if (regex_search(gCode, re))
@@ -78,22 +79,18 @@ domain::Task* IManager::parseGCode(std::string& gCode)
             {
                 vec3 relMove = vec3({codeParts[1].substr(1),codeParts[2].substr(1),codeParts[3].substr(1)});
                 nextRelative = false;
-                task->getInstructions().emplace_back(new domain::Instruction(nullptr,0,0,false,true,relMove,sim));
+                task->getInstructions().emplace_back(new domain::Instruction());
             }
             auto* p = new domain::Position({codeParts[1].substr(1),codeParts[2].substr(1),codeParts[3].substr(1)}, {0,0,0});
-            task->getInstructions().emplace_back(new domain::Instruction(p, 0, 0, false, false, {0,0,0}));
+            task->getInstructions().emplace_back(new domain::Instruction(p, 0, 0, false, false, maxVel_));
         }
-        re.assign("G0 X[0-9]{3} Y[0-9]{3} Z[0-9]{3} F[0-9]{3}");
+        re.assign("G1 X[0-9]{3} Y[0-9]{3} Z[0-9]{3} F[0-9]{3}");
         if (regex_search(gCode, re))
         {
-            if (nextRelative)
-            {
-                vec3 relMove = vec3({codeParts[1].substr(1),codeParts[2].substr(1),codeParts[3].substr(1)});
-                nextRelative = false;
-                task->getInstructions().emplace_back(new domain::Instruction(nullptr,0,0,false,true,relMove,));
-            }
+            float velocity = strtof(codeParts[4].substr(1).c_str(), nullptr);
             auto* p = new domain::Position({codeParts[1].substr(1),codeParts[2].substr(1),codeParts[3].substr(1)}, {0,0,0});
-            task->getInstructions().emplace_back(new domain::Instruction(p, 0, 0, false, false, {0,0,0}));
+            task->getInstructions().emplace_back(new domain::Instruction(p, 0, 0, false, nextRelative, velocity));
+            nextRelative = false;
         }
         re.assign("G91");
         if (regex_search(gCode, re))

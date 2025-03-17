@@ -45,6 +45,7 @@ domain::RobotArm* SimulationManager::getRobotArm()
 void SimulationManager::executeInstruction(const domain::Instruction *instruction) {
     // const auto arm = repo_->readArm(simulationArm_->getName());
     const auto currentPosition = robotArm_->getCurrPosition();
+    if (instruction->isRelative()) robotArm_->setAbsolute(false);
     try
     {
         if (instruction->getWait() > 0) sleep(instruction->getWait());
