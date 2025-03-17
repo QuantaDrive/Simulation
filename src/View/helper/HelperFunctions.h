@@ -20,23 +20,23 @@ namespace domain {
 
 namespace ed = ax::NodeEditor;
 
-struct LinkInfo {
-    ed::LinkId Id;
-    ed::PinId InputId;
-    ed::PinId OutputId;
-};
+namespace NodeHelpers {
+    struct LinkInfo {
+        ed::LinkId Id;
+        ed::PinId InputId;
+        ed::PinId OutputId;
+    };
 
-class NodeHelpers {
-public:
-    static const domain::Node* FindStartNode(const std::vector<domain::Node>& nodes, const ImVector<LinkInfo>& links);
-    static const domain::Node* FindNextNode(const domain::Node* currentNode, const std::vector<domain::Node>& nodes, const ImVector<LinkInfo>& links);
-    static bool IsStartNode(const domain::Node& node, const ImVector<LinkInfo>& links);
-    static bool HasInputConnection(const domain::Node& node, const ImVector<LinkInfo>& links);
-    static bool HasOutputConnection(const domain::Node& node, const ImVector<LinkInfo>& links);
-    static void RenderNodeTooltip(RobotActions::NodeActivation action);
-    static void CalcRandomPosNextNode(ImVec2* m_NextNodePosition);
-    static void RenderHelpText();
-};
+    // Function declarations
+    const domain::Node* FindStartNode(const std::vector<domain::Node>& nodes, const ImVector<LinkInfo>& links);
+    const domain::Node* FindNextNode(const domain::Node* currentNode, const std::vector<domain::Node>& nodes, const ImVector<LinkInfo>& links);
+    bool IsStartNode(const domain::Node& node, const ImVector<LinkInfo>& links);
+    bool HasInputConnection(const domain::Node& node, const ImVector<LinkInfo>& links);
+    bool HasOutputConnection(const domain::Node& node, const ImVector<LinkInfo>& links);
+    void RenderNodeTooltip(RobotActions::NodeActivation action);
+    void CalcRandomPosNextNode(ImVec2* m_NextNodePosition);
+    void RenderHelpText();
+}
 
 
 #endif //HELPERFUNCTIONS_H

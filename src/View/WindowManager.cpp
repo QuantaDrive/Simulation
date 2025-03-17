@@ -1,4 +1,4 @@
-#include "IWindowManager.h"
+#include "WindowManager.h"
 #include <bits/algorithmfwd.h>
 
 #include "imgui_internal.h"
@@ -7,64 +7,23 @@
 #include "../Domain/Instruction.h"
 #include "helper/HelperFunctions.h"
 namespace ed = ax::NodeEditor;
-
-
 using namespace domain;
 
+WindowManager::NodeIdMatcher::NodeIdMatcher(ed::NodeId id) : nodeId(id) {}
 
-class WindowManager : public IWindowManager {
-    struct NodeIdMatcher {
-        explicit NodeIdMatcher(ed::NodeId id) : nodeId(id) {
-        }
+bool WindowManager::NodeIdMatcher::operator()(const domain::Node& node) const {
+    return node.getNodeId() == nodeId;
+}
 
-        bool operator()(const domain::Node &node) const {
-            return node.getNodeId() == nodeId;
-        }
+WindowManager::LinkNodeMatcher::LinkNodeMatcher(const domain::Node& n) : node(n) {}
 
-        ed::NodeId nodeId;
-    };
-
-    struct LinkNodeMatcher {
-        explicit LinkNodeMatcher(const domain::Node &n) : node(n) {
-        }
-
-        bool operator()(const LinkInfo &link) const {
-            return link.InputId == node.getNodeInputPinId() ||
-                   link.OutputId == node.getNodeOutputPinId();
-        }
-
-        const domain::Node &node;
-    };
+bool WindowManager::LinkNodeMatcher::operator()(const NodeHelpers::LinkInfo& link) const {
+    return link.InputId == node.getNodeInputPinId() ||
+           link.OutputId == node.getNodeOutputPinId();
+}
 
 
-    GLFWwindow *window = nullptr;
-    // Single instruction Window
-    int gripforce = 0;
-    std::string textInput;
-
-    // Render Nodes Window
-    ImVector<LinkInfo> m_Links;
-    std::vector<domain::Node> m_Nodes;
-    bool m_FirstFrame = true;
-    int m_NextLinkId = 100;
-    ImVec2 m_NextNodePosition = ImVec2(0, 0);
-    int m_NextNodeId = 1;
-
-    // Window states
-    bool m_ShowNodeSelector = true;
-    bool m_ShowNodeEditor = true;
-    bool m_ShowHelpWindow = false;
-    // Select node
-    ed::NodeId m_SelectedNodeId = 0;
-
-    // Error handling
-    bool m_ShowInfoWindow = true; // Always visible by default
-    std::string m_InfoMessage = "Welcome to the Robot Arm Simulator";
-    //Simulationmanager
-    SimulationManager *localSimulationManager;
-
-
-    void RenderInfoWindow() {
+    void WindowManager::RenderInfoWindow() {
         // Set window position aligned with Node Editor window
         ImVec2 nodeEditorPos = ImVec2(0, 0);
         float windowHeight = 50.0f;
@@ -99,7 +58,7 @@ class WindowManager : public IWindowManager {
         ImGui::End();
     }
 
-    void RenderHelpWindow() {
+    void WindowManager::RenderHelpWindow() {
         if (!m_ShowHelpWindow) return;
         ImGui::SetNextWindowSizeConstraints(ImVec2(400, 300), ImVec2(600, 800));
         ImGui::Begin("Node Editor Help", &m_ShowHelpWindow);
@@ -108,7 +67,7 @@ class WindowManager : public IWindowManager {
     }
 
 
-    void RenderNodeSelectorWindow() {
+    void WindowManager::RenderNodeSelectorWindow() {
         // Set max width to 250
         ImGui::SetNextWindowSizeConstraints(ImVec2(200, 0), ImVec2(250, FLT_MAX));
         ImGui::Begin("Node Selector", &m_ShowNodeSelector, ImGuiWindowFlags_MenuBar);
@@ -190,23 +149,23 @@ class WindowManager : public IWindowManager {
         ImGui::End();
     }
 
-    static bool compareNodeById(const domain::Node &node, ed::NodeId nodeId) {
+    bool WindowManager::compareNodeById(const domain::Node &node, ed::NodeId nodeId) {
         return node.getNodeId() == nodeId;
     }
 
-    bool shouldRemoveLink(const LinkInfo &link, const domain::Node &node) const {
+    bool WindowManager::shouldRemoveLink(const NodeHelpers::LinkInfo &link, const domain::Node &node) {
         return link.InputId == node.getNodeInputPinId() ||
                link.OutputId == node.getNodeOutputPinId();
     }
 
 
-    void deleteNodeAndConnectedLinks(ed::NodeId nodeId) {
+    void WindowManager::deleteNodeAndConnectedLinks(ed::NodeId nodeId) {
         // First find the node
         auto nodeIt = std::find_if(m_Nodes.begin(), m_Nodes.end(), NodeIdMatcher(nodeId));
 
         if (nodeIt != m_Nodes.end()) {
             // Create a temporary vector for valid links
-            ImVector<LinkInfo> newLinks;
+            ImVector<NodeHelpers::LinkInfo> newLinks;
             newLinks.reserve(m_Links.size());
 
             // Copy only the links that are not connected to the node
@@ -224,7 +183,7 @@ class WindowManager : public IWindowManager {
         }
     }
 
-    void HandleNodeCopy() {
+    void WindowManager::HandleNodeCopy() {
         ed::NodeId selectedNodeId;
         if (ed::GetSelectedNodes(&selectedNodeId, 1) &&
             ImGui::GetIO().KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_C)) {
@@ -251,10 +210,21 @@ class WindowManager : public IWindowManager {
         }
     }
 
-    void RenderImGuiNodesEditorWindow(ed::EditorContext *g_Context) {
+    void WindowManager::RenderImGuiNodesEditorWindow(ed::EditorContext *g_Context) {
         ImGui::Begin("Node Editor", &m_ShowNodeEditor, ImGuiWindowFlags_MenuBar);
 
         if (ImGui::BeginMenuBar()) {
+            // Add padding before and after button
+            ImGui::Dummy(ImVec2(5.0f, 0.0f));
+            // Left padding
+            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10.0f, 3.0f));  // Button padding
+            if (ImGui::Button("Focus")) {
+                ed::SetCurrentEditor(g_Context);
+                ed::NavigateToContent();
+            }
+            ImGui::PopStyleVar();
+            // Right padding
+            ImGui::Dummy(ImVec2(5.0f, 0.0f));
             ImGui::EndMenuBar();
         }
 
@@ -309,7 +279,7 @@ class WindowManager : public IWindowManager {
         ImGui::End();
     }
 
-    void LinkHandler() {
+    void WindowManager::LinkHandler() {
         ed::PinId inputPinId, outputPinId;
         if (ed::QueryNewLink(&inputPinId, &outputPinId)) {
             if (inputPinId && outputPinId) {
@@ -355,7 +325,7 @@ class WindowManager : public IWindowManager {
         }
     }
 
-    void LinkDeleteHandler() {
+    void WindowManager::LinkDeleteHandler() {
         ed::LinkId deletedLinkId;
         while (ed::QueryDeletedLink(&deletedLinkId)) {
             // If you agree that link can be deleted, accept deletion.
@@ -372,7 +342,7 @@ class WindowManager : public IWindowManager {
     }
 
 
-    void renderNodesInEditor(domain::Node &node) {
+    void WindowManager::renderNodesInEditor(domain::Node &node) {
         ed::BeginNode(node.getNodeId());
         ImGui::Text(node.getTitle().c_str());
 
@@ -476,7 +446,7 @@ class WindowManager : public IWindowManager {
     }
 
 
-    void ExecuteNodeChain() {
+    void WindowManager::ExecuteNodeChain() {
         const domain::Node *startNode = NodeHelpers::FindStartNode(m_Nodes, m_Links);
         if (!startNode) {
             std::cout << "No starting node found!" << std::endl;
@@ -490,7 +460,7 @@ class WindowManager : public IWindowManager {
         }
     }
 
-    void ExecuteNode(const domain::Node &node) {
+    void WindowManager::ExecuteNode(const domain::Node &node) {
         if (!localSimulationManager) return;
 
         switch (node.getActivation()) {
@@ -548,17 +518,16 @@ class WindowManager : public IWindowManager {
         }
     }
 
-public:
-    void ShowInfo(const std::string &message) {
+    void WindowManager::ShowInfo(const std::string &message) {
         m_InfoMessage = message;
     }
 
-    explicit WindowManager(SimulationManager *simulationManager) {
+     WindowManager::WindowManager(SimulationManager *simulationManager) {
         localSimulationManager = simulationManager;
     }
 
 
-    void SetupImGui(GLFWwindow *existingWindow) override {
+    void WindowManager::SetupImGui(GLFWwindow *existingWindow) {
         window = existingWindow;
 
         // Set window user pointer for callbacks
@@ -603,7 +572,7 @@ public:
     }
 
 
-    void RenderUI(ed::EditorContext *g_Context) override {
+    void WindowManager::RenderUI(ed::EditorContext *g_Context){
         // Start ImGui frame (only once per frame)
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -638,7 +607,7 @@ public:
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     }
 
-    void CleanupImGui(ed::EditorContext *g_Context) override {
+    void WindowManager::CleanupImGui(ed::EditorContext *g_Context) {
         ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
@@ -646,4 +615,4 @@ public:
         glfwTerminate();
         ed::DestroyEditor(g_Context);
     }
-};
+

@@ -8,7 +8,7 @@
 #include "src/Domain/RobotArm.h"
 #include "src/Domain/Tool.h"
 #include "src/Simulation/BL/SimulationManager.h"
-#include "src/View/WindowManager.cpp"
+#include "src/View/WindowManager.h"
 
 namespace ed = ax::NodeEditor;
 ed::EditorContext *g_Context = nullptr;
