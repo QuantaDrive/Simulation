@@ -2,10 +2,11 @@
 // Created by dante on 3/8/25.
 //
 
-#include "IManager.h"
+#include "GCode.h"
 
 #include <string>
 #include <ctime>
+#include <fstream>
 #include <stdexcept>
 #include <regex.h>
 #include <regex>
@@ -14,8 +15,10 @@
 #include "../Domain/Task.h"
 #include "../Domain/Instruction.h"
 #include "../Domain/Position.h"
+#include "../Domain/RobotArm.h"
 
-string IManager::toGCode(domain::Task* task)
+
+string GCode::toGCode(domain::Task* task)
 {
     bool alreadyRelative = false;
     bool alreadyAbsolute = false;
@@ -53,7 +56,7 @@ string IManager::toGCode(domain::Task* task)
     return gCode;
 }
 
-std::vector<std::string> IManager::split(std::string s, const std::string& delimiter) {
+std::vector<std::string> GCode::split(std::string s, const std::string& delimiter) {
     std::vector<std::string> tokens;
     size_t pos = 0;
     std::string token;
@@ -67,7 +70,7 @@ std::vector<std::string> IManager::split(std::string s, const std::string& delim
     return tokens;
 }
 
-domain::Task* IManager::parseGCode(std::string& gCode)
+domain::Task* GCode::parseGCode(std::string& gCode)
 {
     time_t timestamp = time(&timestamp);
     tm datetime = *localtime(&timestamp);
@@ -125,4 +128,22 @@ domain::Task* IManager::parseGCode(std::string& gCode)
     return task;
 }
 
+void GCode::saveToFile(const std::string& fileName)
+{
+    ofstream out;
+    out.open(fileName);
+    out << toGCode(robotArm_->getTasks()[0]);
+    out.close();
 
+}
+
+void GCode::loadFromFile(const std::string& fileName)
+{
+    ifstream in;
+    in.open(fileName);
+    std::string line;
+    while (getline(in,line))
+    {}
+    in.close();
+    robotArm_->getTasks().emplace_back(parseGCode(line));
+}

@@ -94,8 +94,8 @@ add_executable(
         src/Domain/NodeActivation.h
         src/View/helper/HelperFunctions.cpp
         src/View/helper/HelperFunctions.h
-        src/BL/IManager.cpp
-        src/BL/IManager.h
+        src/BL/GCode.cpp
+        src/BL/GCode.h
 )
 
 ### ImGui Node Editor ###
