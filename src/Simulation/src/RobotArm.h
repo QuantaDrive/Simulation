@@ -23,11 +23,11 @@ namespace simulation{
         void moveAngle(int joint, float angle,
             bool relative = false, bool isDegree = false);
 
-        const std::vector<float>& getJointPositions() const;
+        [[nodiscard]] const std::vector<float>& getJointPositions() const;
 
         RobotArm(const std::string& name,const std::string& definitionFile);
         ~RobotArm();
-        std::vector<glm::vec4> getDhParameters() const;
+        [[nodiscard]] std::vector<glm::vec4> getDhParameters() const;
         void render();
         [[nodiscard]] std::string getName() const;
         [[nodiscard]] float getMaxVel() const;
