@@ -58,6 +58,8 @@ protected:
     mat4 armToSphericalWrist(const mat4& j6);
     vector<vector<float>> getParamsJ1Zero(mat4& sphericalWrist);
     vector<domain::Position*> interpolate(const domain::Position* currentPosition, domain::Position* newPosition);
+    bool checkMove(pair<int,float> joint, float time, bool relative);
+    float calcETA(pair<int,float> joint, bool relative);
 public:
     explicit SimulationManager(Repo* repo, simulation::RobotArm* simulationArm);
     ~SimulationManager();
@@ -65,7 +67,7 @@ public:
     [[nodiscard]] domain::RobotArm* getRobotArm();
     void executeTask(const domain::Task* task);
     void executeInstruction(const domain::Instruction* instruction);
-    bool move(domain::Position* position, float velocity);
+    bool move(domain::Position* position, float velocity, bool relative=false);
     void grip(float gripForce);
     void setRotationOfHead(vec3 rotation);
 

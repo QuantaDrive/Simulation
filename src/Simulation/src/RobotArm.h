@@ -19,16 +19,23 @@ namespace simulation{
         std::vector<glm::vec4> dh_parameters;
         float maxVel_;
         float maxAcc_;
+        float currVel_;
+        int interpolStep_;
     public:
         void moveAngle(int joint, float angle,
             bool relative = false, bool isDegree = false);
-        RobotArm(const std::string& name,const std::string& definitionFile);
+        RobotArm(const std::string& name,const std::string& definitionFile, int interpolStep = 1);
         ~RobotArm();
         std::vector<glm::vec4> getDhParameters() const;
         void render();
+        [[nodiscard]] std::vector<float> getJointPositions();
         [[nodiscard]] std::string getName() const;
         [[nodiscard]] float getMaxVel() const;
         [[nodiscard]] float getMaxAcc() const;
+        [[nodiscard]] float getCurrVel() const;
+        void setCurrVel(float currVel);
+        [[nodiscard]] int getInterpolStep() const;
+        void setInterpolStep(int interpolStep);
     };
 } // simulation
 
