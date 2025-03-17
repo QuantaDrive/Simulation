@@ -1,4 +1,6 @@
 #include "WindowManager.h"
+
+#include <stack>
 #include <bits/algorithmfwd.h>
 
 #include "imgui_internal.h"
@@ -317,18 +319,43 @@ void WindowManager::renderNodesInEditor(domain::Node &node) {
 
 
 void WindowManager::executeNodeChain() {
-    const domain::Node *startNode = NodeHelpers::FindStartNode(m_Nodes, m_Links);
+    const domain::Node* startNode = NodeHelpers::FindStartNode(m_Nodes, m_Links);
     if (!startNode) {
         showInfo("Error: No starting node found");
         return;
     }
 
-    const domain::Node *currentNode = startNode;
+    stack<std::pair<const domain::Node*, int>> loopStack;
+    const domain::Node* currentNode = startNode;
+
     while (currentNode) {
-        // print current node
-        cout << "Current node: " << currentNode->getTitle() << endl;
+        if (currentNode->getActivation() == RobotActions::NodeActivation::LoopStart) {
+            // Push the loop start node and remaining iterations to stack
+            loopStack.push({currentNode, currentNode->getLoopCount()});
+        }
+        else if (currentNode->getActivation() == RobotActions::NodeActivation::LoopEnd) {
+            if (loopStack.empty()) {
+                showInfo("Error: Loop End without matching Loop Start");
+                return;
+            }
+
+            auto& [loopStartNode, remainingIterations] = loopStack.top();
+            remainingIterations--;
+
+            if (remainingIterations > 0) {
+                // Go back to node after loop start
+                currentNode = NodeHelpers::FindNextNode(loopStartNode, m_Nodes, m_Links);
+                continue;
+            }
+            loopStack.pop();
+        }
+
         executeNode(*currentNode);
         currentNode = NodeHelpers::FindNextNode(currentNode, m_Nodes, m_Links);
+    }
+
+    if (!loopStack.empty()) {
+        showInfo("Error: Loop Start without matching Loop End");
     }
 }
 

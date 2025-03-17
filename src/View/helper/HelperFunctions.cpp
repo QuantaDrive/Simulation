@@ -9,35 +9,34 @@
 #include "../../Domain/Instruction.h"
 
 const domain::Node* NodeHelpers::FindStartNode(const std::vector<domain::Node>& nodes, const ImVector<LinkInfo>& links) {
-    // If no nodes, return nullptr
     if (nodes.empty()) return nullptr;
 
-    // For each node, check if it has any incoming connections
-    std::vector<const domain::Node*> possibleStartNodes;
-
+    std::vector<const domain::Node*> startNodes;
     for (const auto& node : nodes) {
-        bool hasIncomingLinks = false;
-        for (const auto& link : links) {
-            if (link.InputId == node.getNodeInputPinId()) {
-                hasIncomingLinks = true;
-                break;
-            }
-        }
-
-        if (!hasIncomingLinks) {
-            possibleStartNodes.push_back(&node);
+        // A start node should have no input connections but must have output connections
+        if (!HasInputConnection(node, links) && HasOutputConnection(node, links)) {
+            startNodes.push_back(&node);
         }
     }
 
-    // If no start nodes found, return nullptr
-    if (possibleStartNodes.empty()) return nullptr;
+    // If no valid start nodes found, try to find any node without inputs
+    if (startNodes.empty()) {
+        for (const auto& node : nodes) {
+            if (!HasInputConnection(node, links)) {
+                startNodes.push_back(&node);
+            }
+        }
+    }
 
-    // Return the node with the lowest ID (first created)
-    return *std::min_element(possibleStartNodes.begin(), possibleStartNodes.end(),
-      [](const domain::Node* a, const domain::Node* b) {
-          return static_cast<int>(static_cast<uintptr_t>(a->getNodeId())) <
-                 static_cast<int>(static_cast<uintptr_t>(b->getNodeId()));
-      });
+    // If still no start nodes found, return nullptr
+    if (startNodes.empty()) return nullptr;
+
+    // If multiple start nodes exist, use the earliest created one
+    return *std::min_element(startNodes.begin(), startNodes.end(),
+        [](const domain::Node* a, const domain::Node* b) {
+            return static_cast<int>(static_cast<uintptr_t>(a->getNodeId())) <
+                   static_cast<int>(static_cast<uintptr_t>(b->getNodeId()));
+        });
 }
 
 const domain::Node *NodeHelpers::FindNextNode(const domain::Node *currentNode, const std::vector<domain::Node> &nodes,
