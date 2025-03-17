@@ -52,7 +52,6 @@ private:
     bool m_DragActive = false;
     // preview handling
     bool isPreviewActive = false;
-    std::vector<float> originalPositions;
     std::vector<float> previewAngles;
     domain::Position* lastPreviewPosition = nullptr;
 
