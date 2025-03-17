@@ -106,8 +106,35 @@ vector<domain::Position*> SimulationManager::interpolate(const domain::Position*
     return interpolpoints;
 }
 
+void SimulationManager::interpolateJoint1(float startAngle, const float endAngle, const float velocity)
+{
+    if (startAngle < endAngle)
+    {
+        while (startAngle<endAngle)
+        {
+            simulationArm_->moveAngle(1,1,true,true);
+            startAngle=degrees(simulationArm_->getJointPositions()[1]);
+            const auto timeToSleep = 1/velocity * powf(10,3);
+            usleep(static_cast<unsigned int>(timeToSleep));
+            simulation::refresh();
+            simulationArm_->render();
+        }
+    }
+    else
+    {
+        while (startAngle>endAngle)
+        {
+            simulationArm_->moveAngle(1,-1,true,true);
+            startAngle=degrees(simulationArm_->getJointPositions()[1]);
+            const auto timeToSleep = 1/velocity * powf(10,3);
+            usleep(static_cast<unsigned int>(timeToSleep));
+            simulation::refresh();
+            simulationArm_->render();
+        }
+    }
+}
+
 bool SimulationManager::move(domain::Position *position, float velocity) {
-    // auto arm = repo_->readArm(simulationArm_->getName());
     if (robotArm_->getStatus() == domain::READY) {
         robotArm_->setStatus(domain::BUSY);
         vector<float> anglestest = {};
@@ -119,10 +146,6 @@ bool SimulationManager::move(domain::Position *position, float velocity) {
             robotArm_->setStatus(domain::READY);
             throw;
         }
-        // for (auto angle:anglestest)
-        // {
-        //     cout << angle << endl;
-        // }
         auto interpolPos = interpolate(robotArm_->getCurrPosition(), position);
         vector<vector<float>> allAngles = {};
         for (auto pos: interpolPos) {
@@ -143,9 +166,14 @@ bool SimulationManager::move(domain::Position *position, float velocity) {
         for (auto angles: allAngles)
         {
             for (int i = 0; i < angles.size(); i++) {
+                if (i==0 && abs(angles[i] - degrees(simulationArm_->getJointPositions()[1])) > 10)
+                {
+                    interpolateJoint1(degrees(simulationArm_->getJointPositions()[1]), angles[i], velocity);
+                }
                 simulationArm_->moveAngle(i + 1, angles[i], false, true);
             }
-            usleep(5000);
+            auto timeToSleep = 1/velocity * powf(10,3);
+            usleep(static_cast<unsigned int>(timeToSleep));
             simulation::refresh();
             simulationArm_->render();
         }
@@ -242,8 +270,8 @@ vector<vector<float> > SimulationManager::getParamsJ1Zero(mat4 &sphericalWrist) 
 vector<float> SimulationManager::inverseKinematics(domain::Position *position) {
     mat4 j6Matrix = toolToArm(position, robotArm_->getTool());
     mat4 sphericalWrist = armToSphericalWrist(j6Matrix);
-    auto j1 = degrees(atan2(sphericalWrist[3][1], sphericalWrist[3][1]));
-    cout << "j1: " << j1 << endl;
+    auto j1 = degrees(atan2(sphericalWrist[3][1], sphericalWrist[3][0]));
+    // cout << "j1: " << j1 << endl;
     vector<vector<float> > params = {};
     try
     {
