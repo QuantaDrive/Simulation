@@ -10,9 +10,9 @@
 #include "../Domain/Instruction.h"
 #include "../Domain/Task.h"
 
-domain::RobotArm::RobotArm(const string& name, const vector<Task*>& tasks, const Status status, Position* currPosition, const string& host, const string& type, Tool* tool) :
+domain::RobotArm::RobotArm(const string& name, Task* task, const Status status, Position* currPosition, const string& host, const string& type, Tool* tool) :
 name_(name),
-tasks_(tasks),
+task_(task),
 status_(status),
 currPosition_(currPosition),
 host_(host),
@@ -21,10 +21,7 @@ tool_(tool){}
 
 domain::RobotArm::~RobotArm()
 {
-    for (const auto t: tasks_)
-    {
-        delete t;
-    }
+    delete task_;
     delete tool_;
     delete currPosition_;
 }
@@ -39,14 +36,14 @@ void domain::RobotArm::setStatus(Status status)
     status_=status;
 }
 
-vector<domain::Task*> domain::RobotArm::getTasks() const
+domain::Task* domain::RobotArm::getTask() const
 {
-    return tasks_;
+    return task_;
 }
 
-void domain::RobotArm::setTasks(const vector<Task*>& tasks)
+void domain::RobotArm::setTask(Task* task)
 {
-    tasks_=tasks;
+    task_=task;
 }
 
 domain::Position* domain::RobotArm::getCurrPosition() const

@@ -38,6 +38,16 @@ domain::RobotArm* SimulationManager::getRobotArm()
     return robotArm_;
 }
 
+void SimulationManager::setSimulationArm(simulation::RobotArm* simulationArm)
+{
+    simulationArm_ = simulationArm;
+}
+
+simulation::RobotArm* SimulationManager::getSimulationArm()
+{
+    return simulationArm_;
+}
+
 //
 // Movements
 //
@@ -48,7 +58,7 @@ void SimulationManager::executeInstruction(const domain::Instruction *instructio
     if (instruction->isRelative()) robotArm_->setAbsolute(false);
     try
     {
-        if (instruction->getWait() > 0) sleep(instruction->getWait());
+        if (instruction->getWait() > 0) usleep(instruction->getWait());
         else if (instruction->getGripForce() > 0) grip(instruction->getGripForce());
         else if (instruction->isGoHome())
             move(new domain::Position({0, 0, 754.5}, {0, 0, 0}),

@@ -37,3 +37,8 @@ void domain::Task::setInstructions(const vector<Instruction*>& instructions)
 {
     instructions_=instructions;
 }
+
+void domain::Task::addInstruction(Instruction* instruction)
+{
+    instructions_.push_back(instruction);
+}
