@@ -10,6 +10,8 @@ include_directories(
         libs/imgui-1.91.8
         libs/imgui-node-editor
         libs/yaml-cpp/include
+        libs/curlpp-0.8.1/include
+        libs/curl-8.12.1/include
 )
 
 ### GLFW ###
@@ -59,6 +61,11 @@ add_library(ImGui STATIC
 ### yaml-cpp ###
 
 add_subdirectory(libs/yaml-cpp)
+
+### curl + curlpp ###
+
+add_subdirectory(libs/curl-8.12.1)
+add_subdirectory(libs/curlpp-0.8.1)
 
 ###
 
@@ -131,4 +138,5 @@ target_link_libraries(projectRobotArm
         crude_json
         Simulation
         yaml-cpp
+        curlpp
 )

@@ -43,6 +43,8 @@ int main()
 	// gcodeManager->saveToFile("result.txt");
 	//
 
+	physicalManager->executeTask("gcode.txt");
+
 	simulationManager->initializeCamera();
 	vector<float> angles = {0,0,0,0};
 	try

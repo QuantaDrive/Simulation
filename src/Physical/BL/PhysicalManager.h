@@ -9,7 +9,7 @@
 using namespace domain;
 class PhysicalManager {
 public:
-    void executeTask(Task* task);
+    void executeTask(const std::string& filename);
 };
 
 
