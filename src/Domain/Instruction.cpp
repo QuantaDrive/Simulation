@@ -2,6 +2,8 @@
 
 #include <stdexcept>
 
+#include "Position.h"
+
 domain::Instruction::Instruction(Position* position, const float gripForce, const int wait, const bool goHome, const bool relative, const float velocity) :
 position_(position),
 gripForce_(gripForce),
@@ -17,7 +19,7 @@ domain::Position *domain::Instruction::getPosition() const
     return position_;
 }
 
-void domain::Instruction::setPosition(Position* position)
+void domain::Instruction::setPosition(domain::Position* position)
 {
     position_=position;
 }

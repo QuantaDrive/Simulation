@@ -27,7 +27,7 @@ namespace domain
     class RobotArm {
     private:
         string name_;
-        vector<Task*> tasks_;
+        Task* task_;
         Status status_;
         Position* currPosition_;
         string host_;
@@ -36,7 +36,7 @@ namespace domain
         bool isAbsolute_ = true;
 
     public:
-        RobotArm(const string& name, const vector<Task*>& tasks, Status status, Position* currPosition, const string& host, const string& type, Tool* tool);
+        RobotArm(const string& name, Task* task, Status status, Position* currPosition, const string& host, const string& type, Tool* tool);
 
         virtual ~RobotArm();
 
@@ -44,9 +44,9 @@ namespace domain
 
         void setStatus(Status status);
 
-        [[nodiscard]] vector<Task*> getTasks() const;
+        [[nodiscard]] Task* getTask() const;
 
-        void setTasks(const vector<Task*>& tasks);
+        void setTask(Task* task);
 
         [[nodiscard]] Position* getCurrPosition() const;
 

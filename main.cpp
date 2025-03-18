@@ -3,10 +3,12 @@
 
 #include <yaml-cpp/yaml.h>
 
+#include "src/BL/GCode.h"
 #include "src/DAL/Repo.h"
 #include "src/Domain/Position.h"
 #include "src/Domain/RobotArm.h"
 #include "src/Domain/Tool.h"
+#include "src/Physical/BL/PhysicalManager.h"
 #include "src/Simulation/BL/SimulationManager.h"
 #include "src/View/WindowManager.h"
 
@@ -33,6 +35,14 @@ int main()
 	simulation::RobotArm* arm = new simulation::RobotArm("arm1", "src/Simulation/arms/Moveo/moveo.ini");
 
 	SimulationManager* simulationManager= new SimulationManager(repo,arm);
+	PhysicalManager* physicalManager = new PhysicalManager();
+
+	//gcode test
+	// auto* gcodeManager = new GCode(simulationManager,physicalManager);
+	// gcodeManager->loadFromFile("gcode.txt");
+	// gcodeManager->saveToFile("result.txt");
+	//
+
 	simulationManager->initializeCamera();
 	vector<float> angles = {0,0,0,0};
 	try

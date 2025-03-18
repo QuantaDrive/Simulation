@@ -68,6 +68,8 @@ public:
     ~SimulationManager();
     void setRobotArm(domain::RobotArm* robotArm);
     [[nodiscard]] domain::RobotArm* getRobotArm();
+    void setSimulationArm(simulation::RobotArm* simulationArm);
+    [[nodiscard]] simulation::RobotArm* getSimulationArm();
     void executeTask(const domain::Task* task);
     void executeInstruction(const domain::Instruction* instruction);
     bool move(domain::Position* position, float velocity);

@@ -13,6 +13,7 @@ class Position;
 
 namespace domain
 {
+    class Position;
     class Instruction {
     private:
         Position* position_;

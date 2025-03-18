@@ -33,6 +33,8 @@ namespace domain
         [[nodiscard]] vector<Instruction*> getInstructions() const;
 
         void setInstructions(const vector<Instruction*>& instructions);
+
+        void addInstruction(Instruction* instruction);
     };
 }
 
