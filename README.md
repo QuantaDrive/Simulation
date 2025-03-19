@@ -13,3 +13,6 @@ Renato Coellar Orellana, Stan Willems, Dante Vuijst
   - libgl1-mesa-dev
   - mesa-utils
   - libglu1-mesa-dev
+  - libcurl4-openssl-dev
+  - libssl-dev
+  - libpsl-dev
