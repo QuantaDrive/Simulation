@@ -49,6 +49,7 @@ private:
     bool m_ShowNodeEditor = true;
     bool m_ShowHelpWindow = false;
     ed::NodeId m_SelectedNodeId = 0;
+    ed::NodeId m_LastSelectedNode;
 
     // Info window members
     bool m_ShowInfoWindow = true;
@@ -66,8 +67,6 @@ private:
     void renderNodesInEditor(domain::Node& node);
     void executeNodeChain();
     void executeNode(const domain::Node& node);
-
-    static bool compareNodeById(const domain::Node& node, ed::NodeId nodeId);
 
     bool shouldRemoveLink(const NodeHelpers::LinkInfo &link, const domain::Node &node);
     void deleteNodeAndConnectedLinks(ed::NodeId nodeId);

@@ -413,32 +413,44 @@ bool SimulationManager::startPreview(domain::Position* position) {
     }
 
     try {
-        // Check if position is reachable before calculating angles
-        glm::vec3 coords = position->getCoords();
-        float distance = glm::length(coords);
+        // Get interpolated positions
+        auto currentPosition = robotArm_->getCurrPosition();
+        auto interpolatedPositions = interpolate(currentPosition, position);
 
-        // Get arm's maximum reach (sum of DH parameter 'a' values)
-        float maxReach = 0.0f;
-        auto dhParams = simulationArm_->getDhParameters();
-        for (const auto& param : dhParams) {
-            maxReach += std::abs(param.w); // w component stores the 'a' parameter
+        // Add final position to check
+        interpolatedPositions.push_back(position);
+
+        // Try to calculate angles for all positions
+        vector<vector<float>> allAngles;
+        for (const auto& pos : interpolatedPositions) {
+            try {
+                allAngles.push_back(inverseKinematics(pos));
+            } catch (const std::logic_error& e) {
+                // Clean up temporary positions
+                for (auto p : interpolatedPositions) {
+                    if (p != position) delete p;
+                }
+                endPreview();
+                return false;
+            }
         }
-
-        if (distance > maxReach) {
-       return false;
-        }
-
-        previewAngles = calculateFinalAngles(position);
-
-        // Apply preview angles
+        // Apply only the final angles for preview
+        previewAngles = allAngles.back();
         for (int i = 0; i < previewAngles.size(); ++i) {
             simulationArm_->moveAngle(i + 1, previewAngles[i], false, true);
         }
+
+        // Clean up temporary positions
+        for (auto p : interpolatedPositions) {
+            if (p != position) delete p;
+        }
+
+        return true;
+
     } catch (const std::exception& e) {
         endPreview();
         throw;
     }
-    return true;
 }
 
 void SimulationManager::endPreview() {
