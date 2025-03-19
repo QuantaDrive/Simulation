@@ -31,7 +31,7 @@ string GCode::toGCode()
     Task* task = simManager_->getRobotArm()->getTask();
     bool alreadyRelative = false;
     bool alreadyAbsolute = false;
-    string gCode = "";
+    string gCode;
     for (const auto instruction : task->getInstructions())
     {
         if (instruction->getWait()>0)
@@ -57,10 +57,12 @@ string GCode::toGCode()
             gCode += "G90\n";
         }
         if (instruction->isRapid())
-        {
-            gCode += "G0 X"+to_string(instruction->getPosition()->getCoords()[0])+" Y"+to_string(instruction->getPosition()->getCoords()[1])+" Z"+to_string(instruction->getPosition()->getCoords()[2])+"\n";
-        }
-        else gCode += "G1 X"+to_string(instruction->getPosition()->getCoords()[0])+" Y"+to_string(instruction->getPosition()->getCoords()[1])+" Z"+to_string(instruction->getPosition()->getCoords()[2])+" F"+to_string(instruction->getVelocity())+"\n";
+            gCode += "G0 X"+to_string(instruction->getPosition()->getCoords()[0])+" Y"+to_string(instruction->getPosition()->getCoords()[1])+" Z"+to_string(instruction->getPosition()->getCoords()[2])+
+                    " I"+to_string(instruction->getPosition()->getRotation()[0])+" J"+to_string(instruction->getPosition()->getRotation()[1])+" K"+to_string(instruction->getPosition()->getRotation()[2])+"\n";
+        else
+            gCode += "G1 X"+to_string(instruction->getPosition()->getCoords()[0])+" Y"+to_string(instruction->getPosition()->getCoords()[1])+" Z"+to_string(instruction->getPosition()->getCoords()[2])+
+                    " I"+to_string(instruction->getPosition()->getRotation()[0])+" J"+to_string(instruction->getPosition()->getRotation()[1])+" K"+to_string(instruction->getPosition()->getRotation()[2])+
+                    " F"+to_string(instruction->getVelocity())+"\n";
     }
     return gCode;
 }
