@@ -33,6 +33,11 @@ vector<domain::Instruction*> domain::Task::getInstructions() const
     return instructions_;
 }
 
+void domain::Task::clearInstructions()
+{
+    instructions_.clear();
+}
+
 void domain::Task::setInstructions(const vector<Instruction*>& instructions)
 {
     instructions_=instructions;

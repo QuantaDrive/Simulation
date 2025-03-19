@@ -381,6 +381,8 @@ void WindowManager::sendNodeChainToPhysicalArm()
     stack<std::pair<const domain::Node*, int>> loopStack;
     const domain::Node* currentNode = startNode;
 
+    localSimulationManager->getRobotArm()->getTask()->clearInstructions();
+
     while (currentNode) {
         if (currentNode->getActivation() == RobotActions::NodeActivation::LoopStart) {
             // Push the loop start node and remaining iterations to stack

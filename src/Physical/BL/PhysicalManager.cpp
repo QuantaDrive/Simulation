@@ -34,11 +34,11 @@ void PhysicalManager::executeTask(Task* task)
 
     std::string content = GCode::toGCode(task);
 
-    cout << content << endl;
+    // cout << content << endl;
 
 
     request.setOpt(new curlpp::options::PostFields(content));
     request.setOpt(new curlpp::options::PostFieldSize(safer_cast<unsigned long,long>(content.size()+1)));
 
-    // request.perform();
+    request.perform();
 }
