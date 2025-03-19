@@ -7,6 +7,8 @@
 #include "../Domain/Node.h"
 #include "../Domain/NodeActivation.h"
 #include "../Domain/Instruction.h"
+#include "../Domain/RobotArm.h"
+#include "../Domain/Task.h"
 #include "helper/HelperFunctions.h"
 namespace ed = ax::NodeEditor;
 using namespace domain;
@@ -167,6 +169,10 @@ void WindowManager::renderNodeSelectorWindow() {
         }
 
         ImGui::PopStyleColor(3);
+
+        if (ImGui::Button("Send to physical arm", ImVec2(windowWidth, 0))) {
+            sendNodeChainToPhysicalArm();
+        }
     }
     ImGui::End();
 }
@@ -364,12 +370,119 @@ void WindowManager::executeNode(const domain::Node &node) {
     NodeHelpers::ExecuteNode(node, localSimulationManager);
 }
 
+void WindowManager::sendNodeChainToPhysicalArm()
+{
+    const domain::Node* startNode = NodeHelpers::FindStartNode(m_Nodes, m_Links);
+    if (!startNode) {
+        showInfo("Error: No starting node found");
+        return;
+    }
+
+    stack<std::pair<const domain::Node*, int>> loopStack;
+    const domain::Node* currentNode = startNode;
+
+    while (currentNode) {
+        if (currentNode->getActivation() == RobotActions::NodeActivation::LoopStart) {
+            // Push the loop start node and remaining iterations to stack
+            loopStack.push({currentNode, currentNode->getLoopCount()});
+        }
+        else if (currentNode->getActivation() == RobotActions::NodeActivation::LoopEnd) {
+            if (loopStack.empty()) {
+                showInfo("Error: Loop End without matching Loop Start");
+                return;
+            }
+
+            auto& [loopStartNode, remainingIterations] = loopStack.top();
+            remainingIterations--;
+
+            if (remainingIterations > 0) {
+                // Go back to node after loop start
+                currentNode = NodeHelpers::FindNextNode(loopStartNode, m_Nodes, m_Links);
+                continue;
+            }
+            loopStack.pop();
+        }
+
+        addNodeToTask(*currentNode);
+        currentNode = NodeHelpers::FindNextNode(currentNode, m_Nodes, m_Links);
+    }
+
+    if (!loopStack.empty()) {
+        showInfo("Error: Loop Start without matching Loop End");
+    }
+    localPhysicalManager->executeTask(localSimulationManager->getRobotArm()->getTask());
+}
+
+void WindowManager::addNodeToTask(const domain::Node& node)
+{
+    Task* task = localSimulationManager->getRobotArm()->getTask();
+    switch (node.getActivation()) {
+    case RobotActions::NodeActivation::Absolute:
+        localSimulationManager->setAbsolute(true);
+        break;
+
+    case RobotActions::NodeActivation::Relative:
+        localSimulationManager->setAbsolute(false);
+        break;
+
+    case RobotActions::NodeActivation::LinearMove: {
+            auto* instruction = new domain::Instruction();
+            instruction->setPosition(node.getPosition());
+            instruction->setVelocity(node.getVelocity());
+            instruction->setLinear(true);
+            if (localSimulationManager->isAbsolute()) instruction->setRelative(false);
+            else instruction->setRelative(true);
+            task->addInstruction(instruction);
+            // delete instruction;
+            break;
+    }
+
+    case RobotActions::NodeActivation::RapidMove: {
+            auto* instruction = new domain::Instruction();
+            instruction->setPosition(node.getPosition());
+            instruction->setRapid(true);
+            if (localSimulationManager->isAbsolute()) instruction->setRelative(false);
+            else instruction->setRelative(true);
+            task->addInstruction(instruction);
+            // delete instruction;
+            break;
+    }
+
+    case RobotActions::NodeActivation::Wait: {
+            auto* instruction = new domain::Instruction();
+            instruction->setRelative(false);
+            instruction->setWait(node.getWaitTimer());
+            task->addInstruction(instruction);
+            // delete instruction;
+            break;
+    }
+
+    case RobotActions::NodeActivation::Home: {
+            auto* instruction = new domain::Instruction();
+            instruction->setRelative(false);
+            instruction->setGoHome(true);
+            task->addInstruction(instruction);
+            // delete instruction;
+            break;
+    }
+
+    case RobotActions::NodeActivation::AngleHead:
+        localSimulationManager->setRotationOfHead(node.getRotationHead());
+        break;
+
+    default:
+        break;
+    }
+
+}
+
 void WindowManager::showInfo(const std::string &message) {
     m_InfoMessage = message;
 }
 
-WindowManager::WindowManager(SimulationManager *simulationManager) {
+WindowManager::WindowManager(SimulationManager *simulationManager, PhysicalManager *physicalManager) {
     localSimulationManager = simulationManager;
+    localPhysicalManager = physicalManager;
 }
 
 

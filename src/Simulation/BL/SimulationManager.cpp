@@ -19,6 +19,10 @@
 SimulationManager::SimulationManager(Repo *repo, simulation::RobotArm *simulationArm): repo_(repo),
     simulationArm_(simulationArm) {
     robotArm_ = repo_->readArm(simulationArm_->getName());
+    time_t timestamp = time(&timestamp);
+    tm datetime = *localtime(&timestamp);
+    domain::Task* task = new domain::Task(datetime,{});
+    robotArm_->setTask(task);
 }
 
 SimulationManager::~SimulationManager() {
@@ -374,6 +378,11 @@ void SimulationManager::setDragActive(bool active) {
 
 void SimulationManager::setAbsolute(bool is_absolute) {
     robotArm_->setAbsolute(is_absolute);
+}
+
+bool SimulationManager::isAbsolute()
+{
+    return robotArm_->isAbsolute();
 }
 
 void SimulationManager::updateCameraPosition() {

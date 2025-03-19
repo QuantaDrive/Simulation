@@ -5,6 +5,7 @@
 #ifndef DOMAIN_ROBOTARM_H
 #define DOMAIN_ROBOTARM_H
 
+#include <ctime>
 #include <string>
 #include <vector>
 

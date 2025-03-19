@@ -43,8 +43,6 @@ int main()
 	// gcodeManager->saveToFile("result.txt");
 	//
 
-	physicalManager->executeTask("gcode.txt");
-
 	simulationManager->initializeCamera();
 	vector<float> angles = {0,0,0,0};
 	try
@@ -67,7 +65,7 @@ int main()
 	g_Context = ed::CreateEditor(&config);
 
 	// Setup ImGui
-	WindowManager windowManager = WindowManager(simulationManager);
+	WindowManager windowManager = WindowManager(simulationManager,physicalManager);
 	windowManager.setupImGui(simulation::window);
 	do
 	{

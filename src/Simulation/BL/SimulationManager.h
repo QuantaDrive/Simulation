@@ -84,6 +84,7 @@ public:
     void setDragActive(bool active);
 
     void setAbsolute(bool is_absolute);
+    [[nodiscard]] bool isAbsolute();
 
     // preview handling
     bool startPreview(domain::Position* position);

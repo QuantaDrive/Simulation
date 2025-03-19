@@ -10,6 +10,8 @@
 #include "curlpp/Options.hpp"
 #include <cstring>
 
+#include "../../BL/GCode.h"
+
 template<typename T, typename U>
 T safer_cast(const U& from) {
     T to;
@@ -17,7 +19,7 @@ T safer_cast(const U& from) {
     return to;
 }
 
-void PhysicalManager::executeTask(const std::string& filename)
+void PhysicalManager::executeTask(Task* task)
 {
     //TODO: webserver op arm
     curlpp::Easy request;
@@ -30,19 +32,13 @@ void PhysicalManager::executeTask(const std::string& filename)
 
     request.setOpt(new curlpp::options::HttpHeader(header));
 
-    std::string content;
-    std::string line;
-    ifstream in;
-    in.open(filename);
-    while (getline(in, line))
-    {
-        content += line + "\n";
-    }
+    std::string content = GCode::toGCode(task);
+
     cout << content << endl;
 
 
     request.setOpt(new curlpp::options::PostFields(content));
     request.setOpt(new curlpp::options::PostFieldSize(safer_cast<unsigned long,long>(content.size()+1)));
 
-    request.perform();
+    // request.perform();
 }

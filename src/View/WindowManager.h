@@ -10,6 +10,7 @@
 #include <string>
 #include <GLFW/glfw3.h>
 #include "../Simulation/BL/SimulationManager.h"
+#include "../Physical/BL/PhysicalManager.h"
 
 #include "helper/HelperFunctions.h"
 
@@ -55,6 +56,7 @@ private:
     bool m_ShowInfoWindow = true;
     std::string m_InfoMessage = "Welcome to the Robot Arm Simulator";
     SimulationManager* localSimulationManager;
+    PhysicalManager* localPhysicalManager;
 
     // Private methods
     void renderInfoWindow();
@@ -67,13 +69,15 @@ private:
     void renderNodesInEditor(domain::Node& node);
     void executeNodeChain();
     void executeNode(const domain::Node& node);
+    void sendNodeChainToPhysicalArm();
+    void addNodeToTask(const domain::Node& node);
 
     bool shouldRemoveLink(const NodeHelpers::LinkInfo &link, const domain::Node &node);
     void deleteNodeAndConnectedLinks(ed::NodeId nodeId);
 
 public:
     // Constructor
-    explicit WindowManager(SimulationManager* simulationManager);
+    explicit WindowManager(SimulationManager* simulationManager,PhysicalManager* physicalManager);
 
     // Interface implementations
     void setupImGui(GLFWwindow* existingWindow) override;
