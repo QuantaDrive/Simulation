@@ -22,7 +22,7 @@ void PhysicalManager::executeTask(const std::string& filename)
     //TODO: webserver op arm
     curlpp::Easy request;
 
-    request.setOpt(new curlpp::options::Url("localhost"));
+    request.setOpt(new curlpp::options::Url("localhost:8000/gcode"));
     request.setOpt(new curlpp::options::Verbose(true));
 
     std::list<std::string> header;
@@ -44,7 +44,5 @@ void PhysicalManager::executeTask(const std::string& filename)
     request.setOpt(new curlpp::options::PostFields(content));
     request.setOpt(new curlpp::options::PostFieldSize(safer_cast<unsigned long,long>(content.size()+1)));
 
-    // request.setOpt(new curlpp::options::UserPwd("user:password"));
-
-    // request.perform();
+    request.perform();
 }
