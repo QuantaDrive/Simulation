@@ -17,6 +17,8 @@ void simulation::RobotArm::moveAngle(const int joint, float angle, const bool re
     if (joint < 1 || joint >= this->jointDOFs.size())
         // You cant move joint 0 because it is the base
         return;
+    if (joint == 6)
+        angle = -angle;
     if (isDegree)
         angle = glm::radians(angle);
     if (relative)
