@@ -266,7 +266,7 @@ vector<vector<float> > SimulationManager::getParamsJ1Zero(mat4 &sphericalWrist) 
     float j1 = 0;
     float x = sphericalWrist[3][0] * cos(radians(-j1)) - sphericalWrist[3][1] * sin(radians(-j1));
     float y = sphericalWrist[3][1] * cos(radians(-j1)) + sphericalWrist[3][0] * sin(radians(-j1));
-    float L1 = abs(x - simulationArm_->getDhParameters()[0][3]);
+    float L1 = sqrtf(powf(sphericalWrist[3][0],2) + powf(sphericalWrist[3][1],2));
     float L4 = sphericalWrist[3][2] - simulationArm_->getDhParameters()[0][2];
     float L2 = sqrtf(powf(L1, 2) + powf(L4, 2));
     float L3 = sqrtf(
