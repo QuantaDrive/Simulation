@@ -4,9 +4,12 @@
 
 #include "HelperFunctions.h"
 
+#include <fstream>
 #include <iostream>
 
 #include "../../Domain/Instruction.h"
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
 
 const domain::Node* NodeHelpers::FindStartNode(const std::vector<domain::Node>& nodes, const ImVector<LinkInfo>& links) {
     if (nodes.empty()) return nullptr;
@@ -255,7 +258,7 @@ void NodeHelpers::RenderNodeControls(domain::Node& node, SimulationManager* simu
             break;
         }
         case RobotActions::NodeActivation::AngleHead: {
-            std::string idTitle = "linear_or_rapid_move " + node.getNodeId().Get();
+            std::string idTitle = "angleHead" + node.getNodeId().Get();
             ImGui::PushID(idTitle.c_str());
             ImGui::PushItemWidth(100);
 
@@ -434,4 +437,122 @@ void NodeHelpers::HandleDeleteActions(ed::NodeId selectedNodeId,
         DeleteNodeAndConnectedLinks(selectedNodeId, nodes, links);
     }
 }
+
+    void NodeHelpers::saveNodeEditor(
+        const std::string& filename,
+        const std::vector<domain::Node>& nodes,
+        const ImVector<LinkInfo>& links
+    ) {
+        json j;
+
+        // Save nodes
+        json nodesArray = json::array();
+        for (const auto& node : nodes) {
+            json nodeObj;
+            nodeObj["id"] = reinterpret_cast<uintptr_t>(node.getNodeId().AsPointer());
+            nodeObj["title"] = node.getTitle();
+            nodeObj["activation"] = static_cast<int>(node.getActivation());
+            nodeObj["loopCount"] = node.getLoopCount();
+            nodeObj["waitTimer"] = node.getWaitTimer();
+            nodeObj["velocity"] = node.getVelocity();
+
+            auto pos = node.getPosition();
+            nodeObj["position"] = {
+                {"x", pos->getCoords().x},
+                {"y", pos->getCoords().y},
+                {"z", pos->getCoords().z}
+            };
+
+            auto rot = node.getRotationHead();
+            nodeObj["rotation"] = {
+                {"x", rot.x},
+                {"y", rot.y},
+                {"z", rot.z}
+            };
+
+            nodesArray.push_back(nodeObj);
+        }
+        j["nodes"] = nodesArray;
+
+        // Save links
+        json linksArray = json::array();
+        for (const auto& link : links) {
+            json linkObj;
+            linkObj["id"] = reinterpret_cast<uintptr_t>(link.Id.AsPointer());
+            linkObj["inputId"] = reinterpret_cast<uintptr_t>(link.InputId.AsPointer());
+            linkObj["outputId"] = reinterpret_cast<uintptr_t>(link.OutputId.AsPointer());
+            linksArray.push_back(linkObj);
+        }
+        j["links"] = linksArray;
+
+        // Write to file
+        std::ofstream file(filename);
+        file << j.dump(4);
+    }
+
+    void NodeHelpers::loadNodeEditor(
+        const std::string& filename,
+        std::vector<domain::Node>& nodes,
+        ImVector<NodeHelpers::LinkInfo>& links,
+        int& nextNodeId,
+        int& nextLinkId
+    ) {
+        // Clear existing nodes and links
+        nodes.clear();
+        links.clear();
+        nextNodeId = 1;
+
+        // Read JSON from file
+        std::ifstream file(filename);
+        json j = json::parse(file);
+
+        // Load nodes
+        for (const auto& nodeObj : j["nodes"]) {
+            auto node = std::make_unique<domain::Node>(
+                nodeObj["title"].get<std::string>().c_str(),
+                static_cast<RobotActions::NodeActivation>(nodeObj["activation"].get<int>())
+            );
+
+            // Initialize node IDs properly
+            void* idPtr = reinterpret_cast<void*>(nodeObj["id"].get<uintptr_t>());
+            ed::NodeId nodeId(idPtr);
+            int currentId = static_cast<int>(reinterpret_cast<uintptr_t>(idPtr));
+            node->initializeNodeIds(currentId);
+            nextNodeId = std::max(nextNodeId, currentId + 1);
+
+            // Set other node properties
+            node->setLoopCount(nodeObj["loopCount"].get<int>());
+            node->setWaitTimer(nodeObj["waitTimer"].get<int>());
+            node->setVelocity(nodeObj["velocity"].get<float>());
+
+            auto pos = new domain::Position(
+                {nodeObj["position"]["x"].get<float>(),
+                 nodeObj["position"]["y"].get<float>(),
+                 nodeObj["position"]["z"].get<float>()},
+                {0, 0, 0}
+            );
+            node->setPosition(pos);
+
+            node->setRotationHead({
+                nodeObj["rotation"]["x"].get<float>(),
+                nodeObj["rotation"]["y"].get<float>(),
+                nodeObj["rotation"]["z"].get<float>()
+            });
+
+            nodes.push_back(*node);
+        }
+
+        // Load links
+        for (const auto& linkObj : j["links"]) {
+            NodeHelpers::LinkInfo link;
+            link.Id = ed::LinkId(reinterpret_cast<void*>(linkObj["id"].get<uintptr_t>()));
+            link.InputId = ed::PinId(reinterpret_cast<void*>(linkObj["inputId"].get<uintptr_t>()));
+            link.OutputId = ed::PinId(reinterpret_cast<void*>(linkObj["outputId"].get<uintptr_t>()));
+            links.push_back(link);
+
+            // Update next link ID
+            uintptr_t linkId = linkObj["id"].get<uintptr_t>();
+            nextLinkId = std::max(nextLinkId, static_cast<int>(linkId) + 1);
+        }
+    }
 

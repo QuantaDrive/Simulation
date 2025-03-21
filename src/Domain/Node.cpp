@@ -16,9 +16,17 @@ Node::Node(const char* title, RobotActions::NodeActivation activation)
     return title_;
 }
 
+void Node::setTitle(const std::string &title) {
+    title_ = title;
+}
+
 RobotActions::NodeActivation Node::getActivation() const
 {
     return activation_;
+}
+
+void Node::setActivation(RobotActions::NodeActivation activation) {
+    activation_ = activation;
 }
 
 ed::NodeId Node::getNodeId() const
@@ -26,9 +34,21 @@ ed::NodeId Node::getNodeId() const
     return nodeId_;
 }
 
+void Node::setNodeId(const ed::NodeId &node_id) {
+    nodeId_ = node_id;
+}
+
 ed::PinId Node::getNodeInputPinId() const
 {
     return nodeInputPinId_;
+}
+
+void Node::setNodeInputPinId(const ed::PinId &node_input_pin_id) {
+    nodeInputPinId_ = node_input_pin_id;
+}
+
+void Node::setNodeOutputPinId(const ed::PinId &node_output_pin_id) {
+    nodeOutputPinId_ = node_output_pin_id;
 }
 
 ed::PinId Node::getNodeOutputPinId() const
@@ -72,8 +92,8 @@ int Node::getWaitTimer() const {
     return waitTimer_;
 }
 
-void Node::setWaitTimer(int wait_timer) {
-    waitTimer_ = wait_timer;
+void Node::setWaitTimer(int waitTimer) {
+    waitTimer_ = waitTimer;
 }
 
 vec3 Node::getRotationHead() const {
