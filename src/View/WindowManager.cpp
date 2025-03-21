@@ -237,6 +237,7 @@ void WindowManager::loadNodeEditor(const std::string& filename) {
         // Clear existing nodes and links
         m_Nodes.clear();
         m_Links.clear();
+        m_NextNodeId = 1; // Reset node ID counter
 
         // Read JSON from file
         std::ifstream file(filename);
@@ -249,33 +250,46 @@ void WindowManager::loadNodeEditor(const std::string& filename) {
                 static_cast<RobotActions::NodeActivation>(nodeObj["activation"].get<int>())
             );
 
-            node->setNodeId(ed::NodeId(reinterpret_cast<void*>(nodeObj["id"].get<uintptr_t>())));
+            // Initialize node IDs properly
+            void* idPtr = reinterpret_cast<void*>(nodeObj["id"].get<uintptr_t>());
+            ed::NodeId nodeId(idPtr);
+            int currentId = static_cast<int>(reinterpret_cast<uintptr_t>(idPtr));
+            node->initializeNodeIds(currentId);
+            m_NextNodeId = std::max(m_NextNodeId, currentId + 1);
+
+            // Set other node properties
             node->setLoopCount(nodeObj["loopCount"].get<int>());
             node->setWaitTimer(nodeObj["waitTimer"].get<int>());
             node->setVelocity(nodeObj["velocity"].get<float>());
 
             auto pos = new domain::Position(
-                {nodeObj["position"]["x"], nodeObj["position"]["y"], nodeObj["position"]["z"]},
-                {0, 0, 0}  // Default orientation
+                {nodeObj["position"]["x"].get<float>(),
+                 nodeObj["position"]["y"].get<float>(),
+                 nodeObj["position"]["z"].get<float>()},
+                {0, 0, 0}
             );
             node->setPosition(pos);
 
             node->setRotationHead({
-                nodeObj["rotation"]["x"],
-                nodeObj["rotation"]["y"],
-                nodeObj["rotation"]["z"]
+                nodeObj["rotation"]["x"].get<float>(),
+                nodeObj["rotation"]["y"].get<float>(),
+                nodeObj["rotation"]["z"].get<float>()
             });
 
             m_Nodes.push_back(*node);
         }
 
-        // Load links
+        // Load links after all nodes are created
         for (const auto& linkObj : j["links"]) {
             NodeHelpers::LinkInfo link;
             link.Id = ed::LinkId(reinterpret_cast<void*>(linkObj["id"].get<uintptr_t>()));
             link.InputId = ed::PinId(reinterpret_cast<void*>(linkObj["inputId"].get<uintptr_t>()));
             link.OutputId = ed::PinId(reinterpret_cast<void*>(linkObj["outputId"].get<uintptr_t>()));
             m_Links.push_back(link);
+
+            // Update next link ID
+            uintptr_t linkId = linkObj["id"].get<uintptr_t>();
+            m_NextLinkId = std::max(m_NextLinkId, static_cast<int>(linkId) + 1);
         }
 
         showInfo("Node editor loaded successfully");
