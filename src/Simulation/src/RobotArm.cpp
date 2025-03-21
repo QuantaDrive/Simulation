@@ -6,6 +6,7 @@
 
 #include <utility>
 #include <inicpp.h>
+#include <iostream>
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "Init.h"
@@ -17,7 +18,10 @@ void simulation::RobotArm::moveAngle(const int joint, float angle, const bool re
     if (joint < 1 || joint >= this->jointDOFs.size())
         // You cant move joint 0 because it is the base
         return;
-    if (joint == 6)
+    if (angle < this->jointLimits[joint][0] || angle > this->jointLimits[joint][1]) {
+        return;
+    }
+    if (this->jointInverse[joint])
         angle = -angle;
     if (isDegree)
         angle = glm::radians(angle);
@@ -56,7 +60,6 @@ simulation::RobotArm::RobotArm(const std::string& name, const std::string& defin
         Mesh* mesh = new Mesh(meshFilename);
         this->joints.push_back(mesh);
         // Load joint position and axis for visualization
-        this->jointOffsets.push_back(stringToVec3(definition["joint_" + std::to_string(i)]["offset"].as<std::string>()));
         if (i == 0)
             definition["joint_" + std::to_string(i)]["axis"] = 'X';
         switch (definition["joint_" + std::to_string(i)]["axis"].as<char>()) {
@@ -71,6 +74,17 @@ simulation::RobotArm::RobotArm(const std::string& name, const std::string& defin
                 break;
             default: ;
         }
+        definition["joint_" + std::to_string(i)].try_emplace("invert", "false");
+        this->jointInverse.push_back(definition["joint_" + std::to_string(i)]["invert"].as<bool>());
+        if (i == 0) {
+            definition["joint_" + std::to_string(i)]["min_position"] = '0';
+            definition["joint_" + std::to_string(i)]["max_position"] = '0';
+        }
+        this->jointLimits.emplace_back(
+            definition["joint_" + std::to_string(i)]["min_position"].as<float>(),
+            definition["joint_" + std::to_string(i)]["max_position"].as<float>()
+            );
+        this->jointOffsets.push_back(stringToVec3(definition["joint_" + std::to_string(i)]["offset"].as<std::string>()));
         if (i != 0) {
             const float omega = definition["joint_" + std::to_string(i)]["dh_omega"].as<float>();
             const float alpha = definition["joint_" + std::to_string(i)]["dh_alpha"].as<float>();
