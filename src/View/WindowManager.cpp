@@ -469,8 +469,16 @@ void WindowManager::addNodeToTask(const domain::Node& node)
     }
 
     case RobotActions::NodeActivation::AngleHead:
-        localSimulationManager->setRotationOfHead(node.getRotationHead());
-        break;
+        {
+            auto* instruction = new domain::Instruction();
+            auto* position = new domain::Position(localSimulationManager->getRobotArm()->getCurrPosition()->getCoords(),node.getRotationHead());
+            instruction->setPosition(position);
+            instruction->setRelative(false);
+            instruction->setGoHome(false);
+            task->addInstruction(instruction);
+            // delete instruction;
+            break;
+        }
 
     default:
         break;

@@ -3,10 +3,12 @@
 //
 
 #include "HelperFunctions.h"
+#include "HelperFunctions.h"
 
 #include <iostream>
 
 #include "../../Domain/Instruction.h"
+#include "../../Domain/RobotArm.h"
 
 const domain::Node* NodeHelpers::FindStartNode(const std::vector<domain::Node>& nodes, const ImVector<LinkInfo>& links) {
     if (nodes.empty()) return nullptr;
@@ -331,8 +333,18 @@ void NodeHelpers::ExecuteNode(const domain::Node& node, SimulationManager* simul
         }
 
         case RobotActions::NodeActivation::AngleHead:
-            simulationManager->setRotationOfHead(node.getRotationHead());
-        break;
+            {
+                // simulationManager->setRotationOfHead(node.getRotationHead());
+                auto* instruction = new domain::Instruction();
+                auto* position = new domain::Position(simulationManager->getRobotArm()->getCurrPosition()->getCoords(),node.getRotationHead());
+                instruction->setPosition(position);
+                instruction->setRelative(false);
+                instruction->setGoHome(false);
+                instruction->setRapid(true);
+                simulationManager->executeInstruction(instruction);
+                delete instruction;
+                break;
+            }
 
         default:
             break;
