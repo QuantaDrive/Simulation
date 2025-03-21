@@ -169,6 +169,49 @@ void WindowManager::renderNodeSelectorWindow() {
         }
 
         ImGui::PopStyleColor(3);
+
+        // Add spacing before Delete All button
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        // Delete All button with red styling
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.7f, 0.2f, 0.2f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.8f, 0.3f, 0.3f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.6f, 0.1f, 0.1f, 1.0f));
+
+        if (ImGui::Button("Delete All", ImVec2(windowWidth, 0))) {
+            // Show confirmation popup
+            ImGui::OpenPopup("Delete All Nodes?");
+        }
+
+        // Confirmation popup
+        if (ImGui::BeginPopupModal("Delete All Nodes?", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+            ImGui::Text("Are you sure you want to delete all nodes?\nThis action cannot be undone.");
+            ImGui::Separator();
+
+            if (ImGui::Button("Yes", ImVec2(120, 0))) {
+                m_Nodes.clear();
+                m_Links.clear();
+                m_NextNodeId = 1;
+                m_NextLinkId = 100;
+                showInfo("All nodes deleted");
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("No", ImVec2(120, 0))) {
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::EndPopup();
+        }
+
+        ImGui::PopStyleColor(3);
+
+        if (ImGui::IsItemHovered()) {
+            ImGui::BeginTooltip();
+            ImGui::Text("Delete all nodes and connections");
+            ImGui::EndTooltip();
+        }
     }
     ImGui::End();
 }
@@ -546,7 +589,7 @@ void WindowManager::renderUI(ed::EditorContext *g_Context) {
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
-void WindowManager::rleanupImGui(ed::EditorContext *g_Context) {
+void WindowManager::cleanupImGui(ed::EditorContext *g_Context) {
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();

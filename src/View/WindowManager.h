@@ -88,7 +88,7 @@ public:
     // Interface implementations
     void setupImGui(GLFWwindow* existingWindow) override;
     void renderUI(ed::EditorContext* g_Context) override;
-    void rleanupImGui(ed::EditorContext* g_Context) override;
+    void cleanupImGui(ed::EditorContext* g_Context) override;
 
     // Public methods
     void showInfo(const std::string& message);

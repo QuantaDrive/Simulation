@@ -82,7 +82,7 @@ int main()
 
 	simulation::Close();
 	// Cleanup ImGui & Node Editor
-	windowManager.rleanupImGui(g_Context);
+	windowManager.cleanupImGui(g_Context);
 
 	//cleanup
 	delete simulationManager;
