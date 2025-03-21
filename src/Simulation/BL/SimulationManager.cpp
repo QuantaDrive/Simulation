@@ -159,7 +159,7 @@ bool SimulationManager::move(domain::Position *position, float velocity) {
             try
             {
                 // cout << "Position: " << pos->getCoords()[0] << " " << pos->getCoords()[1] << " " << pos->getCoords()[2] << endl;
-                cout << "Rotation: " << pos->getRotation()[0] << " " << pos->getRotation()[1] << " " << pos->getRotation()[2] << endl;
+                // cout << "Rotation: " << pos->getRotation()[0] << " " << pos->getRotation()[1] << " " << pos->getRotation()[2] << endl;
                 angles = inverseKinematics(pos);
             }catch (logic_error e)
             {
