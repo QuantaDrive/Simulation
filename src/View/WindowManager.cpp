@@ -8,8 +8,10 @@
 #include "../Domain/NodeActivation.h"
 #include "../Domain/Instruction.h"
 #include "helper/HelperFunctions.h"
+#include <filesystem>
 namespace ed = ax::NodeEditor;
 using namespace domain;
+const std::string WindowManager::SAVES_DIRECTORY = "saves";
 
 WindowManager::NodeIdMatcher::NodeIdMatcher(ed::NodeId id) : nodeId(id) {
 }
@@ -179,6 +181,108 @@ bool WindowManager::shouldRemoveLink(const NodeHelpers::LinkInfo &link, const do
 
 void WindowManager::deleteNodeAndConnectedLinks(ed::NodeId nodeId) {
     NodeHelpers::DeleteNodeAndConnectedLinks(nodeId, m_Nodes, m_Links);
+}
+
+void WindowManager::saveNodeEditor(const std::string& filename) {
+    json j;
+
+    // Save nodes
+    json nodesArray = json::array();
+    for (const auto& node : m_Nodes) {
+        json nodeObj;
+        nodeObj["id"] = reinterpret_cast<uintptr_t>(node.getNodeId().AsPointer());
+        nodeObj["title"] = node.getTitle();
+        nodeObj["activation"] = static_cast<int>(node.getActivation());
+        nodeObj["loopCount"] = node.getLoopCount();
+        nodeObj["waitTimer"] = node.getWaitTimer();
+        nodeObj["velocity"] = node.getVelocity();
+
+        auto pos = node.getPosition();
+        nodeObj["position"] = {
+            {"x", pos->getCoords().x},
+            {"y", pos->getCoords().y},
+            {"z", pos->getCoords().z}
+        };
+
+        auto rot = node.getRotationHead();
+        nodeObj["rotation"] = {
+            {"x", rot.x},
+            {"y", rot.y},
+            {"z", rot.z}
+        };
+
+        nodesArray.push_back(nodeObj);
+    }
+    j["nodes"] = nodesArray;
+
+    // Save links
+    json linksArray = json::array();
+    for (const auto& link : m_Links) {
+        json linkObj;
+        linkObj["id"] = reinterpret_cast<uintptr_t>(link.Id.AsPointer());
+        linkObj["inputId"] = reinterpret_cast<uintptr_t>(link.InputId.AsPointer());
+        linkObj["outputId"] = reinterpret_cast<uintptr_t>(link.OutputId.AsPointer());
+        linksArray.push_back(linkObj);
+    }
+    j["links"] = linksArray;
+
+    // Write to file
+    std::ofstream file(filename);
+    file << j.dump(4);
+    showInfo("Node editor saved successfully");
+}
+
+void WindowManager::loadNodeEditor(const std::string& filename) {
+    try {
+        // Clear existing nodes and links
+        m_Nodes.clear();
+        m_Links.clear();
+
+        // Read JSON from file
+        std::ifstream file(filename);
+        json j = json::parse(file);
+
+        // Load nodes
+        for (const auto& nodeObj : j["nodes"]) {
+            auto node = std::make_unique<domain::Node>(
+                nodeObj["title"].get<std::string>().c_str(),
+                static_cast<RobotActions::NodeActivation>(nodeObj["activation"].get<int>())
+            );
+
+            node->setNodeId(ed::NodeId(reinterpret_cast<void*>(nodeObj["id"].get<uintptr_t>())));
+            node->setLoopCount(nodeObj["loopCount"].get<int>());
+            node->setWaitTimer(nodeObj["waitTimer"].get<int>());
+            node->setVelocity(nodeObj["velocity"].get<float>());
+
+            auto pos = new domain::Position(
+                {nodeObj["position"]["x"], nodeObj["position"]["y"], nodeObj["position"]["z"]},
+                {0, 0, 0}  // Default orientation
+            );
+            node->setPosition(pos);
+
+            node->setRotationHead({
+                nodeObj["rotation"]["x"],
+                nodeObj["rotation"]["y"],
+                nodeObj["rotation"]["z"]
+            });
+
+            m_Nodes.push_back(*node);
+        }
+
+        // Load links
+        for (const auto& linkObj : j["links"]) {
+            NodeHelpers::LinkInfo link;
+            link.Id = ed::LinkId(reinterpret_cast<void*>(linkObj["id"].get<uintptr_t>()));
+            link.InputId = ed::PinId(reinterpret_cast<void*>(linkObj["inputId"].get<uintptr_t>()));
+            link.OutputId = ed::PinId(reinterpret_cast<void*>(linkObj["outputId"].get<uintptr_t>()));
+            m_Links.push_back(link);
+        }
+
+        showInfo("Node editor loaded successfully");
+
+    } catch (const std::exception& e) {
+        showInfo("Error loading node editor: " + std::string(e.what()));
+    }
 }
 
 void WindowManager::handleNodeCopy() {
@@ -373,6 +477,79 @@ WindowManager::WindowManager(SimulationManager *simulationManager) {
 }
 
 
+void WindowManager::refreshSavedNodesList() {
+    m_SavedNodeFiles.clear();
+
+    // Create directory if it doesn't exist
+    if (!std::filesystem::exists(SAVES_DIRECTORY)) {
+        std::filesystem::create_directory(SAVES_DIRECTORY);
+    }
+
+    // List all .json files in the saves directory
+    for (const auto& entry : std::filesystem::directory_iterator(SAVES_DIRECTORY)) {
+        if (entry.path().extension() == ".json") {
+            m_SavedNodeFiles.push_back(entry.path().filename().string());
+        }
+    }
+}
+
+void WindowManager::renderSavedNodesWindow() {
+    ImGui::SetNextWindowSizeConstraints(ImVec2(200, 200), ImVec2(400, 600));
+    ImGui::Begin("Saved Nodes", &m_ShowSavedNodesWindow);
+
+    // Save current setup section
+    ImGui::TextWrapped("Save current node setup:");
+    static char filename[128] = "";
+    ImGui::InputText("##filename", filename, IM_ARRAYSIZE(filename));
+    ImGui::SameLine();
+
+    if (ImGui::Button("Save")) {
+        if (strlen(filename) > 0) {
+            std::string fullPath = SAVES_DIRECTORY + "/" + std::string(filename) + ".json";
+            saveNodeEditor(fullPath);
+            refreshSavedNodesList();
+            memset(filename, 0, sizeof(filename));  // Clear the input field
+        } else {
+            showInfo("Error: Please enter a filename");
+        }
+    }
+
+    ImGui::Separator();
+    ImGui::TextWrapped("Load saved node setups:");
+
+    // Refresh button
+    if (ImGui::Button("Refresh List")) {
+        refreshSavedNodesList();
+    }
+
+    ImGui::BeginChild("SavedNodesList", ImVec2(0, 0), true);
+
+    // List all saved files as buttons
+    for (const auto& file : m_SavedNodeFiles) {
+        if (ImGui::Button(file.c_str(), ImVec2(-1, 0))) {
+            std::string fullPath = SAVES_DIRECTORY + "/" + file;
+            loadNodeEditor(fullPath);
+        }
+
+        // Context menu for deletion
+        if (ImGui::BeginPopupContextItem()) {
+            if (ImGui::MenuItem("Delete")) {
+                std::string fullPath = SAVES_DIRECTORY + "/" + file;
+                if (std::filesystem::remove(fullPath)) {
+                    refreshSavedNodesList();
+                    showInfo("File deleted successfully");
+                } else {
+                    showInfo("Error: Failed to delete file");
+                }
+            }
+            ImGui::EndPopup();
+        }
+    }
+
+    ImGui::EndChild();
+    ImGui::End();
+}
+
 void WindowManager::setupImGui(GLFWwindow *existingWindow) {
     window = existingWindow;
 
@@ -429,6 +606,7 @@ void WindowManager::renderUI(ed::EditorContext *g_Context) {
         if (ImGui::BeginMenu("Windows")) {
             ImGui::MenuItem("Node Selector", nullptr, &m_ShowNodeSelector);
             ImGui::MenuItem("Node Editor", nullptr, &m_ShowNodeEditor);
+            ImGui::MenuItem("Saved Nodes", nullptr, &m_ShowSavedNodesWindow);
             ImGui::MenuItem("Help", nullptr, &m_ShowHelpWindow);
             ImGui::EndMenu();
         }
@@ -448,6 +626,9 @@ void WindowManager::renderUI(ed::EditorContext *g_Context) {
     if (m_ShowInfoWindow) {
         renderInfoWindow();
     }
+    if (m_ShowSavedNodesWindow) {
+        renderSavedNodesWindow();
+    }
     // Render the final ImGui frame
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -461,3 +642,4 @@ void WindowManager::rleanupImGui(ed::EditorContext *g_Context) {
     glfwTerminate();
     ed::DestroyEditor(g_Context);
 }
+

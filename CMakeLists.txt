@@ -10,6 +10,7 @@ include_directories(
         libs/imgui-1.91.8
         libs/imgui-node-editor
         libs/yaml-cpp/include
+        libs/json-develop
 )
 
 ### GLFW ###
@@ -54,6 +55,8 @@ add_library(ImGui STATIC
         libs/imgui-1.91.8/backends/imgui_impl_glfw.cpp
         libs/imgui-1.91.8/misc/cpp/imgui_stdlib.h
         libs/imgui-1.91.8/misc/cpp/imgui_stdlib.cpp
+
+
 )
 
 ### yaml-cpp ###
@@ -119,6 +122,10 @@ add_library(crude_json STATIC
         libs/imgui-node-editor/crude_json.cpp
 )
 
+# nlohmann/json libs
+add_library(json INTERFACE)
+target_include_directories(json INTERFACE libs/json-develop/include)
+
 ### Executable ###
 
 target_link_libraries(projectRobotArm
@@ -131,4 +138,6 @@ target_link_libraries(projectRobotArm
         crude_json
         Simulation
         yaml-cpp
+        json
+
 )

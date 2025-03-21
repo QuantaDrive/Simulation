@@ -255,7 +255,7 @@ void NodeHelpers::RenderNodeControls(domain::Node& node, SimulationManager* simu
             break;
         }
         case RobotActions::NodeActivation::AngleHead: {
-            std::string idTitle = "linear_or_rapid_move " + node.getNodeId().Get();
+            std::string idTitle = "angleHead" + node.getNodeId().Get();
             ImGui::PushID(idTitle.c_str());
             ImGui::PushItemWidth(100);
 

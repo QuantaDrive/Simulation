@@ -39,36 +39,38 @@ namespace domain
     public:
         explicit Node(const char* title, RobotActions::NodeActivation activation);
 
+        Node() = default;
         [[nodiscard]] std::string getTitle() const;
+        void setTitle(const std::string &title);
 
         [[nodiscard]] RobotActions::NodeActivation getActivation() const;
+        void setActivation(RobotActions::NodeActivation activation);
 
         [[nodiscard]] ed::NodeId getNodeId() const;
+        void setNodeId(const ed::NodeId &node_id);
 
         [[nodiscard]] ed::PinId getNodeInputPinId() const;
+        void setNodeInputPinId(const ed::PinId &node_input_pin_id);
 
         [[nodiscard]] ed::PinId getNodeOutputPinId() const;
+        void setNodeOutputPinId(const ed::PinId &node_output_pin_id);
 
         void initializeNodeIds(int& nodeId);
 
+        [[nodiscard]] int getLoopCount() const;
         void setLoopCount(int count);
 
-        [[nodiscard]] int getLoopCount() const;
-
+        [[nodiscard]] Position *getPosition() const;
         void setPosition(Position *absolute_position);
 
-        [[nodiscard]] Position *getPosition() const;
 
         [[nodiscard]] int getWaitTimer() const;
-
-        void setWaitTimer(int wait_timer);
+        void setWaitTimer(int waitTimer);
 
         [[nodiscard]] vec3 getRotationHead() const;
-
         void setRotationHead(const vec3 &degrees);
 
         [[nodiscard]] float getVelocity() const;
-
         void setVelocity(float velocity);
     };
 }
