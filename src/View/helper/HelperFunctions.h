@@ -53,6 +53,19 @@ namespace NodeHelpers {
     void HandleDeleteActions(ed::NodeId selectedNodeId,
                                         std::vector<domain::Node>& nodes,
                                         ImVector<LinkInfo>& links);
+    void saveNodeEditor(
+      const std::string& filename,
+      const std::vector<domain::Node>& nodes,
+      const ImVector<LinkInfo>& links
+  );
+
+    void loadNodeEditor(
+        const std::string& filename,
+        std::vector<domain::Node>& nodes,
+        ImVector<LinkInfo>& links,
+        int& nextNodeId,
+        int& nextLinkId
+    );
 }
 
 

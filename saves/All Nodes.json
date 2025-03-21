@@ -1,0 +1,208 @@
+{
+    "links": [
+        {
+            "id": 100,
+            "inputId": 15,
+            "outputId": 11
+        },
+        {
+            "id": 101,
+            "inputId": 12,
+            "outputId": 17
+        },
+        {
+            "id": 102,
+            "inputId": 18,
+            "outputId": 23
+        },
+        {
+            "id": 103,
+            "inputId": 24,
+            "outputId": 8
+        },
+        {
+            "id": 104,
+            "inputId": 9,
+            "outputId": 2
+        },
+        {
+            "id": 105,
+            "inputId": 3,
+            "outputId": 26
+        },
+        {
+            "id": 106,
+            "inputId": 27,
+            "outputId": 5
+        },
+        {
+            "id": 107,
+            "inputId": 6,
+            "outputId": 20
+        }
+    ],
+    "nodes": [
+        {
+            "activation": 0,
+            "id": 1,
+            "loopCount": 0,
+            "position": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "title": "Wait",
+            "velocity": 0.0,
+            "waitTimer": 1
+        },
+        {
+            "activation": 1,
+            "id": 4,
+            "loopCount": 0,
+            "position": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "title": "Angle Head",
+            "velocity": 0.0,
+            "waitTimer": 0
+        },
+        {
+            "activation": 2,
+            "id": 7,
+            "loopCount": 0,
+            "position": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "title": "Rapid Move",
+            "velocity": 0.0,
+            "waitTimer": 0
+        },
+        {
+            "activation": 3,
+            "id": 10,
+            "loopCount": 0,
+            "position": {
+                "x": 300.0,
+                "y": 0.0,
+                "z": 150.0
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "title": "Linear Move",
+            "velocity": 0.0,
+            "waitTimer": 0
+        },
+        {
+            "activation": 4,
+            "id": 13,
+            "loopCount": 0,
+            "position": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "title": "Absolute",
+            "velocity": 0.0,
+            "waitTimer": 0
+        },
+        {
+            "activation": 5,
+            "id": 16,
+            "loopCount": 0,
+            "position": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "title": "Relative",
+            "velocity": 0.0,
+            "waitTimer": 0
+        },
+        {
+            "activation": 6,
+            "id": 19,
+            "loopCount": 0,
+            "position": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "title": "Home",
+            "velocity": 0.0,
+            "waitTimer": 0
+        },
+        {
+            "activation": 7,
+            "id": 22,
+            "loopCount": 2,
+            "position": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "title": "Loop Start",
+            "velocity": 0.0,
+            "waitTimer": 0
+        },
+        {
+            "activation": 8,
+            "id": 25,
+            "loopCount": 0,
+            "position": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "title": "Loop End",
+            "velocity": 0.0,
+            "waitTimer": 0
+        }
+    ]
+}

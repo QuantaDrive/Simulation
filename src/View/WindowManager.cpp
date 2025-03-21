@@ -184,116 +184,14 @@ void WindowManager::deleteNodeAndConnectedLinks(ed::NodeId nodeId) {
 }
 
 void WindowManager::saveNodeEditor(const std::string& filename) {
-    json j;
-
-    // Save nodes
-    json nodesArray = json::array();
-    for (const auto& node : m_Nodes) {
-        json nodeObj;
-        nodeObj["id"] = reinterpret_cast<uintptr_t>(node.getNodeId().AsPointer());
-        nodeObj["title"] = node.getTitle();
-        nodeObj["activation"] = static_cast<int>(node.getActivation());
-        nodeObj["loopCount"] = node.getLoopCount();
-        nodeObj["waitTimer"] = node.getWaitTimer();
-        nodeObj["velocity"] = node.getVelocity();
-
-        auto pos = node.getPosition();
-        nodeObj["position"] = {
-            {"x", pos->getCoords().x},
-            {"y", pos->getCoords().y},
-            {"z", pos->getCoords().z}
-        };
-
-        auto rot = node.getRotationHead();
-        nodeObj["rotation"] = {
-            {"x", rot.x},
-            {"y", rot.y},
-            {"z", rot.z}
-        };
-
-        nodesArray.push_back(nodeObj);
-    }
-    j["nodes"] = nodesArray;
-
-    // Save links
-    json linksArray = json::array();
-    for (const auto& link : m_Links) {
-        json linkObj;
-        linkObj["id"] = reinterpret_cast<uintptr_t>(link.Id.AsPointer());
-        linkObj["inputId"] = reinterpret_cast<uintptr_t>(link.InputId.AsPointer());
-        linkObj["outputId"] = reinterpret_cast<uintptr_t>(link.OutputId.AsPointer());
-        linksArray.push_back(linkObj);
-    }
-    j["links"] = linksArray;
-
-    // Write to file
-    std::ofstream file(filename);
-    file << j.dump(4);
+    NodeHelpers::saveNodeEditor(filename, m_Nodes, m_Links);
     showInfo("Node editor saved successfully");
 }
 
 void WindowManager::loadNodeEditor(const std::string& filename) {
     try {
-        // Clear existing nodes and links
-        m_Nodes.clear();
-        m_Links.clear();
-        m_NextNodeId = 1; // Reset node ID counter
-
-        // Read JSON from file
-        std::ifstream file(filename);
-        json j = json::parse(file);
-
-        // Load nodes
-        for (const auto& nodeObj : j["nodes"]) {
-            auto node = std::make_unique<domain::Node>(
-                nodeObj["title"].get<std::string>().c_str(),
-                static_cast<RobotActions::NodeActivation>(nodeObj["activation"].get<int>())
-            );
-
-            // Initialize node IDs properly
-            void* idPtr = reinterpret_cast<void*>(nodeObj["id"].get<uintptr_t>());
-            ed::NodeId nodeId(idPtr);
-            int currentId = static_cast<int>(reinterpret_cast<uintptr_t>(idPtr));
-            node->initializeNodeIds(currentId);
-            m_NextNodeId = std::max(m_NextNodeId, currentId + 1);
-
-            // Set other node properties
-            node->setLoopCount(nodeObj["loopCount"].get<int>());
-            node->setWaitTimer(nodeObj["waitTimer"].get<int>());
-            node->setVelocity(nodeObj["velocity"].get<float>());
-
-            auto pos = new domain::Position(
-                {nodeObj["position"]["x"].get<float>(),
-                 nodeObj["position"]["y"].get<float>(),
-                 nodeObj["position"]["z"].get<float>()},
-                {0, 0, 0}
-            );
-            node->setPosition(pos);
-
-            node->setRotationHead({
-                nodeObj["rotation"]["x"].get<float>(),
-                nodeObj["rotation"]["y"].get<float>(),
-                nodeObj["rotation"]["z"].get<float>()
-            });
-
-            m_Nodes.push_back(*node);
-        }
-
-        // Load links after all nodes are created
-        for (const auto& linkObj : j["links"]) {
-            NodeHelpers::LinkInfo link;
-            link.Id = ed::LinkId(reinterpret_cast<void*>(linkObj["id"].get<uintptr_t>()));
-            link.InputId = ed::PinId(reinterpret_cast<void*>(linkObj["inputId"].get<uintptr_t>()));
-            link.OutputId = ed::PinId(reinterpret_cast<void*>(linkObj["outputId"].get<uintptr_t>()));
-            m_Links.push_back(link);
-
-            // Update next link ID
-            uintptr_t linkId = linkObj["id"].get<uintptr_t>();
-            m_NextLinkId = std::max(m_NextLinkId, static_cast<int>(linkId) + 1);
-        }
-
+        NodeHelpers::loadNodeEditor(filename, m_Nodes, m_Links, m_NextNodeId, m_NextLinkId);
         showInfo("Node editor loaded successfully");
-
     } catch (const std::exception& e) {
         showInfo("Error loading node editor: " + std::string(e.what()));
     }
@@ -532,7 +430,7 @@ void WindowManager::renderSavedNodesWindow() {
     ImGui::TextWrapped("Load saved node setups:");
 
     // Refresh button
-    if (ImGui::Button("Refresh List")) {
+    if (ImGui::Button("Refresh")) {
         refreshSavedNodesList();
     }
 
@@ -541,14 +439,14 @@ void WindowManager::renderSavedNodesWindow() {
     // List all saved files as buttons
     for (const auto& file : m_SavedNodeFiles) {
         if (ImGui::Button(file.c_str(), ImVec2(-1, 0))) {
-            std::string fullPath = SAVES_DIRECTORY + "/" + file;
+            std::string fullPath = SAVES_DIRECTORY + "/" += file;
             loadNodeEditor(fullPath);
         }
 
         // Context menu for deletion
         if (ImGui::BeginPopupContextItem()) {
             if (ImGui::MenuItem("Delete")) {
-                std::string fullPath = SAVES_DIRECTORY + "/" + file;
+                std::string fullPath = SAVES_DIRECTORY + "/" += file;
                 if (std::filesystem::remove(fullPath)) {
                     refreshSavedNodesList();
                     showInfo("File deleted successfully");
