@@ -109,59 +109,49 @@ void SimulationManager::executeTask(const domain::Task *task) {
 vector<domain::Position*> SimulationManager::interpolate(const domain::Position* currentPosition, domain::Position* newPosition) {
     auto currP = currentPosition->getCoords();
     auto newP = newPosition->getCoords();
+    auto currRot = currentPosition->getRotation();
+    auto newRot = newPosition->getRotation();
 
     float d = sqrtf(powf(currP[0] - newP[0], 2) + powf(currP[1] - newP[1], 2) + powf(currP[2] - newP[2], 2));
+    float rollDiff = newRot[0] - currRot[0];
+    float pitchDiff = newRot[1] - currRot[1];
+    float yawDiff = newRot[2] - currRot[2];
+
+    d = max({d,abs(yawDiff),abs(pitchDiff),abs(rollDiff)});
 
     vector<domain::Position*> interpolpoints = {};
     for (int i = 1; i < static_cast<int>(round(d)); i++) {
         float x = currP[0] + static_cast<float>(i) / d * (newP[0] - currP[0]);
         float y = currP[1] + static_cast<float>(i) / d * (newP[1] - currP[1]);
         float z = currP[2] + static_cast<float>(i) / d * (newP[2] - currP[2]);
-        interpolpoints.emplace_back(new domain::Position({x, y, z}, newPosition->getRotation()));
+        float rx = currRot[0] + static_cast<float>(i) / d * (rollDiff);
+        float ry = currRot[1] + static_cast<float>(i) / d * (pitchDiff);
+        float rz = currRot[2] + static_cast<float>(i) / d * (yawDiff);
+        interpolpoints.emplace_back(new domain::Position({x, y, z}, {rx, ry, rz}));
     }
+    float x = currP[0] + (newP[0] - currP[0]);
+    float y = currP[1] + (newP[1] - currP[1]);
+    float z = currP[2] + (newP[2] - currP[2]);
+    float rx = currRot[0] + rollDiff;
+    float ry = currRot[1] + pitchDiff;
+    float rz = currRot[2] + yawDiff;
+    interpolpoints.emplace_back(new domain::Position({x, y, z}, {rx, ry, rz}));
     return interpolpoints;
-}
-
-void SimulationManager::interpolateJoint1(float startAngle, const float endAngle, const float velocity)
-{
-    if (startAngle < endAngle)
-    {
-        while (startAngle<endAngle)
-        {
-            simulationArm_->moveAngle(1,1,true,true);
-            startAngle=degrees(simulationArm_->getJointPositions()[1]);
-            const auto timeToSleep = 1/velocity * powf(10,3);
-            usleep(static_cast<unsigned int>(timeToSleep));
-            simulation::refresh();
-            simulationArm_->render();
-        }
-    }
-    else
-    {
-        while (startAngle>endAngle)
-        {
-            simulationArm_->moveAngle(1,-1,true,true);
-            startAngle=degrees(simulationArm_->getJointPositions()[1]);
-            const auto timeToSleep = 1/velocity * powf(10,3);
-            usleep(static_cast<unsigned int>(timeToSleep));
-            simulation::refresh();
-            simulationArm_->render();
-        }
-    }
 }
 
 bool SimulationManager::move(domain::Position *position, float velocity) {
     if (robotArm_->getStatus() == domain::READY) {
         robotArm_->setStatus(domain::BUSY);
-        vector<float> anglestest = {};
-        try
-        {
-            anglestest = inverseKinematics(position);
-        }catch (logic_error e)
-        {
-            robotArm_->setStatus(domain::READY);
-            throw;
-        }
+        // vector<float> anglestest = {};
+        // try
+        // {
+        //     anglestest = inverseKinematics(position);
+        // }catch (logic_error e)
+        // {
+        //     robotArm_->setStatus(domain::READY);
+        //     throw;
+        // }
+
         auto interpolPos = interpolate(robotArm_->getCurrPosition(), position);
         vector<vector<float>> allAngles = {};
         for (auto pos: interpolPos) {
@@ -169,6 +159,7 @@ bool SimulationManager::move(domain::Position *position, float velocity) {
             try
             {
                 // cout << "Position: " << pos->getCoords()[0] << " " << pos->getCoords()[1] << " " << pos->getCoords()[2] << endl;
+                // cout << "Rotation: " << pos->getRotation()[0] << " " << pos->getRotation()[1] << " " << pos->getRotation()[2] << endl;
                 angles = inverseKinematics(pos);
             }catch (logic_error e)
             {
@@ -178,14 +169,10 @@ bool SimulationManager::move(domain::Position *position, float velocity) {
             allAngles.emplace_back(angles);
             delete pos;
         }
-        allAngles.emplace_back(anglestest);
+        // allAngles.emplace_back(anglestest);
         for (auto angles: allAngles)
         {
             for (int i = 0; i < angles.size(); i++) {
-                if (i==0 && abs(angles[i] - degrees(simulationArm_->getJointPositions()[1])) > 10)
-                {
-                    interpolateJoint1(degrees(simulationArm_->getJointPositions()[1]), angles[i], velocity);
-                }
                 simulationArm_->moveAngle(i + 1, angles[i], false, true);
             }
             auto timeToSleep = 1/velocity * powf(10,3);

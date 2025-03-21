@@ -62,7 +62,6 @@ protected:
     mat4 armToSphericalWrist(const mat4& j6);
     vector<vector<float>> getParamsJ1Zero(mat4& sphericalWrist);
     vector<domain::Position*> interpolate(const domain::Position* currentPosition, domain::Position* newPosition);
-    void interpolateJoint1(float startAngle, float endAngle, float velocity);
 public:
     explicit SimulationManager(Repo* repo, simulation::RobotArm* simulationArm);
     ~SimulationManager();
