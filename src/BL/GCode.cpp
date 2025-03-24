@@ -10,7 +10,6 @@
 #include <iomanip>
 #include <iostream>
 #include <stdexcept>
-#include <regex.h>
 #include <regex>
 #include <glm/gtc/constants.hpp>
 

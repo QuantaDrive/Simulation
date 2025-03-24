@@ -13,6 +13,10 @@
 #include "../Physical/BL/PhysicalManager.h"
 
 #include "helper/HelperFunctions.h"
+#include <fstream>
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
+
 
 namespace ed = ax::NodeEditor;
 
@@ -57,6 +61,10 @@ private:
     std::string m_InfoMessage = "Welcome to the Robot Arm Simulator";
     SimulationManager* localSimulationManager;
     PhysicalManager* localPhysicalManager;
+    // Save and load window members
+    bool m_ShowSavedNodesWindow = true;
+    std::vector<std::string> m_SavedNodeFiles;
+    static const std::string SAVES_DIRECTORY;
 
     // Private methods
     void renderInfoWindow();
@@ -74,7 +82,10 @@ private:
 
     bool shouldRemoveLink(const NodeHelpers::LinkInfo &link, const domain::Node &node);
     void deleteNodeAndConnectedLinks(ed::NodeId nodeId);
-
+    void saveNodeEditor(const std::string& filename);
+    void loadNodeEditor(const std::string& filename);
+    void renderSavedNodesWindow();
+    void refreshSavedNodesList();
 public:
     // Constructor
     explicit WindowManager(SimulationManager* simulationManager,PhysicalManager* physicalManager);

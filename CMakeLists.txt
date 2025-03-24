@@ -12,6 +12,7 @@ include_directories(
         libs/yaml-cpp/include
         libs/curlpp-0.8.1/include
         libs/curl-8.12.1/include
+        libs/json-develop
 )
 
 ### GLFW ###
@@ -126,6 +127,10 @@ add_library(crude_json STATIC
         libs/imgui-node-editor/crude_json.cpp
 )
 
+# nlohmann/json libs
+add_library(json INTERFACE)
+target_include_directories(json INTERFACE libs/json-develop/include)
+
 ### Executable ###
 
 target_link_libraries(projectRobotArm
@@ -139,4 +144,6 @@ target_link_libraries(projectRobotArm
         Simulation
         yaml-cpp
         curlpp
+        json
+
 )
