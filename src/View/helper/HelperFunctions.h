@@ -34,23 +34,23 @@ namespace NodeHelpers {
     };
 
     // Function declarations
-    const domain::Node* FindStartNode(const std::vector<domain::Node>& nodes, const ImVector<LinkInfo>& links);
-    const domain::Node* FindNextNode(const domain::Node* currentNode, const std::vector<domain::Node>& nodes, const ImVector<LinkInfo>& links);
-    bool IsStartNode(const domain::Node& node, const ImVector<LinkInfo>& links);
-    bool HasInputConnection(const domain::Node& node, const ImVector<LinkInfo>& links);
-    bool HasOutputConnection(const domain::Node& node, const ImVector<LinkInfo>& links);
-    void RenderNodeTooltip(RobotActions::NodeActivation action);
-    void CalcRandomPosNextNode(ImVec2* m_NextNodePosition);
-    void RenderHelpText();
-    void RenderNodeControls(domain::Node& node, SimulationManager* simulationManager, std::function<void(const std::string&)> showInfoCallback);
-    void ExecuteNode(const domain::Node& node, SimulationManager* simulationManager);
-    bool ShouldRemoveLink(const LinkInfo& link, const domain::Node& node);
-    void HandleNodeCopy(std::vector<domain::Node>& nodes, int& nextNodeId, ImVec2& nextNodePosition);
-    bool ValidateNewLink(const domain::Node* sourceNode, const domain::Node* targetNode);
-    void DeleteNodeAndConnectedLinks(ed::NodeId nodeId, std::vector<domain::Node>& nodes, ImVector<LinkInfo>& links);
-    void RenderLinks(const ImVector<LinkInfo>& links);
-    void HandleNodeSelection(SimulationManager* simulationManager, std::vector<domain::Node>& m_Nodes, ed::NodeId& lastSelectedNode);
-    void HandleDeleteActions(ed::NodeId selectedNodeId,
+    const domain::Node* findStartNode(const std::vector<domain::Node>& nodes, const ImVector<LinkInfo>& links);
+    const domain::Node* findNextNode(const domain::Node* currentNode, const std::vector<domain::Node>& nodes, const ImVector<LinkInfo>& links);
+    bool isStartNode(const domain::Node& node, const ImVector<LinkInfo>& links);
+    bool hasInputConnection(const domain::Node& node, const ImVector<LinkInfo>& links);
+    bool hasOutputConnection(const domain::Node& node, const ImVector<LinkInfo>& links);
+    void renderNodeTooltip(RobotActions::NodeActivation action);
+    void calcRandomPosNextNode(ImVec2* m_NextNodePosition);
+    void renderHelpText();
+    void renderNodeControls(domain::Node& node, SimulationManager* simulationManager, std::function<void(const std::string&)> showInfoCallback);
+    void executeNode(const domain::Node& node, SimulationManager* simulationManager);
+    bool shouldRemoveLink(const LinkInfo& link, const domain::Node& node);
+    void handleNodeCopy(std::vector<domain::Node>& nodes, int& nextNodeId, ImVec2& nextNodePosition);
+    bool validateNewLink(const domain::Node* sourceNode, const domain::Node* targetNode);
+    void deleteNodeAndConnectedLinks(ed::NodeId nodeId, std::vector<domain::Node>& nodes, ImVector<LinkInfo>& links);
+    void renderLinks(const ImVector<LinkInfo>& links);
+    void handleNodeSelection(SimulationManager* simulationManager, std::vector<domain::Node>& m_Nodes, ed::NodeId& lastSelectedNode);
+    void handleDeleteActions(ed::NodeId selectedNodeId,
                                         std::vector<domain::Node>& nodes,
                                         ImVector<LinkInfo>& links);
     void saveNodeEditor(
@@ -66,6 +66,7 @@ namespace NodeHelpers {
         int& nextNodeId,
         int& nextLinkId
     );
+    void renderTooltip(const char* text);
 }
 
 
