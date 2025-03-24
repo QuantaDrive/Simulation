@@ -18,7 +18,7 @@ public:
 
    virtual void setupImGui(GLFWwindow *existingWindow) = 0;
    virtual void renderUI(ax::NodeEditor::EditorContext *g_Context) = 0;
-   virtual void rleanupImGui(ax::NodeEditor::EditorContext *g_Context) = 0;
+   virtual void cleanupImGui(ax::NodeEditor::EditorContext *g_Context) = 0;
 };
 
 #endif // IWINDOWMANAGER_H
