@@ -459,6 +459,7 @@ void WindowManager::renderSavedNodesWindow() {
             showInfo("Error: Please enter a filename");
         }
     }
+    NodeHelpers::renderTooltip("Save current node setup to a file");
 
     ImGui::Separator();
     ImGui::TextWrapped("Load saved node setups:");
@@ -537,8 +538,6 @@ void WindowManager::setupImGui(GLFWwindow *existingWindow) {
     (void) io;
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 330");
-
-    std::cout << "Window initialized successfully\n";
 }
 
 

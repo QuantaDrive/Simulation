@@ -50,7 +50,7 @@ private:
     // Window state flags
     bool m_ShowNodeSelector = true;
     bool m_ShowNodeEditor = true;
-    bool m_ShowHelpWindow = false;
+    bool m_ShowHelpWindow = true;
     ed::NodeId m_SelectedNodeId = 0;
     ed::NodeId m_LastSelectedNode;
 

@@ -49,7 +49,6 @@ const domain::Node *NodeHelpers::findNextNode(const domain::Node *currentNode, c
         if (link.InputId == currentNode->getNodeOutputPinId()) {
             for (const auto &node: nodes) {
                 if (link.OutputId == node.getNodeInputPinId()) {
-                    std::cout << "Next node: " << node.getTitle() << std::endl;
                     return &node;
                 }
             }
