@@ -10,6 +10,8 @@
 #include <string>
 #include <GLFW/glfw3.h>
 #include "../Simulation/BL/SimulationManager.h"
+#include "../Physical/BL/PhysicalManager.h"
+
 #include "helper/HelperFunctions.h"
 #include <fstream>
 #include <nlohmann/json.hpp>
@@ -58,7 +60,8 @@ private:
     bool m_ShowInfoWindow = true;
     std::string m_InfoMessage = "Welcome to the Robot Arm Simulator";
     SimulationManager* localSimulationManager;
-    // Save and load window memvbers
+    PhysicalManager* localPhysicalManager;
+    // Save and load window members
     bool m_ShowSavedNodesWindow = true;
     std::vector<std::string> m_SavedNodeFiles;
     static const std::string SAVES_DIRECTORY;
@@ -74,6 +77,8 @@ private:
     void renderNodesInEditor(domain::Node& node);
     void executeNodeChain();
     void executeNode(const domain::Node& node);
+    void sendNodeChainToPhysicalArm();
+    void addNodeToTask(const domain::Node& node);
 
     bool shouldRemoveLink(const NodeHelpers::LinkInfo &link, const domain::Node &node);
     void deleteNodeAndConnectedLinks(ed::NodeId nodeId);
@@ -83,7 +88,7 @@ private:
     void refreshSavedNodesList();
 public:
     // Constructor
-    explicit WindowManager(SimulationManager* simulationManager);
+    explicit WindowManager(SimulationManager* simulationManager,PhysicalManager* physicalManager);
 
     // Interface implementations
     void setupImGui(GLFWwindow* existingWindow) override;

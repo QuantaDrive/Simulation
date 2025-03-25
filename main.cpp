@@ -65,7 +65,7 @@ int main()
 	g_Context = ed::CreateEditor(&config);
 
 	// Setup ImGui
-	WindowManager windowManager = WindowManager(simulationManager);
+	WindowManager windowManager = WindowManager(simulationManager,physicalManager);
 	windowManager.setupImGui(simulation::window);
 	do
 	{

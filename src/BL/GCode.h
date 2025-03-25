@@ -29,7 +29,7 @@ private:
 public:
     GCode(SimulationManager* simManager, PhysicalManager* physManager = nullptr);
     virtual ~GCode() = default;
-    std::string toGCode();
+    static std::string toGCode(domain::Task* task);
     domain::Task* parseGCode(std::vector<std::string>& gCode);
     void saveToFile(const std::string& fileName);
     void loadFromFile(const std::string& fileName);

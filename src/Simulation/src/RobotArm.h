@@ -14,8 +14,10 @@ namespace simulation{
         std::string name_;
         std::vector<Mesh*> joints;
         std::vector<float> jointPositions;
-        std::vector<glm::vec3> jointOffsets;
         std::vector<glm::vec3> jointDOFs;
+        std::vector<bool> jointInverse;
+        std::vector<glm::vec2> jointLimits;
+        std::vector<glm::vec3> jointOffsets;
         std::vector<glm::vec4> dh_parameters;
         float maxVel_;
         float maxAcc_;

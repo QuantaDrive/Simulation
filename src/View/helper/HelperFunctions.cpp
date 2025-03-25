@@ -8,6 +8,7 @@
 #include <iostream>
 
 #include "../../Domain/Instruction.h"
+#include "../../Domain/RobotArm.h"
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
 
@@ -177,7 +178,7 @@ void NodeHelpers::renderHelpText() {
     ImGui::Spacing();
 
     ImGui::Text("Execution:");
-    ImGui::BulletText("Click 'Send Instructions' to execute node sequence");
+    ImGui::BulletText("Click 'Simulate instructions' to execute node sequence in simulation");
     ImGui::BulletText("Sequence starts from node with no input connection");
     ImGui::BulletText("Nodes execute in order of connections");
 }
@@ -333,8 +334,18 @@ void NodeHelpers::executeNode(const domain::Node &node, SimulationManager *simul
         }
 
         case RobotActions::NodeActivation::AngleHead:
-            simulationManager->setRotationOfHead(node.getRotationHead());
-            break;
+            {
+                // simulationManager->setRotationOfHead(node.getRotationHead());
+                auto* instruction = new domain::Instruction();
+                auto* position = new domain::Position(simulationManager->getRobotArm()->getCurrPosition()->getCoords(),node.getRotationHead());
+                instruction->setPosition(position);
+                instruction->setRelative(false);
+                instruction->setGoHome(false);
+                instruction->setRapid(true);
+                simulationManager->executeInstruction(instruction);
+                delete instruction;
+                break;
+            }
 
         default:
             break;

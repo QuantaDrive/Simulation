@@ -10,6 +10,8 @@ include_directories(
         libs/imgui-1.91.8
         libs/imgui-node-editor
         libs/yaml-cpp/include
+        libs/curlpp-0.8.1/include
+        libs/curl-8.12.1/include
         libs/json-develop
 )
 
@@ -55,13 +57,16 @@ add_library(ImGui STATIC
         libs/imgui-1.91.8/backends/imgui_impl_glfw.cpp
         libs/imgui-1.91.8/misc/cpp/imgui_stdlib.h
         libs/imgui-1.91.8/misc/cpp/imgui_stdlib.cpp
-
-
 )
 
 ### yaml-cpp ###
 
 add_subdirectory(libs/yaml-cpp)
+
+### curl + curlpp ###
+
+add_subdirectory(libs/curl-8.12.1)
+add_subdirectory(libs/curlpp-0.8.1)
 
 ###
 
@@ -138,6 +143,7 @@ target_link_libraries(projectRobotArm
         crude_json
         Simulation
         yaml-cpp
+        curlpp
         json
 
 )

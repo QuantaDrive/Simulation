@@ -25,9 +25,8 @@ simManager_(simManager),
 physManager_(physManager)
 {}
 
-string GCode::toGCode()
+string GCode::toGCode(Task* task)
 {
-    Task* task = simManager_->getRobotArm()->getTask();
     bool alreadyRelative = false;
     bool alreadyAbsolute = false;
     string gCode;
@@ -145,9 +144,10 @@ domain::Task* GCode::parseGCode(vector<std::string>& gCode)
 
 void GCode::saveToFile(const std::string& fileName)
 {
+    auto* task = simManager_->getRobotArm()->getTask();
     ofstream out;
     out.open(fileName);
-    out << toGCode();
+    out << toGCode(task);
     out.close();
 
 }
