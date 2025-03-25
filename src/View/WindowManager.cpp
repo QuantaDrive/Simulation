@@ -152,18 +152,24 @@ void WindowManager::renderNodeSelectorWindow() {
         ImGui::Separator();
         ImGui::Spacing();
 
-
         // Style the Send instructions button differently
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.7f, 0.2f, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.8f, 0.3f, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.1f, 0.6f, 0.1f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.5f, 0.2f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.2f, 0.7f, 0.2f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.1f, 0.3f, 0.1f, 1.0f));
 
-        if (ImGui::Button("Send instructions", ImVec2(windowWidth, 0))) {
+        if (ImGui::Button("Simulate instructions", ImVec2(windowWidth, 0))) {
             executeNodeChain();
         }
 
         // Add tooltip for Send instructions button
-        NodeHelpers::renderTooltip("Execute the current node sequence");
+        NodeHelpers::renderTooltip("Simulate the current node sequence");
+
+        if (ImGui::Button("Send instructions", ImVec2(windowWidth, 0))) {
+            sendNodeChainToPhysicalArm();
+        }
+
+        // Add tooltip for Send instructions to physical button
+        NodeHelpers::renderTooltip("Send the current node sequence to the physical arm");
 
         ImGui::PopStyleColor(3);
 
@@ -203,10 +209,6 @@ void WindowManager::renderNodeSelectorWindow() {
         }
 
         ImGui::PopStyleColor(3);
-
-        if (ImGui::Button("Send to physical arm", ImVec2(windowWidth, 0))) {
-            sendNodeChainToPhysicalArm();
-        }
 
         NodeHelpers::renderTooltip("Delete all nodes and connections");
     }
@@ -423,7 +425,7 @@ void WindowManager::executeNode(const domain::Node &node) {
 
 void WindowManager::sendNodeChainToPhysicalArm()
 {
-    const domain::Node* startNode = NodeHelpers::FindStartNode(m_Nodes, m_Links);
+    const domain::Node* startNode = NodeHelpers::findStartNode(m_Nodes, m_Links);
     if (!startNode) {
         showInfo("Error: No starting node found");
         return;
@@ -450,14 +452,14 @@ void WindowManager::sendNodeChainToPhysicalArm()
 
             if (remainingIterations > 0) {
                 // Go back to node after loop start
-                currentNode = NodeHelpers::FindNextNode(loopStartNode, m_Nodes, m_Links);
+                currentNode = NodeHelpers::findNextNode(loopStartNode, m_Nodes, m_Links);
                 continue;
             }
             loopStack.pop();
         }
 
         addNodeToTask(*currentNode);
-        currentNode = NodeHelpers::FindNextNode(currentNode, m_Nodes, m_Links);
+        currentNode = NodeHelpers::findNextNode(currentNode, m_Nodes, m_Links);
     }
 
     if (!loopStack.empty()) {

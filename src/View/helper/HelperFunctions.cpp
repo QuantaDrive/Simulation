@@ -178,7 +178,7 @@ void NodeHelpers::renderHelpText() {
     ImGui::Spacing();
 
     ImGui::Text("Execution:");
-    ImGui::BulletText("Click 'Send Instructions' to execute node sequence");
+    ImGui::BulletText("Click 'Simulate instructions' to execute node sequence in simulation");
     ImGui::BulletText("Sequence starts from node with no input connection");
     ImGui::BulletText("Nodes execute in order of connections");
 }
