@@ -88,7 +88,7 @@ void WindowManager::renderHelpWindow() {
     if (!m_ShowHelpWindow) return;
     ImGui::SetNextWindowSizeConstraints(ImVec2(400, 300), ImVec2(600, 800));
     ImGui::Begin("Node Editor Help", &m_ShowHelpWindow);
-    NodeHelpers::RenderHelpText();
+    NodeHelpers::renderHelpText();
     ImGui::End();
 }
 
@@ -137,12 +137,12 @@ void WindowManager::renderNodeSelectorWindow() {
 
                 m_Nodes.push_back(newNode);
 
-                NodeHelpers::CalcRandomPosNextNode(&m_NextNodePosition);
+                NodeHelpers::calcRandomPosNextNode(&m_NextNodePosition);
             }
             // Add tooltip for each button
             if (ImGui::IsItemHovered()) {
                 ImGui::BeginTooltip();
-                NodeHelpers::RenderNodeTooltip(action);
+                NodeHelpers::renderNodeTooltip(action);
                 ImGui::EndTooltip();
             }
             ImGui::PopItemWidth();
@@ -163,11 +163,43 @@ void WindowManager::renderNodeSelectorWindow() {
         }
 
         // Add tooltip for Send instructions button
-        if (ImGui::IsItemHovered()) {
-            ImGui::BeginTooltip();
-            ImGui::Text("Execute the current node sequence");
-            ImGui::Text("Nodes must be properly connected");
-            ImGui::EndTooltip();
+        NodeHelpers::renderTooltip("Execute the current node sequence");
+
+        ImGui::PopStyleColor(3);
+
+        // Add spacing before Delete All button
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        // Delete All button with red styling
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.7f, 0.2f, 0.2f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.8f, 0.3f, 0.3f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.6f, 0.1f, 0.1f, 1.0f));
+
+        if (ImGui::Button("Delete All", ImVec2(windowWidth, 0))) {
+            // Show confirmation popup
+            ImGui::OpenPopup("Delete All Nodes?");
+        }
+
+        // Confirmation popup
+        if (ImGui::BeginPopupModal("Delete All Nodes?", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+            ImGui::Text("Are you sure you want to delete all nodes?\nThis action cannot be undone.");
+            ImGui::Separator();
+
+            if (ImGui::Button("Yes", ImVec2(120, 0))) {
+                m_Nodes.clear();
+                m_Links.clear();
+                m_NextNodeId = 1;
+                m_NextLinkId = 100;
+                showInfo("All nodes deleted");
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("No", ImVec2(120, 0))) {
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::EndPopup();
         }
 
         ImGui::PopStyleColor(3);
@@ -175,6 +207,8 @@ void WindowManager::renderNodeSelectorWindow() {
         if (ImGui::Button("Send to physical arm", ImVec2(windowWidth, 0))) {
             sendNodeChainToPhysicalArm();
         }
+
+        NodeHelpers::renderTooltip("Delete all nodes and connections");
     }
     ImGui::End();
 }
@@ -186,7 +220,7 @@ bool WindowManager::shouldRemoveLink(const NodeHelpers::LinkInfo &link, const do
 
 
 void WindowManager::deleteNodeAndConnectedLinks(ed::NodeId nodeId) {
-    NodeHelpers::DeleteNodeAndConnectedLinks(nodeId, m_Nodes, m_Links);
+    NodeHelpers::deleteNodeAndConnectedLinks(nodeId, m_Nodes, m_Links);
 }
 
 void WindowManager::saveNodeEditor(const std::string& filename) {
@@ -204,7 +238,7 @@ void WindowManager::loadNodeEditor(const std::string& filename) {
 }
 
 void WindowManager::handleNodeCopy() {
-    NodeHelpers::HandleNodeCopy(m_Nodes, m_NextNodeId, m_NextNodePosition);
+    NodeHelpers::handleNodeCopy(m_Nodes, m_NextNodeId, m_NextNodePosition);
 }
 
 void WindowManager::renderImGuiNodesEditorWindow(ed::EditorContext *g_Context) {
@@ -217,6 +251,7 @@ void WindowManager::renderImGuiNodesEditorWindow(ed::EditorContext *g_Context) {
             ed::SetCurrentEditor(g_Context);
             ed::NavigateToContent();
         }
+        NodeHelpers::renderTooltip("Center view on all nodes");
         ImGui::PopStyleVar();
         ImGui::Dummy(ImVec2(5.0f, 0.0f));
         ImGui::EndMenuBar();
@@ -232,7 +267,7 @@ void WindowManager::renderImGuiNodesEditorWindow(ed::EditorContext *g_Context) {
             renderNodesInEditor(node);
         }
 
-        NodeHelpers::RenderLinks(m_Links);
+        NodeHelpers::renderLinks(m_Links);
 
         if (ed::BeginCreate()) {
             linkHandler();
@@ -242,11 +277,11 @@ void WindowManager::renderImGuiNodesEditorWindow(ed::EditorContext *g_Context) {
         if (ed::BeginDelete()) {
             linkDeleteHandler();
             ed::NodeId selectedNodeId;
-            NodeHelpers::HandleDeleteActions(selectedNodeId, m_Nodes, m_Links);
+            NodeHelpers::handleDeleteActions(selectedNodeId, m_Nodes, m_Links);
             ed::EndDelete();
         }
 
-        NodeHelpers::HandleNodeSelection(localSimulationManager,m_Nodes,  m_LastSelectedNode);
+        NodeHelpers::handleNodeSelection(localSimulationManager,m_Nodes,  m_LastSelectedNode);
 
         if (m_FirstFrame) {
             ed::NavigateToContent(0.0f);
@@ -326,7 +361,7 @@ void WindowManager::renderNodesInEditor(domain::Node &node) {
     ed::BeginNode(node.getNodeId());
     ImGui::Text(node.getTitle().c_str());
 
-    NodeHelpers::RenderNodeControls(node, localSimulationManager,
+    NodeHelpers::renderNodeControls(node, localSimulationManager,
                                     [this](const std::string &msg) { showInfo(msg); });
 
     ed::BeginPin(node.getNodeInputPinId(), ed::PinKind::Input);
@@ -341,7 +376,7 @@ void WindowManager::renderNodesInEditor(domain::Node &node) {
 
 
 void WindowManager::executeNodeChain() {
-    const domain::Node* startNode = NodeHelpers::FindStartNode(m_Nodes, m_Links);
+    const domain::Node* startNode = NodeHelpers::findStartNode(m_Nodes, m_Links);
     if (!startNode) {
         showInfo("Error: No starting node found");
         return;
@@ -366,14 +401,14 @@ void WindowManager::executeNodeChain() {
 
             if (remainingIterations > 0) {
                 // Go back to node after loop start
-                currentNode = NodeHelpers::FindNextNode(loopStartNode, m_Nodes, m_Links);
+                currentNode = NodeHelpers::findNextNode(loopStartNode, m_Nodes, m_Links);
                 continue;
             }
             loopStack.pop();
         }
 
         executeNode(*currentNode);
-        currentNode = NodeHelpers::FindNextNode(currentNode, m_Nodes, m_Links);
+        currentNode = NodeHelpers::findNextNode(currentNode, m_Nodes, m_Links);
     }
 
     if (!loopStack.empty()) {
@@ -383,7 +418,7 @@ void WindowManager::executeNodeChain() {
 
 void WindowManager::executeNode(const domain::Node &node) {
     if (!localSimulationManager) return;
-    NodeHelpers::ExecuteNode(node, localSimulationManager);
+    NodeHelpers::executeNode(node, localSimulationManager);
 }
 
 void WindowManager::sendNodeChainToPhysicalArm()
@@ -548,6 +583,7 @@ void WindowManager::renderSavedNodesWindow() {
             showInfo("Error: Please enter a filename");
         }
     }
+    NodeHelpers::renderTooltip("Save current node setup to a file");
 
     ImGui::Separator();
     ImGui::TextWrapped("Load saved node setups:");
@@ -556,6 +592,7 @@ void WindowManager::renderSavedNodesWindow() {
     if (ImGui::Button("Refresh")) {
         refreshSavedNodesList();
     }
+    NodeHelpers::renderTooltip("Load or refresh saved node setups");
 
     ImGui::BeginChild("SavedNodesList", ImVec2(0, 0), true);
 
@@ -625,8 +662,6 @@ void WindowManager::setupImGui(GLFWwindow *existingWindow) {
     (void) io;
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 330");
-
-    std::cout << "Window initialized successfully\n";
 }
 
 
@@ -669,7 +704,7 @@ void WindowManager::renderUI(ed::EditorContext *g_Context) {
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
-void WindowManager::rleanupImGui(ed::EditorContext *g_Context) {
+void WindowManager::cleanupImGui(ed::EditorContext *g_Context) {
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();

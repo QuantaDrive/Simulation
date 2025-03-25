@@ -52,7 +52,7 @@ private:
     // Window state flags
     bool m_ShowNodeSelector = true;
     bool m_ShowNodeEditor = true;
-    bool m_ShowHelpWindow = false;
+    bool m_ShowHelpWindow = true;
     ed::NodeId m_SelectedNodeId = 0;
     ed::NodeId m_LastSelectedNode;
 
@@ -93,7 +93,7 @@ public:
     // Interface implementations
     void setupImGui(GLFWwindow* existingWindow) override;
     void renderUI(ed::EditorContext* g_Context) override;
-    void rleanupImGui(ed::EditorContext* g_Context) override;
+    void cleanupImGui(ed::EditorContext* g_Context) override;
 
     // Public methods
     void showInfo(const std::string& message);
