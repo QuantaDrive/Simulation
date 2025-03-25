@@ -21,7 +21,6 @@ T safer_cast(const U& from) {
 
 void PhysicalManager::executeTask(Task* task)
 {
-    //TODO: webserver op arm
     curlpp::Easy request;
 
     request.setOpt(new curlpp::options::Url("localhost:8000/gcode"));

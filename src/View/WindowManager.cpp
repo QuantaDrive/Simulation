@@ -488,7 +488,6 @@ void WindowManager::addNodeToTask(const domain::Node& node)
             if (localSimulationManager->isAbsolute()) instruction->setRelative(false);
             else instruction->setRelative(true);
             task->addInstruction(instruction);
-            // delete instruction;
             break;
     }
 
@@ -499,7 +498,6 @@ void WindowManager::addNodeToTask(const domain::Node& node)
             if (localSimulationManager->isAbsolute()) instruction->setRelative(false);
             else instruction->setRelative(true);
             task->addInstruction(instruction);
-            // delete instruction;
             break;
     }
 
@@ -508,7 +506,6 @@ void WindowManager::addNodeToTask(const domain::Node& node)
             instruction->setRelative(false);
             instruction->setWait(node.getWaitTimer());
             task->addInstruction(instruction);
-            // delete instruction;
             break;
     }
 
@@ -517,7 +514,6 @@ void WindowManager::addNodeToTask(const domain::Node& node)
             instruction->setRelative(false);
             instruction->setGoHome(true);
             task->addInstruction(instruction);
-            // delete instruction;
             break;
     }
 
@@ -529,7 +525,6 @@ void WindowManager::addNodeToTask(const domain::Node& node)
             instruction->setRelative(false);
             instruction->setGoHome(false);
             task->addInstruction(instruction);
-            // delete instruction;
             break;
         }
 
@@ -695,11 +690,11 @@ void WindowManager::renderUI(ed::EditorContext *g_Context) {
     if (m_ShowHelpWindow) {
         renderHelpWindow();
     }
-    if (m_ShowInfoWindow) {
-        renderInfoWindow();
-    }
     if (m_ShowSavedNodesWindow) {
         renderSavedNodesWindow();
+    }
+    if (m_ShowInfoWindow) {
+        renderInfoWindow();
     }
     // Render the final ImGui frame
     ImGui::Render();

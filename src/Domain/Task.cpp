@@ -35,6 +35,9 @@ vector<domain::Instruction*> domain::Task::getInstructions() const
 
 void domain::Task::clearInstructions()
 {
+    for (const auto i : instructions_) {
+        delete i;
+    }
     instructions_.clear();
 }
 

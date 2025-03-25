@@ -211,12 +211,12 @@ mat4 SimulationManager::getTransformationMatrix(vec3 position, vec3 rotation) {
     const float Rx = radians(rotation[0]);
     const float Ry = radians(rotation[1]);
     const float Rz = radians(rotation[2]);
-    auto matrix = mat4(cos(Rx) * cos(Ry), cos(Rx) * sin(Ry) * sin(Rz) - sin(Rx) * cos(Rz),
-                       cos(Rx) * sin(Ry) * cos(Rz) + sin(Rx) * sin(Rz), position[0],
-                       sin(Rx) * cos(Ry), sin(Rx) * sin(Ry) * sin(Rz) + cos(Rx) * cos(Rz),
-                       sin(Rx) * sin(Ry) * cos(Rz) - cos(Rx) * sin(Rz), position[1],
-                       -sin(Ry), cos(Ry) * sin(Rz), cos(Ry) * cos(Rz), position[2],
-                       0, 0, 0, 1);
+    // auto matrix = mat4(cos(Rx) * cos(Ry), cos(Rx) * sin(Ry) * sin(Rz) - sin(Rx) * cos(Rz),
+    //                    cos(Rx) * sin(Ry) * cos(Rz) + sin(Rx) * sin(Rz), position[0],
+    //                    sin(Rx) * cos(Ry), sin(Rx) * sin(Ry) * sin(Rz) + cos(Rx) * cos(Rz),
+    //                    sin(Rx) * sin(Ry) * cos(Rz) - cos(Rx) * sin(Rz), position[1],
+    //                    -sin(Ry), cos(Ry) * sin(Rz), cos(Ry) * cos(Rz), position[2],
+    //                    0, 0, 0, 1);
     auto matrix2 = mat4(cos(Rx) * cos(Ry),sin(Rx) * cos(Ry),-sin(Ry),0,
                         cos(Rx) * sin(Ry) * sin(Rz) - sin(Rx) * cos(Rz),sin(Rx) * sin(Ry) * sin(Rz) + cos(Rx) * cos(Rz),cos(Ry) * sin(Rz),0,
                         cos(Rx) * sin(Ry) * cos(Rz) + sin(Rx) * sin(Rz),sin(Rx) * sin(Ry) * cos(Rz) - cos(Rx) * sin(Rz),cos(Ry) * cos(Rz),0,
@@ -245,28 +245,27 @@ mat4 SimulationManager::toolToArm(const domain::Position *position, const domain
 }
 
 mat4 SimulationManager::armToSphericalWrist(const mat4 &j6) {
-    mat4 negate = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, -simulationArm_->getDhParameters()[5][2], 1};
+    //mat4 negate = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, -simulationArm_->getDhParameters()[5][2], 1};
+    auto negate = getTransformationMatrix({0, 0, -simulationArm_->getDhParameters()[5][2]}, {0, 0, 0});
     return j6 * negate;
 }
 
 vector<vector<float> > SimulationManager::getParamsJ1Zero(mat4 &sphericalWrist) {
-    float j1 = 0;
-    float x = sphericalWrist[3][0] * cos(radians(-j1)) - sphericalWrist[3][1] * sin(radians(-j1));
-    float y = sphericalWrist[3][1] * cos(radians(-j1)) + sphericalWrist[3][0] * sin(radians(-j1));
-    float L1 = sqrtf(powf(sphericalWrist[3][0],2) + powf(sphericalWrist[3][1],2));
+    float L1 = sqrtf(powf(sphericalWrist[3][0],2) + powf(sphericalWrist[3][1],2)) - simulationArm_->getDhParameters()[0][3];
     float L4 = sphericalWrist[3][2] - simulationArm_->getDhParameters()[0][2];
     float L2 = sqrtf(powf(L1, 2) + powf(L4, 2));
     float L3 = sqrtf(
-        powf(simulationArm_->getDhParameters()[3][2], 2) + powf(simulationArm_->getDhParameters()[2][3], 2));
+        powf(simulationArm_->getDhParameters()[3][2], 2) + powf(simulationArm_->getDhParameters()[2][3], 2)
+        );
     float thetaB = degrees(atan2(L1, L4));
     float thetaC = degrees(acosf((powf(simulationArm_->getDhParameters()[1][3], 2) + powf(L2, 2) - powf(L3, 2)) / (2 * L2 * simulationArm_->getDhParameters()[1][3])));
-    float thetaD = degrees(acosf((powf(L3, 2) + powf(simulationArm_->getDhParameters()[1][3], 2) - powf(L2, 2)) / (2 * L3 * simulationArm_->getDhParameters()[1][3])));
-    float thetaE = degrees(atan2(simulationArm_->getDhParameters()[2][3], simulationArm_->getDhParameters()[3][2]));
+    float thetaD = degrees(acosf((powf(simulationArm_->getDhParameters()[1][3], 2) + powf(L3, 2) - powf(L2, 2)) / (2 * L3 * simulationArm_->getDhParameters()[1][3])));
+    float thetaE = degrees(atanf(simulationArm_->getDhParameters()[2][3] / simulationArm_->getDhParameters()[3][2]));
     float j2 = thetaB - thetaC;
-    float j3 = -(thetaD + thetaE) + 180;
-    // cout << "thetaC = " << thetaC << " thetaD = " << thetaD << " j2 = " << j2 << " j3 = " << j3 << endl;
-    if (thetaC!=thetaC || thetaD!=thetaD || j2!=j2 || j3!=j3) throw logic_error("coordinates out of arms reach");
-    return {{x, y}, {L1, L2, L3, L4}, {thetaB, thetaC, thetaD, thetaE}, {j2, j3}};
+    float j3 = 180 - thetaD - thetaE;
+    // if any of these variables are NaN, throw an error
+    if (thetaC != thetaC || thetaD != thetaD || j2 != j2 || j3 != j3) throw logic_error("coordinates out of arms reach");
+    return {{sphericalWrist[3][0], sphericalWrist[3][1]}, {L1, L2, L3, L4}, {thetaB, thetaC, thetaD, thetaE}, {j2, j3}};
 }
 
 
@@ -274,7 +273,6 @@ vector<float> SimulationManager::inverseKinematics(domain::Position *position) {
     mat4 j6Matrix = toolToArm(position, robotArm_->getTool());
     mat4 sphericalWrist = armToSphericalWrist(j6Matrix);
     auto j1 = degrees(atan2(sphericalWrist[3][1], sphericalWrist[3][0]));
-    // cout << "j1: " << j1 << endl;
     vector<vector<float> > params = {};
     try
     {
@@ -286,11 +284,10 @@ vector<float> SimulationManager::inverseKinematics(domain::Position *position) {
         throw;
     }
     auto dhParams = simulationArm_->getDhParameters();
-    mat4 j1M = getDhTransformationMatrix(j1 + dhParams[0][0], dhParams[0][1], dhParams[0][2], dhParams[0][3]);
-    mat4 j2M = getDhTransformationMatrix(params[3][0] + dhParams[1][0], dhParams[1][1], dhParams[1][2], dhParams[1][3]);
-    mat4 j3M = getDhTransformationMatrix(params[3][1] + dhParams[2][0], dhParams[2][1], dhParams[2][2], dhParams[2][3]);
-    mat4 R02 = j1M * j2M;
-    mat4 R03 = R02 * j3M;
+    mat4 j1M = getDhTransformationMatrix(dhParams[0][0] + j1,           dhParams[0][1], dhParams[0][2], dhParams[0][3]);
+    mat4 j2M = getDhTransformationMatrix(dhParams[1][0] + params[3][0], dhParams[1][1], dhParams[1][2], dhParams[1][3]);
+    mat4 j3M = getDhTransformationMatrix(dhParams[2][0] + params[3][1], dhParams[2][1], dhParams[2][2], dhParams[2][3]);
+    mat4 R03 = j1M * j2M * j3M;
     mat3 R03Sub = {
         R03[0][0], R03[0][1], R03[0][2],
         R03[1][0], R03[1][1], R03[1][2],
@@ -302,9 +299,10 @@ vector<float> SimulationManager::inverseKinematics(domain::Position *position) {
         j6Matrix[2][0], j6Matrix[2][1], j6Matrix[2][2]
     };
     mat3 j3Orientation = transpose(R03Sub) * j6Rot;
+    const float j5_sign = atan2(-j3Orientation[0][2], sqrtf(powf(j3Orientation[0][0], 2) - powf(j3Orientation[0][1], 2)));
     float j5 = degrees(atan2(sqrtf(1 - powf(j3Orientation[2][2], 2)), j3Orientation[2][2]));
-    if (j5 <= 0) j5 = degrees(atan2(-sqrtf(1 - powf(j3Orientation[2][2], 2)), j3Orientation[2][2]));
-    // cout << "j5: " << j5 << endl;
+    if (j5_sign < 0)
+        j5 = - j5;
     float j4, j6;
     if (j5 > 0) {
         j4 = degrees(atan2(j3Orientation[2][1], -j3Orientation[2][0]));
