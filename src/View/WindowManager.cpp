@@ -503,7 +503,8 @@ void WindowManager::addNodeToTask(const domain::Node& node)
 
     case RobotActions::NodeActivation::Wait: {
             auto* instruction = new domain::Instruction();
-            instruction->setRelative(false);
+            if (localSimulationManager->isAbsolute()) instruction->setRelative(false);
+            else instruction->setRelative(true);
             instruction->setWait(node.getWaitTimer());
             task->addInstruction(instruction);
             break;
@@ -522,7 +523,8 @@ void WindowManager::addNodeToTask(const domain::Node& node)
             auto* instruction = new domain::Instruction();
             auto* position = new domain::Position(localSimulationManager->getRobotArm()->getCurrPosition()->getCoords(),node.getRotationHead());
             instruction->setPosition(position);
-            instruction->setRelative(false);
+            if (localSimulationManager->isAbsolute()) instruction->setRelative(false);
+            else instruction->setRelative(true);
             instruction->setGoHome(false);
             task->addInstruction(instruction);
             break;

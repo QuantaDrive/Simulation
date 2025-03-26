@@ -15,6 +15,7 @@
 
 int simulation::Init(const int width, const int height)
 {
+    //glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_X11);
     // Initialize GLFW
     if (!glfwInit())
     {
