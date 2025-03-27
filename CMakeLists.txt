@@ -3,6 +3,8 @@ project(projectRobotArm)
 
 set(CMAKE_CXX_STANDARD 17)
 
+set(BUILD_EXAMPLES OFF)
+
 include_directories(
         libs/glfw-3.4/include
         libs/glew-1.13.0/include
